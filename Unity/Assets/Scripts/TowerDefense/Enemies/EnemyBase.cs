@@ -80,7 +80,7 @@ namespace DragonTD.TowerDefense
             Destroy(gameObject);
         }
 
-        private void ReachBase()
+        protected void ReachBase()
         {
             GameManager.Instance.LoseLife(_data.DamageToBase);
             Die();

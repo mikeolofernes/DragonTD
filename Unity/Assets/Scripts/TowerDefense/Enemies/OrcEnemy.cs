@@ -18,8 +18,7 @@ namespace DragonTD.TowerDefense
                 _waypointIndex++;
                 if (_waypointIndex >= _waypoints.Length)
                 {
-                    // Orcs charge the base with full aggression — handled by base ReachBase via Die path
-                    SendMessage("ReachBase", SendMessageOptions.DontRequireReceiver);
+                    ReachBase();
                 }
             }
         }
