@@ -23,6 +23,7 @@ namespace DragonTD.UI
         private void OnEnable()
         {
             GameManager.Instance.OnStateChanged += HandleStateChanged;
+            GameManager.Instance.OnLivesChanged += UpdateLivesFromEvent;
             ResourceManager.Instance.OnManaChanged += UpdateMana;
             ResourceManager.Instance.OnGoldChanged += UpdateGold;
             UpdateLives();
@@ -31,6 +32,7 @@ namespace DragonTD.UI
         private void OnDisable()
         {
             GameManager.Instance.OnStateChanged -= HandleStateChanged;
+            GameManager.Instance.OnLivesChanged -= UpdateLivesFromEvent;
             ResourceManager.Instance.OnManaChanged -= UpdateMana;
             ResourceManager.Instance.OnGoldChanged -= UpdateGold;
         }
@@ -52,9 +54,9 @@ namespace DragonTD.UI
             _goldText.text = $"Gold: {gold}";
         }
 
-        private void UpdateLives()
-        {
+        private void UpdateLives() =>
             _livesText.text = $"Lives: {GameManager.Instance.Lives}";
-        }
+
+        private void UpdateLivesFromEvent(int _) => UpdateLives();
     }
 }

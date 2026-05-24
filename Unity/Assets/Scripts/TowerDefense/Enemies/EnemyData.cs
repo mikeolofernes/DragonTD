@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonTD.Dragons;
 
 namespace DragonTD.TowerDefense
 {
@@ -14,5 +15,7 @@ namespace DragonTD.TowerDefense
         public int GoldValue;
         public int DamageToBase;
         public EnemyFaction Faction;
+        public DragonElement Element;
+        public bool HasElement;
     }
 }

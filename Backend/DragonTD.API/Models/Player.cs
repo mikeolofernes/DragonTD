@@ -13,4 +13,7 @@ public class Player
     public DateTime LastLoginAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<PlayerDragon> Dragons { get; set; } = new List<PlayerDragon>();
+
+    public int GachaPullsSinceLastS { get; set; } = 0;
+    public int GachaTotalPulls { get; set; } = 0;
 }

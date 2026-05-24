@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonTD.TowerDefense;
 
 namespace DragonTD.Core
 {
@@ -13,6 +14,7 @@ namespace DragonTD.Core
         public GameState State { get; private set; }
 
         public event System.Action<GameState> OnStateChanged;
+        public event System.Action<int> OnLivesChanged;
 
         private GameState _stateBeforePause;
 
@@ -38,6 +40,7 @@ namespace DragonTD.Core
         {
             Lives = _startingLives;
             CurrentWave = 0;
+            ResourceManager.Instance?.ResetForBattle();
             SetState(GameState.Setup);
         }
 
@@ -50,11 +53,9 @@ namespace DragonTD.Core
         public void LoseLife(int amount = 1)
         {
             Lives -= amount;
-            if (Lives <= 0)
-            {
-                Lives = 0;
-                SetState(GameState.Defeat);
-            }
+            if (Lives <= 0) Lives = 0;
+            OnLivesChanged?.Invoke(Lives);
+            if (Lives <= 0) SetState(GameState.Defeat);
         }
 
         public void OnWaveCleared()
