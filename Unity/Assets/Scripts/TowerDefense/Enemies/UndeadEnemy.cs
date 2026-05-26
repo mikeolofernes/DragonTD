@@ -13,7 +13,7 @@ namespace DragonTD.TowerDefense
             {
                 _hasRevived = true;
                 _currentHp = _maxHp * 0.5f;
-                OnHpChanged?.Invoke(HpPercent);
+                RaiseHpChanged();
                 return;
             }
             base.Die();

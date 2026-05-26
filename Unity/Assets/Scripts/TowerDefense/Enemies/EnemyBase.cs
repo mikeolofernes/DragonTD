@@ -22,6 +22,8 @@ namespace DragonTD.TowerDefense
         public event System.Action<EnemyBase> OnDied;
         public event System.Action<float> OnHpChanged;
 
+        protected void RaiseHpChanged() => OnHpChanged?.Invoke(HpPercent);
+
         public float DistanceToGoal
         {
             get

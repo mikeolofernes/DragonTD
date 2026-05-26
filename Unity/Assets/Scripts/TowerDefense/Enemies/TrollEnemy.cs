@@ -12,7 +12,7 @@ namespace DragonTD.TowerDefense
             if (_currentHp < _maxHp)
             {
                 _currentHp = Mathf.Min(_maxHp, _currentHp + _regenPerSecond * Time.deltaTime);
-                OnHpChanged?.Invoke(HpPercent);
+                RaiseHpChanged();
             }
         }
     }
