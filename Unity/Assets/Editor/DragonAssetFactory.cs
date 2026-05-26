@@ -161,15 +161,10 @@ namespace DragonTD.Editor
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
             if (sprite != null) vd.portrait = sprite;
 
-            // Try to auto-bind idle video clip
+            // Try to auto-bind dragon video
             string videoPath = $"{ArtBasePath}/{dragonId}/idle_anim.mp4";
             var video = AssetDatabase.LoadAssetAtPath<UnityEngine.Video.VideoClip>(videoPath);
-            if (video != null) vd.idleVideo = video;
-
-            // Try to auto-bind attack video clip
-            string attackVideoPath = $"{ArtBasePath}/{dragonId}/attack_anim.mp4";
-            var attackVideo = AssetDatabase.LoadAssetAtPath<UnityEngine.Video.VideoClip>(attackVideoPath);
-            if (attackVideo != null) vd.attackVideo = attackVideo;
+            if (video != null) vd.dragonVideo = video;
 
             return vd;
         }

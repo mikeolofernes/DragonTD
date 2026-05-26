@@ -22,7 +22,6 @@ namespace DragonTD.Dragons
         [Header("Prototype — Direct References (no Addressables required)")]
         public Sprite    portrait;
         public GameObject hatchlingPrefab;
-        public UnityEngine.Video.VideoClip idleVideo;
-        public UnityEngine.Video.VideoClip attackVideo;
+        public UnityEngine.Video.VideoClip dragonVideo;
     }
 }
