@@ -6,24 +6,24 @@ namespace DragonTD.Dragons
     public static class AbilityExecutor
     {
         public static void ExecuteActiveSkill(
-            AbilityData ability,
+            SkillDefinition skill,
             DragonInstance caster,
             EnemyBase primaryTarget,
             Vector3 originPosition)
         {
-            if (ability == null || primaryTarget == null || primaryTarget.IsDead) return;
+            if (skill == null || primaryTarget == null || primaryTarget.IsDead) return;
 
-            float baseDamage = caster.Attack * ability.DamageMultiplier;
+            float baseDamage = caster.Attack * skill.GetDamageMultiplier(caster.SkillLevel);
 
-            if (ability.IsAoe)
+            if (skill.isAoe)
             {
-                Collider2D[] hits = Physics2D.OverlapCircleAll(primaryTarget.transform.position, ability.AoeRadius);
+                Collider2D[] hits = Physics2D.OverlapCircleAll(primaryTarget.transform.position, skill.aoeRadius);
                 foreach (Collider2D hit in hits)
                 {
                     EnemyBase enemy = hit.GetComponent<EnemyBase>();
                     if (enemy == null || enemy.IsDead) continue;
                     float mult = enemy.HasElement
-                        ? ElementInteraction.GetMultiplier(caster.Data.Element, enemy.EnemyElement)
+                        ? ElementInteraction.GetMultiplier(caster.Definition.element, enemy.EnemyElement)
                         : 1f;
                     enemy.TakeDamage(baseDamage * mult);
                 }
@@ -31,7 +31,7 @@ namespace DragonTD.Dragons
             else
             {
                 float mult = primaryTarget.HasElement
-                    ? ElementInteraction.GetMultiplier(caster.Data.Element, primaryTarget.EnemyElement)
+                    ? ElementInteraction.GetMultiplier(caster.Definition.element, primaryTarget.EnemyElement)
                     : 1f;
                 primaryTarget.TakeDamage(baseDamage * mult);
             }

@@ -15,27 +15,27 @@ namespace DragonTD.Editor
         {
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "ScriptableObjects/Dragons"));
 
-            // Ignarion — Fire Striker
-            CreateDragon("Ignarion",
-                "A young dragon born from volcanic eruptions. Its fire burns with unrelenting fury.",
-                DragonRarity.S, DragonElement.Fire, DragonRole.Striker,
-                hp: 1200f, atk: 180f, def: 80f, spd: 3.5f, range: 4f, mana: 80,
+            // Ignarion — Flame Striker
+            CreateDragon(
+                id: "ignarion_001", name: "Ignarion",
+                rarity: DragonRarity.Epic, element: DragonElement.Fire, dragonClass: DragonClass.Flame,
+                hp: 1200f, atk: 180f, armor: 80f, speed: 3.5f, range: 4f, mana: 80,
                 atkCd: 1.0f, atkMult: 1.0f, atkRange: 4f,
                 skillCd: 8f, skillMult: 2.5f, skillAoe: true, skillRadius: 2f);
 
-            // Aquariel — Water Guardian
-            CreateDragon("Aquariel",
-                "Guardian of the ocean depths. Slows enemies and sustains allied dragons.",
-                DragonRarity.A, DragonElement.Water, DragonRole.Guardian,
-                hp: 1600f, atk: 100f, def: 120f, spd: 2.5f, range: 3f, mana: 70,
+            // Aquariel — Frost Guardian
+            CreateDragon(
+                id: "aquariel_002", name: "Aquariel",
+                rarity: DragonRarity.Rare, element: DragonElement.Water, dragonClass: DragonClass.Frost,
+                hp: 1600f, atk: 100f, armor: 120f, speed: 2.5f, range: 3f, mana: 70,
                 atkCd: 1.5f, atkMult: 1.0f, atkRange: 3f,
                 skillCd: 12f, skillMult: 1.5f, skillAoe: true, skillRadius: 3f);
 
-            // Voltaris — Lightning Tempest
-            CreateDragon("Voltaris",
-                "Lightning given form. Strikes before the thunder reaches your ears.",
-                DragonRarity.S, DragonElement.Lightning, DragonRole.Tempest,
-                hp: 900f, atk: 220f, def: 60f, spd: 5f, range: 5f, mana: 90,
+            // Voltaris — Storm Tempest
+            CreateDragon(
+                id: "voltaris_003", name: "Voltaris",
+                rarity: DragonRarity.Epic, element: DragonElement.Lightning, dragonClass: DragonClass.Storm,
+                hp: 900f, atk: 220f, armor: 60f, speed: 5f, range: 5f, mana: 90,
                 atkCd: 0.6f, atkMult: 0.8f, atkRange: 5f,
                 skillCd: 10f, skillMult: 3.0f, skillAoe: false, skillRadius: 0f);
 
@@ -45,50 +45,65 @@ namespace DragonTD.Editor
         }
 
         private static void CreateDragon(
-            string dragonName, string lore,
-            DragonRarity rarity, DragonElement element, DragonRole role,
-            float hp, float atk, float def, float spd, float range, int mana,
+            string id, string name,
+            DragonRarity rarity, DragonElement element, DragonClass dragonClass,
+            float hp, float atk, float armor, float speed, float range, int mana,
             float atkCd, float atkMult, float atkRange,
             float skillCd, float skillMult, bool skillAoe, float skillRadius)
         {
-            var normalAttack = MakeAbility($"{dragonName}_NormalAttack",
-                $"{dragonName} Strike", AbilityType.NormalAttack, atkCd, atkMult, atkRange, false, 0f);
+            var normalAttack = MakeSkill($"{id}_normal",
+                $"{name} Strike", atkCd, atkMult, atkRange, false, 0f);
 
-            var activeSkill = MakeAbility($"{dragonName}_ActiveSkill",
-                $"{dragonName} Skill", AbilityType.ActiveSkill, skillCd, skillMult, range, skillAoe, skillRadius);
+            var activeSkill = MakeSkill($"{id}_active",
+                $"{name} Skill", skillCd, skillMult, range, skillAoe, skillRadius);
 
-            var dragon = ScriptableObject.CreateInstance<DragonData>();
-            dragon.DragonName = dragonName;
-            dragon.Lore       = lore;
-            dragon.Rarity     = rarity;
-            dragon.Element    = element;
-            dragon.Role       = role;
-            dragon.BaseHp     = hp;
-            dragon.BaseAttack = atk;
-            dragon.BaseDefense = def;
-            dragon.BaseSpeed  = spd;
-            dragon.BaseRange  = range;
-            dragon.ManaCost   = mana;
-            dragon.NormalAttack = normalAttack;
-            dragon.ActiveSkill  = activeSkill;
-            AssetDatabase.CreateAsset(dragon, $"{BasePath}/{dragonName}.asset");
+            var dragon = ScriptableObject.CreateInstance<DragonDefinition>();
+            dragon.dragonId    = id;
+            dragon.displayName = name;
+            dragon.rarity      = rarity;
+            dragon.element     = element;
+            dragon.dragonClass = dragonClass;
+            dragon.manaCost    = mana;
+
+            dragon.baseStats = new DragonBaseStats
+            {
+                hp          = hp,
+                attack      = atk,
+                armor       = armor,
+                flightSpeed = speed,
+                range       = range,
+                attackSpeed = 1f / atkCd
+            };
+
+            dragon.skillSet = new DragonSkillSet
+            {
+                normalAttack = normalAttack,
+                activeSkill  = activeSkill
+            };
+
+            AssetDatabase.CreateAsset(dragon, $"{BasePath}/{name}.asset");
         }
 
-        private static AbilityData MakeAbility(
+        private static SkillDefinition MakeSkill(
             string assetName, string displayName,
-            AbilityType type, float cooldown, float dmgMult, float abilityRange,
+            float cooldown, float dmgMult, float skillRange,
             bool isAoe, float aoeRadius)
         {
-            var ability = ScriptableObject.CreateInstance<AbilityData>();
-            ability.AbilityName      = displayName;
-            ability.Type             = type;
-            ability.Cooldown         = cooldown;
-            ability.DamageMultiplier = dmgMult;
-            ability.Range            = abilityRange;
-            ability.IsAoe            = isAoe;
-            ability.AoeRadius        = aoeRadius;
-            AssetDatabase.CreateAsset(ability, $"{BasePath}/{assetName}.asset");
-            return ability;
+            var skill = ScriptableObject.CreateInstance<SkillDefinition>();
+            skill.skillId      = assetName;
+            skill.displayName  = displayName;
+            skill.cooldown     = cooldown;
+            skill.range        = skillRange;
+            skill.isAoe        = isAoe;
+            skill.aoeRadius    = aoeRadius;
+
+            // Encode dmgMult as uniform across all 10 levels
+            skill.levelMultipliers = new float[10];
+            for (int i = 0; i < 10; i++)
+                skill.levelMultipliers[i] = dmgMult * (1f + i * 0.1f);
+
+            AssetDatabase.CreateAsset(skill, $"{BasePath}/{assetName}.asset");
+            return skill;
         }
     }
 }

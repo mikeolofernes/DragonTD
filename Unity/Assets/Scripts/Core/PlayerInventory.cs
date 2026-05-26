@@ -8,7 +8,7 @@ namespace DragonTD.Core
     {
         public static PlayerInventory Instance { get; private set; }
 
-        [SerializeField] private DragonData[] _starterDragons;
+        [SerializeField] private DragonDefinition[] _starterDragons;
 
         public List<DragonInstance> OwnedDragons { get; private set; } = new List<DragonInstance>();
 
@@ -23,13 +23,13 @@ namespace DragonTD.Core
 
         private void Start()
         {
-            foreach (DragonData data in _starterDragons)
-                AddDragon(data);
+            foreach (DragonDefinition def in _starterDragons)
+                AddDragon(def);
         }
 
-        public void AddDragon(DragonData data)
+        public void AddDragon(DragonDefinition def)
         {
-            OwnedDragons.Add(new DragonInstance { Data = data });
+            OwnedDragons.Add(new DragonInstance { Definition = def });
             OnInventoryChanged?.Invoke();
         }
     }

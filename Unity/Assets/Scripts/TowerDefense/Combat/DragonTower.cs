@@ -17,8 +17,10 @@ namespace DragonTD.TowerDefense
         public void Setup(DragonInstance instance)
         {
             _dragonInstance = instance;
-            _attackCooldown = instance.Data.NormalAttack != null ? instance.Data.NormalAttack.Cooldown : 1f;
-            _activeSkillCooldown = instance.Data.ActiveSkill != null ? instance.Data.ActiveSkill.Cooldown : 10f;
+            _attackCooldown = instance.Definition.NormalAttack != null
+                ? instance.Definition.NormalAttack.cooldown : 1f;
+            _activeSkillCooldown = instance.Definition.ActiveSkill != null
+                ? instance.Definition.ActiveSkill.cooldown : 10f;
         }
 
         private void Update()
@@ -34,20 +36,20 @@ namespace DragonTD.TowerDefense
                 _lastAttackTime = Time.time;
             }
 
-            if (_dragonInstance.Data.ActiveSkill != null &&
+            if (_dragonInstance.Definition.ActiveSkill != null &&
                 Time.time - _lastActiveSkillTime >= _activeSkillCooldown)
             {
                 AbilityExecutor.ExecuteActiveSkill(
-                    _dragonInstance.Data.ActiveSkill, _dragonInstance, target, transform.position);
+                    _dragonInstance.Definition.ActiveSkill, _dragonInstance, target, transform.position);
                 _lastActiveSkillTime = Time.time;
             }
         }
 
         private EnemyBase FindNearestEnemy()
         {
-            float range = _dragonInstance.Data.NormalAttack != null
-                ? _dragonInstance.Data.NormalAttack.Range
-                : _dragonInstance.Data.BaseRange;
+            float range = _dragonInstance.Definition.NormalAttack != null
+                ? _dragonInstance.Definition.NormalAttack.range
+                : _dragonInstance.Definition.baseStats.range;
 
             Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, range);
             EnemyBase nearest = null;
@@ -67,10 +69,10 @@ namespace DragonTD.TowerDefense
         {
             if (_projectilePrefab == null || _firePoint == null) return;
 
-            float dmgMult = _dragonInstance.Data.NormalAttack != null
-                ? _dragonInstance.Data.NormalAttack.DamageMultiplier : 1f;
+            float dmgMult = _dragonInstance.Definition.NormalAttack != null
+                ? _dragonInstance.Definition.NormalAttack.GetDamageMultiplier(_dragonInstance.SkillLevel) : 1f;
             float elemMult = target.HasElement
-                ? ElementInteraction.GetMultiplier(_dragonInstance.Data.Element, target.EnemyElement) : 1f;
+                ? ElementInteraction.GetMultiplier(_dragonInstance.Definition.element, target.EnemyElement) : 1f;
             float damage = _dragonInstance.Attack * dmgMult * elemMult;
 
             GameObject go = Instantiate(_projectilePrefab, _firePoint.position, Quaternion.identity);
@@ -80,14 +82,15 @@ namespace DragonTD.TowerDefense
         private void OnDrawGizmosSelected()
         {
             if (_dragonInstance == null) return;
-            float range = _dragonInstance.Data.NormalAttack != null
-                ? _dragonInstance.Data.NormalAttack.Range : _dragonInstance.Data.BaseRange;
+            float range = _dragonInstance.Definition.NormalAttack != null
+                ? _dragonInstance.Definition.NormalAttack.range
+                : _dragonInstance.Definition.baseStats.range;
             Gizmos.color = Color.cyan;
             Gizmos.DrawWireSphere(transform.position, range);
-            if (_dragonInstance.Data.ActiveSkill is { IsAoe: true } skill)
+            if (_dragonInstance.Definition.ActiveSkill is { isAoe: true } skill)
             {
                 Gizmos.color = new Color(1f, 0.5f, 0f, 0.5f);
-                Gizmos.DrawWireSphere(transform.position, skill.AoeRadius);
+                Gizmos.DrawWireSphere(transform.position, skill.aoeRadius);
             }
         }
     }

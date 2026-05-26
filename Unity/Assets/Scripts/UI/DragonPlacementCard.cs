@@ -6,7 +6,6 @@ using DragonTD.TowerDefense;
 
 namespace DragonTD.UI
 {
-    // HUD card for a single owned dragon. Click to enter placement mode.
     public class DragonPlacementCard : MonoBehaviour
     {
         [SerializeField] private Image _portrait;
@@ -19,9 +18,10 @@ namespace DragonTD.UI
         public void Setup(DragonInstance dragon)
         {
             _dragon = dragon;
-            _nameText.text = dragon.Data.DragonName;
-            _manaCostText.text = dragon.Data.ManaCost.ToString();
-            if (dragon.Data.Portrait != null) _portrait.sprite = dragon.Data.Portrait;
+            _nameText.text = dragon.Definition.displayName;
+            _manaCostText.text = dragon.Definition.manaCost.ToString();
+            if (dragon.Definition.visualData.portrait != null)
+                _portrait.sprite = dragon.Definition.visualData.portrait;
         }
 
         private void Start() =>

@@ -7,7 +7,7 @@ namespace DragonTD.Summoning
     [System.Serializable]
     public class PityTracker
     {
-        public int PullsSinceLastS = 0;
+        public int PullsSinceLastEpic = 0;
         public int TotalPulls = 0;
     }
 
@@ -15,7 +15,7 @@ namespace DragonTD.Summoning
     {
         private Dictionary<string, PityTracker> _pity = new Dictionary<string, PityTracker>();
 
-        public DragonData SinglePull(SummonPool pool)
+        public DragonDefinition SinglePull(SummonPool pool)
         {
             if (!_pity.TryGetValue(pool.BannerName, out PityTracker tracker))
             {
@@ -23,68 +23,61 @@ namespace DragonTD.Summoning
                 _pity[pool.BannerName] = tracker;
             }
 
-            tracker.PullsSinceLastS++;
+            tracker.PullsSinceLastEpic++;
             tracker.TotalPulls++;
 
             DragonRarity rarity;
 
-            // Hard pity at 100: force SSS
-            if (tracker.PullsSinceLastS >= 100)
+            // Hard pity at 100: force Mythic
+            if (tracker.PullsSinceLastEpic >= 100)
             {
-                rarity = DragonRarity.SSS;
+                rarity = DragonRarity.Mythic;
             }
-            // Soft pity at 50+: boost S and above rates
+            // Soft pity at 50+: triple Epic+ rates
             else
             {
-                bool softPity = tracker.PullsSinceLastS >= 50;
+                bool softPity = tracker.PullsSinceLastEpic >= 50;
                 rarity = RollRarity(pool, softPity);
             }
 
-            // Reset pity counter if S or above was rolled
-            if (rarity >= DragonRarity.S)
+            // Reset pity counter if Epic or above
+            if (rarity >= DragonRarity.Epic)
             {
-                tracker.PullsSinceLastS = 0;
+                tracker.PullsSinceLastEpic = 0;
             }
 
             return PickDragonOfRarity(pool, rarity);
         }
 
-        public DragonData[] TenPull(SummonPool pool)
+        public DragonDefinition[] TenPull(SummonPool pool)
         {
-            DragonData[] results = new DragonData[10];
-            bool hasAOrAbove = false;
+            DragonDefinition[] results = new DragonDefinition[10];
+            bool hasRareOrAbove = false;
 
             for (int i = 0; i < 9; i++)
             {
                 results[i] = SinglePull(pool);
-                if (results[i].Rarity >= DragonRarity.A)
-                {
-                    hasAOrAbove = true;
-                }
+                if (results[i] != null && results[i].rarity >= DragonRarity.Rare)
+                    hasRareOrAbove = true;
             }
 
-            // 10th pull: guarantee at least A-rarity if none found yet
-            if (!hasAOrAbove)
+            // 10th pull: guarantee at least Rare if none found yet
+            if (!hasRareOrAbove)
             {
                 if (!_pity.TryGetValue(pool.BannerName, out PityTracker tracker))
                 {
                     tracker = new PityTracker();
                     _pity[pool.BannerName] = tracker;
                 }
-                tracker.PullsSinceLastS++;
+                tracker.PullsSinceLastEpic++;
                 tracker.TotalPulls++;
 
-                // Force A or above for guaranteed pull
                 DragonRarity rarity = RollRarity(pool, softPity: true);
-                if (rarity < DragonRarity.A)
-                {
-                    rarity = DragonRarity.A;
-                }
+                if (rarity < DragonRarity.Rare)
+                    rarity = DragonRarity.Rare;
 
-                if (rarity >= DragonRarity.S)
-                {
-                    tracker.PullsSinceLastS = 0;
-                }
+                if (rarity >= DragonRarity.Epic)
+                    tracker.PullsSinceLastEpic = 0;
 
                 results[9] = PickDragonOfRarity(pool, rarity);
             }
@@ -104,11 +97,8 @@ namespace DragonTD.Summoning
             for (int i = 0; i < pool.RarityRates.Length; i++)
             {
                 float rate = pool.RarityRates[i].Rate;
-                // Apply soft pity boost to S, SS, SSS
-                if (softPity && pool.RarityRates[i].Rarity >= DragonRarity.S)
-                {
+                if (softPity && pool.RarityRates[i].Rarity >= DragonRarity.Epic)
                     rate *= 3f;
-                }
                 rates[i] = rate;
                 totalWeight += rate;
             }
@@ -120,40 +110,33 @@ namespace DragonTD.Summoning
             {
                 cumulative += rates[i];
                 if (roll <= cumulative)
-                {
                     return pool.RarityRates[i].Rarity;
-                }
             }
 
-            // Fallback to lowest rarity
             return pool.RarityRates[0].Rarity;
         }
 
-        private DragonData PickDragonOfRarity(SummonPool pool, DragonRarity rarity)
+        private DragonDefinition PickDragonOfRarity(SummonPool pool, DragonRarity rarity)
         {
-            // Handle rate-up: 50% chance to return rate-up dragon if rarity matches
-            if (pool.HasRateUp && pool.RateUpDragon != null && pool.RateUpDragon.Rarity == rarity)
+            // Rate-up: 50% chance to return rate-up dragon if rarity matches
+            if (pool.HasRateUp && pool.RateUpDragon != null && pool.RateUpDragon.rarity == rarity)
             {
                 if (Random.value < 0.5f)
-                {
                     return pool.RateUpDragon;
-                }
             }
 
-            // Collect matching dragons with weights
             List<DragonWeight> matching = new List<DragonWeight>();
             int totalWeight = 0;
 
             foreach (DragonWeight dw in pool.AvailableDragons)
             {
-                if (dw.Dragon != null && dw.Dragon.Rarity == rarity)
+                if (dw.Dragon != null && dw.Dragon.rarity == rarity)
                 {
                     matching.Add(dw);
                     totalWeight += dw.Weight;
                 }
             }
 
-            // Weighted random pick from matching dragons
             if (matching.Count > 0 && totalWeight > 0)
             {
                 int roll = Random.Range(0, totalWeight);
@@ -162,17 +145,13 @@ namespace DragonTD.Summoning
                 {
                     cumulative += dw.Weight;
                     if (roll < cumulative)
-                    {
                         return dw.Dragon;
-                    }
                 }
             }
 
-            // Fallback: return any dragon if none match the rarity
+            // Fallback: any dragon in pool
             if (pool.AvailableDragons != null && pool.AvailableDragons.Length > 0)
-            {
                 return pool.AvailableDragons[Random.Range(0, pool.AvailableDragons.Length)].Dragon;
-            }
 
             return null;
         }
@@ -180,9 +159,7 @@ namespace DragonTD.Summoning
         public PityTracker GetPity(string bannerName)
         {
             if (_pity.TryGetValue(bannerName, out PityTracker tracker))
-            {
                 return tracker;
-            }
             return new PityTracker();
         }
     }

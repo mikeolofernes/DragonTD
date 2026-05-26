@@ -2,11 +2,12 @@ namespace DragonTD.Dragons
 {
     public enum DragonRarity
     {
-        C   = 0,
-        B   = 1,
-        A   = 2,
-        S   = 3,
-        SS  = 4,
-        SSS = 5
+        Common    = 0,
+        Uncommon  = 1,
+        Rare      = 2,
+        Epic      = 3,
+        Legendary = 4,
+        Mythic    = 5,
+        Ancient   = 6   // Fusion-only discovery tier
     }
 }
