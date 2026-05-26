@@ -40,23 +40,43 @@ namespace DragonTD.TowerDefense
         {
             if (!_isPlacing) return;
 
+            // Support both touch (mobile) and mouse (editor)
+#if UNITY_EDITOR || UNITY_STANDALONE
             if (Input.GetMouseButtonDown(1))
             {
                 CancelPlacement();
                 return;
             }
-
             if (Input.GetMouseButtonDown(0))
             {
-                Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                worldPos.z = 0f;
+                HandleTapAt(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            }
+#endif
 
-                GridTile tile = GridManager.Instance.GetTileAtWorldPos(worldPos);
-                if (tile != null && tile.CanPlace() &&
-                    ResourceManager.Instance.TrySpendMana(_selectedDragon.Definition.manaCost))
+            if (Input.touchCount > 0)
+            {
+                Touch touch = Input.GetTouch(0);
+                if (touch.phase == TouchPhase.Began)
                 {
-                    PlaceDragon(tile);
+                    // Two-finger tap cancels placement on mobile
+                    if (Input.touchCount == 2)
+                    {
+                        CancelPlacement();
+                        return;
+                    }
+                    HandleTapAt(Camera.main.ScreenToWorldPoint(touch.position));
                 }
+            }
+        }
+
+        private void HandleTapAt(Vector3 worldPos)
+        {
+            worldPos.z = 0f;
+            GridTile tile = GridManager.Instance.GetTileAtWorldPos(worldPos);
+            if (tile != null && tile.CanPlace() &&
+                ResourceManager.Instance.TrySpendMana(_selectedDragon.Definition.manaCost))
+            {
+                PlaceDragon(tile);
             }
         }
 
