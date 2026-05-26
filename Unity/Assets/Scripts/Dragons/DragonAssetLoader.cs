@@ -1,7 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+#if UNITY_ADDRESSABLES
 using UnityEngine.AddressableAssets;
+#endif
 
 namespace DragonTD.Dragons
 {
@@ -27,27 +29,38 @@ namespace DragonTD.Dragons
             if (string.IsNullOrEmpty(key)) return null;
             if (_cache.TryGetValue(key, out var cached)) return cached as T;
 
+#if UNITY_ADDRESSABLES
             var handle = Addressables.LoadAssetAsync<T>(key);
             var result = await handle.Task;
             if (result != null) _cache[key] = result;
             return result;
+#else
+            await Task.CompletedTask;
+            return null;
+#endif
         }
 
         public void Release(string key)
         {
+#if UNITY_ADDRESSABLES
             if (_cache.TryGetValue(key, out var asset))
             {
                 Addressables.Release(asset);
                 _cache.Remove(key);
             }
+#endif
         }
 
-        // Convenience: returns portrait sprite — uses direct reference as fallback for prototype
+        // Returns portrait sprite — uses direct reference as fallback when Addressables not configured
         public async Task<Sprite> LoadDragonPortrait(DragonDefinition def)
         {
+#if UNITY_ADDRESSABLES
             if (!string.IsNullOrEmpty(def.visualData.portraitKey))
                 return await LoadSprite(def.visualData.portraitKey);
-            return def.visualData.portrait; // prototype fallback
+#else
+            await Task.CompletedTask;
+#endif
+            return def.visualData.portrait;
         }
     }
 }
