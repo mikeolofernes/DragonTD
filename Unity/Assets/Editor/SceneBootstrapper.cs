@@ -22,6 +22,12 @@ namespace DragonTD.Editor
         [MenuItem("Dragon Dominion/★ Build Battle Scene")]
         public static void Build()
         {
+            if (UnityEditor.EditorApplication.isPlaying)
+            {
+                Debug.LogError("[Dragon Dominion] Stop Play mode before running Build Battle Scene.");
+                return;
+            }
+
             // ── Folders ──────────────────────────────────────────────────────────
             EnsureDir("Assets/ScriptableObjects");
             EnsureDir(SODir + "/Enemies");
