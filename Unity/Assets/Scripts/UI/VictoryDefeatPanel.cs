@@ -30,10 +30,12 @@ namespace DragonTD.UI
             if (state != GameState.Victory && state != GameState.Defeat) return;
 
             gameObject.SetActive(true);
-            _resultText.text = state == GameState.Victory ? "VICTORY!" : "DEFEAT";
-            _statsText.text = $"Waves cleared: {GameManager.Instance.CurrentWave}\n" +
-                              $"Lives remaining: {GameManager.Instance.Lives}\n" +
-                              $"Gold earned: {ResourceManager.Instance.Gold}";
+            if (_resultText != null)
+                _resultText.text = state == GameState.Victory ? "VICTORY!" : "DEFEAT";
+            if (_statsText != null)
+                _statsText.text = $"Waves cleared: {GameManager.Instance.CurrentWave}\n" +
+                                  $"Lives remaining: {GameManager.Instance.Lives}\n" +
+                                  $"Gold earned: {ResourceManager.Instance.Gold}";
         }
 
         private void OnRetry()

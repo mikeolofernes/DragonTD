@@ -40,6 +40,7 @@ namespace DragonTD.Core
         {
             Lives = _startingLives;
             CurrentWave = 0;
+            OnLivesChanged?.Invoke(Lives);
             ResourceManager.Instance?.ResetForBattle();
             SetState(GameState.Setup);
         }

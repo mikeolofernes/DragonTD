@@ -30,6 +30,12 @@ namespace DragonTD.Core
 
         private void Start()
         {
+            if (_config == null)
+            {
+                Debug.LogWarning("[GameDirector] No config assigned — director disabled.");
+                enabled = false;
+                return;
+            }
             _intensity = new IntensityMeter(_config);
             GameManager.Instance.OnStateChanged += HandleStateChanged;
             GameManager.Instance.OnLivesChanged += HandleLivesChanged;

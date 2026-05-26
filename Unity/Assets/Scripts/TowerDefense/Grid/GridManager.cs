@@ -33,6 +33,11 @@ namespace DragonTD.TowerDefense
 
         private void BuildGrid()
         {
+            if (_tilePrefab == null)
+            {
+                Debug.LogWarning("[GridManager] No _tilePrefab assigned — grid will not be built.");
+                return;
+            }
             _grid = new GridTile[_width, _height];
 
             for (int x = 0; x < _width; x++)

@@ -21,6 +21,7 @@ namespace DragonTD.UI
 
         private void OnEnable()
         {
+            if (GameManager.Instance == null || ResourceManager.Instance == null) return;
             GameManager.Instance.OnStateChanged += HandleStateChanged;
             GameManager.Instance.OnLivesChanged += UpdateLivesFromEvent;
             ResourceManager.Instance.OnManaChanged += UpdateMana;
@@ -30,31 +31,39 @@ namespace DragonTD.UI
 
         private void OnDisable()
         {
-            GameManager.Instance.OnStateChanged -= HandleStateChanged;
-            GameManager.Instance.OnLivesChanged -= UpdateLivesFromEvent;
-            ResourceManager.Instance.OnManaChanged -= UpdateMana;
-            ResourceManager.Instance.OnGoldChanged -= UpdateGold;
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnStateChanged -= HandleStateChanged;
+                GameManager.Instance.OnLivesChanged -= UpdateLivesFromEvent;
+            }
+            if (ResourceManager.Instance != null)
+            {
+                ResourceManager.Instance.OnManaChanged -= UpdateMana;
+                ResourceManager.Instance.OnGoldChanged -= UpdateGold;
+            }
         }
 
         private void HandleStateChanged(GameState state)
         {
-            bool isBetweenWaves = state == GameState.BetweenWaves;
-            _nextWaveButton.gameObject.SetActive(isBetweenWaves);
-            _waveText.text = $"Wave: {GameManager.Instance.CurrentWave}";
+            bool showNextWave = state == GameState.BetweenWaves || state == GameState.Setup;
+            if (_nextWaveButton != null) _nextWaveButton.gameObject.SetActive(showNextWave);
+            if (_waveText != null) _waveText.text = $"Wave: {GameManager.Instance.CurrentWave}";
         }
 
         private void UpdateMana(int mana)
         {
-            _manaText.text = $"Mana: {mana}";
+            if (_manaText != null) _manaText.text = $"Mana: {mana}";
         }
 
         private void UpdateGold(int gold)
         {
-            _goldText.text = $"Gold: {gold}";
+            if (_goldText != null) _goldText.text = $"Gold: {gold}";
         }
 
-        private void UpdateLives() =>
-            _livesText.text = $"Lives: {GameManager.Instance.Lives}";
+        private void UpdateLives()
+        {
+            if (_livesText != null) _livesText.text = $"Lives: {GameManager.Instance?.Lives ?? 0}";
+        }
 
         private void UpdateLivesFromEvent(int _) => UpdateLives();
     }
