@@ -1,14 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using DragonTD.Core;
 
 namespace DragonTD.UI
 {
     public class VictoryDefeatPanel : MonoBehaviour
     {
-        [SerializeField] private TextMeshProUGUI _resultText;
-        [SerializeField] private TextMeshProUGUI _statsText;
+        [SerializeField] private Text _resultText;
+        [SerializeField] private Text _statsText;
         [SerializeField] private Button _retryButton;
         [SerializeField] private Button _quitButton;
 

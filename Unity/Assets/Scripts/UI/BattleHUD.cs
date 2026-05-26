@@ -1,16 +1,15 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using DragonTD.Core;
 
 namespace DragonTD.UI
 {
     public class BattleHUD : MonoBehaviour
     {
-        [SerializeField] private TextMeshProUGUI _livesText;
-        [SerializeField] private TextMeshProUGUI _waveText;
-        [SerializeField] private TextMeshProUGUI _manaText;
-        [SerializeField] private TextMeshProUGUI _goldText;
+        [SerializeField] private Text _livesText;
+        [SerializeField] private Text _waveText;
+        [SerializeField] private Text _manaText;
+        [SerializeField] private Text _goldText;
         [SerializeField] private Button _pauseButton;
         [SerializeField] private Button _nextWaveButton;
 

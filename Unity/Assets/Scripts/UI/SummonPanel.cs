@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using DragonTD.Summoning;
 using DragonTD.Dragons;
 using DragonTD.Core;
@@ -11,8 +10,8 @@ namespace DragonTD.UI
     public class SummonPanel : MonoBehaviour
     {
         [SerializeField] private SummonPool _currentPool;
-        [SerializeField] private TextMeshProUGUI _bannerNameText;
-        [SerializeField] private TextMeshProUGUI _costText;
+        [SerializeField] private Text _bannerNameText;
+        [SerializeField] private Text _costText;
         [SerializeField] private Button _singlePullButton;
         [SerializeField] private Button _tenPullButton;
         [SerializeField] private Transform _resultContainer;
@@ -74,7 +73,7 @@ namespace DragonTD.UI
             {
                 if (def == null) continue;
                 GameObject card = Instantiate(_dragonResultCardPrefab, _resultContainer);
-                TextMeshProUGUI label = card.GetComponentInChildren<TextMeshProUGUI>();
+                Text label = card.GetComponentInChildren<Text>();
                 if (label != null)
                     label.text = $"{def.displayName}\n{def.rarity}";
             }

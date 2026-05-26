@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using DragonTD.Dragons;
 using DragonTD.TowerDefense;
 
@@ -9,8 +8,8 @@ namespace DragonTD.UI
     public class DragonPlacementCard : MonoBehaviour
     {
         [SerializeField] private Image _portrait;
-        [SerializeField] private TextMeshProUGUI _nameText;
-        [SerializeField] private TextMeshProUGUI _manaCostText;
+        [SerializeField] private Text _nameText;
+        [SerializeField] private Text _manaCostText;
         [SerializeField] private Button _selectButton;
 
         private DragonInstance _dragon;
