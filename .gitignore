@@ -1,0 +1,92 @@
+# ==================== Visual Studio ====================
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.vsidx
+*.vspscc
+*.vsscc
+
+# ==================== Unity ====================
+# Generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# Asset meta files for ignored assets
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Unity3D generated meta files
+*.pidb
+*.unityproj
+*.booproj
+
+# Crashes
+sysinfo.txt
+Crash/
+crashlytics-build.properties
+
+# Packed Addressables
+/[Bb]uild/[Aa]ddressables/
+/[Ff]ast[Pp]lay/
+Assets/StreamingAssets/aa.meta
+Assets/StreamingAssets/aa/
+
+# ==================== .NET / Backend ====================
+[Bb]in/
+[Oo]bj/
+*.dll
+*.exe
+!**/Assets/**/*.dll
+project.lock.json
+project.fragment.lock.json
+artifacts/
+**/Properties/launchSettings.json
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/
+!**/[Pp]ackages/build/
+*.nuspec
+project.lock.json
+.nuget/
+
+# ASP.NET
+wwwroot/
+
+# ==================== Secrets — NEVER COMMIT ====================
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+*.env
+.env
+.env.*
+secrets.json
+**/secrets/**
+
+# ==================== OS ====================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ==================== JetBrains Rider ====================
+.idea/
+*.sln.iml
+
+# ==================== VS Code ====================
+.vscode/
