@@ -10,6 +10,7 @@ namespace DragonTD.TowerDefense
         [SerializeField] private int _width = 20;
         [SerializeField] private int _height = 12;
         [SerializeField] private Vector3 _originPosition = Vector3.zero;
+        [SerializeField] private Vector2Int[] _pathTiles;
 
         private GridTile[,] _grid;
 
@@ -46,7 +47,8 @@ namespace DragonTD.TowerDefense
                 {
                     Vector3 worldPos = GridToWorld(x, y);
                     GridTile tile = Instantiate(_tilePrefab, worldPos, Quaternion.identity, transform);
-                    tile.Initialize(new Vector2Int(x, y), TileType.Buildable);
+                    TileType tileType = IsPathTile(x, y) ? TileType.Path : TileType.Buildable;
+                    tile.Initialize(new Vector2Int(x, y), tileType);
                     _grid[x, y] = tile;
                 }
             }
@@ -79,6 +81,14 @@ namespace DragonTD.TowerDefense
         {
             tile = GetTileAtWorldPos(worldPos);
             return tile != null && tile.CanPlace();
+        }
+
+        private bool IsPathTile(int x, int y)
+        {
+            if (_pathTiles == null) return false;
+            foreach (var p in _pathTiles)
+                if (p.x == x && p.y == y) return true;
+            return false;
         }
     }
 }

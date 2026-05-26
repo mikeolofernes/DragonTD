@@ -8,6 +8,8 @@ namespace DragonTD.TowerDefense
     {
         [SerializeField] private TileType _tileType = TileType.Buildable;
         [SerializeField] private SpriteRenderer _spriteRenderer;
+        [SerializeField] private Sprite _buildableSprite;
+        [SerializeField] private Sprite _pathSprite;
         [SerializeField] private Color _buildableColor = Color.green;
         [SerializeField] private Color _pathColor = Color.gray;
         [SerializeField] private Color _blockedColor = Color.red;
@@ -29,11 +31,17 @@ namespace DragonTD.TowerDefense
         private void UpdateVisual()
         {
             if (_spriteRenderer == null) return;
+
+            Sprite s = _tileType == TileType.Path
+                ? (_pathSprite != null ? _pathSprite : _spriteRenderer.sprite)
+                : (_buildableSprite != null ? _buildableSprite : _spriteRenderer.sprite);
+            if (s != null) _spriteRenderer.sprite = s;
+
             _spriteRenderer.color = _tileType switch
             {
-                TileType.Path => _pathColor,
+                TileType.Path    => _pathSprite    != null ? Color.white : _pathColor,
                 TileType.Blocked => _blockedColor,
-                _ => _buildableColor
+                _                => _buildableSprite != null ? (IsOccupied ? new Color(0.7f,0.7f,0.3f) : Color.white) : _buildableColor
             };
         }
 
