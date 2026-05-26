@@ -212,12 +212,24 @@ namespace DragonTD.Editor
         static WaveData CreateWave1(GameObject orcPrefab)
         {
             const string path = SODir+"/Waves/Wave01.asset";
-            var ex = AssetDatabase.LoadAssetAtPath<WaveData>(path);
-            if (ex != null) return ex;
-            var w = ScriptableObject.CreateInstance<WaveData>();
-            w.EnemyGroups = new[]{ new EnemySpawnEntry{ EnemyPrefab=orcPrefab, Count=8, SpawnInterval=1.2f } };
-            w.TimeBetweenGroups = 3f; w.GoldReward = 50; w.ManaReward = 20;
-            AssetDatabase.CreateAsset(w, path);
+            var w = AssetDatabase.LoadAssetAtPath<WaveData>(path);
+            if (w == null)
+            {
+                w = ScriptableObject.CreateInstance<WaveData>();
+                w.EnemyGroups = new[]{ new EnemySpawnEntry{ Count=8, SpawnInterval=1.2f } };
+                w.TimeBetweenGroups = 3f; w.GoldReward = 50; w.ManaReward = 20;
+                AssetDatabase.CreateAsset(w, path);
+            }
+
+            // Always refresh the prefab ref — it may have been stale from a prior build
+            var so = new SerializedObject(w);
+            var groups = so.FindProperty("EnemyGroups");
+            if (groups != null && groups.arraySize > 0)
+                groups.GetArrayElementAtIndex(0)
+                      .FindPropertyRelative("EnemyPrefab")
+                      .objectReferenceValue = orcPrefab;
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(w);
             return w;
         }
 
@@ -298,23 +310,21 @@ namespace DragonTD.Editor
         static void CreateOrcPrefab(EnemyData data)
         {
             const string path = PrefDir+"/Enemies/OrcEnemy.prefab";
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null) return;
 
-            // Rebuild with collider so DragonTower can detect orcs
             var whiteSpr = GetOrCreateWhiteSprite();
             var go = new GameObject("OrcEnemy");
             go.transform.localScale = Vector3.one * 0.75f;
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = whiteSpr;
             sr.color  = new Color(0.35f, 0.75f, 0.2f);
-            go.AddComponent<BoxCollider2D>(); // ← required for Physics2D detection
+            go.AddComponent<BoxCollider2D>();
 
             var orc = go.AddComponent<OrcEnemy>();
             var so  = new SerializedObject(orc);
             so.FindProperty("_data").objectReferenceValue = data;
             so.ApplyModifiedProperties();
 
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null)
-                AssetDatabase.DeleteAsset(path);
             PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
         }
