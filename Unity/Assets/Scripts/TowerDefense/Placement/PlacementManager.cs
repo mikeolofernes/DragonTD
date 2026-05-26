@@ -53,7 +53,7 @@ namespace DragonTD.TowerDefense
 
                 GridTile tile = GridManager.Instance.GetTileAtWorldPos(worldPos);
                 if (tile != null && tile.CanPlace() &&
-                    ResourceManager.Instance.TrySpendMana(_selectedDragon.Data.ManaCost))
+                    ResourceManager.Instance.TrySpendMana(_selectedDragon.Definition.manaCost))
                 {
                     PlaceDragon(tile);
                 }
@@ -63,13 +63,20 @@ namespace DragonTD.TowerDefense
         private void PlaceDragon(GridTile tile)
         {
             Vector3 worldPos = GridManager.Instance.GridToWorld(tile.GridPosition.x, tile.GridPosition.y);
-            GameObject dragonGO = Object.Instantiate(_selectedDragon.Data.Prefab, worldPos, Quaternion.identity);
+
+            GameObject prefab = _selectedDragon.Definition.visualData.hatchlingPrefab;
+            if (prefab == null)
+            {
+                Debug.LogWarning($"[PlacementManager] No prefab assigned for {_selectedDragon.Definition.displayName}");
+                CancelPlacement();
+                return;
+            }
+
+            GameObject dragonGO = Object.Instantiate(prefab, worldPos, Quaternion.identity);
 
             DragonTower tower = dragonGO.GetComponent<DragonTower>();
             if (tower != null)
-            {
                 tower.Setup(_selectedDragon);
-            }
 
             tile.SetOccupied(true);
             CancelPlacement();

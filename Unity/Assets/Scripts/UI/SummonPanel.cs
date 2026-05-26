@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using DragonTD.Summoning;
 using DragonTD.Dragons;
+using DragonTD.Core;
 
 namespace DragonTD.UI
 {
@@ -18,7 +19,6 @@ namespace DragonTD.UI
         [SerializeField] private GameObject _dragonResultCardPrefab;
 
         private GachaSystem _gacha = new GachaSystem();
-        private List<DragonInstance> _playerInventory;
 
         private void Start()
         {
@@ -26,9 +26,7 @@ namespace DragonTD.UI
             _tenPullButton.onClick.AddListener(OnTenPull);
 
             if (_currentPool != null)
-            {
                 RefreshDisplay();
-            }
         }
 
         public void SetPool(SummonPool pool)
@@ -45,46 +43,40 @@ namespace DragonTD.UI
 
         private void OnSinglePull()
         {
-            // Stub: always succeed for prototype (no gem deduction)
-            DragonData result = _gacha.SinglePull(_currentPool);
-            DragonInstance instance = new DragonInstance(result);
+            if (_currentPool == null) return;
+            DragonDefinition result = _gacha.SinglePull(_currentPool);
+            if (result == null) return;
 
-            _playerInventory?.Add(instance);
-
-            ShowResults(new DragonData[] { result });
+            PlayerInventory.Instance?.AddDragon(result);
+            ShowResults(new DragonDefinition[] { result });
         }
 
         private void OnTenPull()
         {
-            // Stub: always succeed for prototype (no gem deduction)
-            DragonData[] results = _gacha.TenPull(_currentPool);
+            if (_currentPool == null) return;
+            DragonDefinition[] results = _gacha.TenPull(_currentPool);
 
-            foreach (DragonData data in results)
+            foreach (DragonDefinition def in results)
             {
-                DragonInstance instance = new DragonInstance(data);
-                _playerInventory?.Add(instance);
+                if (def != null)
+                    PlayerInventory.Instance?.AddDragon(def);
             }
 
             ShowResults(results);
         }
 
-        private void ShowResults(DragonData[] results)
+        private void ShowResults(DragonDefinition[] results)
         {
-            // Clear existing result cards
             foreach (Transform child in _resultContainer)
-            {
                 Destroy(child.gameObject);
-            }
 
-            // Instantiate a card for each result
-            foreach (DragonData data in results)
+            foreach (DragonDefinition def in results)
             {
+                if (def == null) continue;
                 GameObject card = Instantiate(_dragonResultCardPrefab, _resultContainer);
                 TextMeshProUGUI label = card.GetComponentInChildren<TextMeshProUGUI>();
                 if (label != null)
-                {
-                    label.text = data.DragonName + "\n" + data.Rarity;
-                }
+                    label.text = $"{def.displayName}\n{def.rarity}";
             }
         }
     }
