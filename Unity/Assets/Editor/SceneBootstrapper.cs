@@ -39,27 +39,36 @@ namespace DragonTD.Editor
             EnsureDir(ArtDir);
             EnsureDir("Assets/Scenes");
 
-            // ── Assets ───────────────────────────────────────────────────────────
-            Sprite             whiteSprite = GetOrCreateWhiteSprite();
-            GameDirectorConfig dirCfg      = CreateDirectorConfig();
-            EnemyData          orcData     = CreateOrcData();
-            GridTile           tilePrefab  = CreateTilePrefab(whiteSprite);
-            GameObject         orcPrefab   = CreateOrcPrefab(orcData, whiteSprite);
-            WaveData           wave1       = CreateWave1(orcPrefab);
+            // ── Assets (create & save to disk first) ────────────────────────────
+            GetOrCreateWhiteSprite();
+            CreateDirectorConfig();
+            EnemyData orcData = CreateOrcData();
+            CreateTilePrefab(GetOrCreateWhiteSprite());
+            CreateOrcPrefab(orcData, GetOrCreateWhiteSprite());
+            CreateWave1(AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir + "/Enemies/OrcEnemy.prefab"));
 
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
-            // ── Scene ────────────────────────────────────────────────────────────
+            // ── Scene (reload all assets by path so references survive NewScene) ─
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
+            // Fresh loads — in-memory references become invalid after NewScene()
+            var whiteSpr  = AssetDatabase.LoadAssetAtPath<Sprite>(ArtDir + "/white.png");
+            var dirCfg2   = AssetDatabase.LoadAssetAtPath<GameDirectorConfig>(SODir + "/Director/DefaultDirectorConfig.asset");
+            var tilePref2 = AssetDatabase.LoadAssetAtPath<GridTile>(PrefDir + "/GridTile.prefab");
+            var orcPref2  = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir + "/Enemies/OrcEnemy.prefab");
+            var wave12    = AssetDatabase.LoadAssetAtPath<WaveData>(SODir + "/Waves/Wave01.asset");
+
             SetupCamera();
-            CreateManagerRoot(dirCfg);
-            CreateGridManager(tilePrefab);
-            CreateWaveManager(wave1, orcPrefab);
+            CreateManagerRoot(dirCfg2);
+            CreateGridManager(tilePref2);
+            CreateWaveManager(wave12, orcPref2);
             AddSceneBootstrap();
-            CreateUI(whiteSprite);
+            CreateUI(whiteSpr);
             EnsureEventSystem();
 
+            EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, "Assets/Scenes/BattleScene.unity");
             Debug.Log("[Dragon Dominion] BattleScene built. Open Assets/Scenes/BattleScene.unity and press Play.");
         }
@@ -169,7 +178,7 @@ namespace DragonTD.Editor
             var tile = go.AddComponent<GridTile>();
             var so   = new SerializedObject(tile);
             so.FindProperty("_spriteRenderer").objectReferenceValue = sr;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            so.ApplyModifiedProperties();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
@@ -192,7 +201,7 @@ namespace DragonTD.Editor
             var orc = go.AddComponent<OrcEnemy>();
             var so  = new SerializedObject(orc);
             so.FindProperty("_data").objectReferenceValue = data;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            so.ApplyModifiedProperties();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
@@ -214,18 +223,20 @@ namespace DragonTD.Editor
 
         static void CreateManagerRoot(GameDirectorConfig dirCfg)
         {
-            var root = new GameObject("Managers");
+            // Each singleton calls DontDestroyOnLoad(gameObject) which only works
+            // on root GameObjects — so no parent here.
+            Root<GameManager>("GameManager");
+            Root<ResourceManager>("ResourceManager");
+            Root<PlacementManager>("PlacementManager");
+            Root<PlayerInventory>("PlayerInventory");
+            Root<DragonAssetLoader>("DragonAssetLoader");
 
-            Child<GameManager>(root,       "GameManager");
-            Child<ResourceManager>(root,   "ResourceManager");
-            Child<PlacementManager>(root,  "PlacementManager");
-            Child<PlayerInventory>(root,   "PlayerInventory");
-            Child<DragonAssetLoader>(root, "DragonAssetLoader");
-
-            var dirGO = Child<GameDirector>(root, "GameDirector");
-            var so    = new SerializedObject(dirGO.GetComponent<GameDirector>());
+            var dirGO  = Root<GameDirector>("GameDirector");
+            var dir    = dirGO.GetComponent<GameDirector>();
+            var so     = new SerializedObject(dir);
             so.FindProperty("_config").objectReferenceValue = dirCfg;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(dir);
         }
 
         static void CreateGridManager(GridTile tilePrefab)
@@ -233,11 +244,12 @@ namespace DragonTD.Editor
             var go = new GameObject("GridManager");
             var gm = go.AddComponent<GridManager>();
             var so = new SerializedObject(gm);
-            so.FindProperty("_tilePrefab").objectReferenceValue  = tilePrefab;
-            so.FindProperty("_width").intValue                   = 12;
-            so.FindProperty("_height").intValue                  = 8;
-            so.FindProperty("_originPosition").vector3Value      = new Vector3(-5.5f, -3.5f, 0f);
-            so.ApplyModifiedPropertiesWithoutUndo();
+            so.FindProperty("_tilePrefab").objectReferenceValue = tilePrefab;
+            so.FindProperty("_width").intValue                  = 12;
+            so.FindProperty("_height").intValue                 = 8;
+            so.FindProperty("_originPosition").vector3Value     = new Vector3(-5.5f, -3.5f, 0f);
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(gm);
         }
 
         static void CreateWaveManager(WaveData wave1, GameObject elitePrefab)
@@ -284,7 +296,8 @@ namespace DragonTD.Editor
                 wpProp.GetArrayElementAtIndex(i).objectReferenceValue = wps[i];
 
             so.FindProperty("_eliteEnemyPrefab").objectReferenceValue = elitePrefab;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(wm);
         }
 
         static void AddSceneBootstrap()
@@ -341,7 +354,8 @@ namespace DragonTD.Editor
             so.FindProperty("_goldText").objectReferenceValue       = goldText;
             so.FindProperty("_pauseButton").objectReferenceValue    = pauseBtn;
             so.FindProperty("_nextWaveButton").objectReferenceValue = nextWaveBtn;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(hud);
         }
 
         static void BuildVictoryPanel(GameObject canvas, Sprite sprite)
@@ -371,7 +385,8 @@ namespace DragonTD.Editor
             so.FindProperty("_statsText").objectReferenceValue   = statsText;
             so.FindProperty("_retryButton").objectReferenceValue = retryBtn;
             so.FindProperty("_quitButton").objectReferenceValue  = quitBtn;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(panel);
         }
 
         // ── UI helpers ────────────────────────────────────────────────────────────
@@ -487,6 +502,14 @@ namespace DragonTD.Editor
         }
 
         // ── Misc ──────────────────────────────────────────────────────────────────
+
+        // Root: creates a scene-root GameObject (required for DontDestroyOnLoad singletons)
+        static GameObject Root<T>(string name) where T : Component
+        {
+            var go = new GameObject(name);
+            go.AddComponent<T>();
+            return go;
+        }
 
         static GameObject Child<T>(GameObject parent, string name) where T : Component
         {
