@@ -23,5 +23,6 @@ namespace DragonTD.Dragons
         public Sprite    portrait;
         public GameObject hatchlingPrefab;
         public UnityEngine.Video.VideoClip idleVideo;
+        public UnityEngine.Video.VideoClip attackVideo;
     }
 }
