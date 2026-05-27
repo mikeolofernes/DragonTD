@@ -30,6 +30,9 @@ namespace DragonTD.UI
 
         public void Populate(List<DragonInstance> inventory)
         {
+            if (_cardContainer == null || _cardPrefab == null || inventory == null)
+                return;
+
             foreach (Transform child in _cardContainer)
                 Destroy(child.gameObject);
 

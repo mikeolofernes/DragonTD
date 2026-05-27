@@ -10,16 +10,28 @@ namespace DragonTD.TowerDefense
         [SerializeField] private Image _fillImage;
 
         private EnemyBase _enemy;
+        private Canvas _canvas;
 
         public void Initialize(EnemyBase enemy)
         {
             _enemy = enemy;
             _enemy.OnHpChanged += SetFill;
-            GetComponent<Canvas>().worldCamera = Camera.main;
+            _canvas = GetComponent<Canvas>();
+            _canvas.worldCamera = Camera.main;
             SetFill(1f);
         }
 
-        private void SetFill(float percent) => _fillImage.fillAmount = Mathf.Clamp01(percent);
+        private void LateUpdate()
+        {
+            if (_canvas != null && _canvas.worldCamera == null)
+                _canvas.worldCamera = Camera.main;
+        }
+
+        private void SetFill(float percent)
+        {
+            if (_fillImage != null)
+                _fillImage.fillAmount = Mathf.Clamp01(percent);
+        }
 
         private void OnDestroy()
         {

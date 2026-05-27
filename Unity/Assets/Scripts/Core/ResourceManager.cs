@@ -1,12 +1,17 @@
 using UnityEngine;
+using DragonTD.TowerDefense;
 
 namespace DragonTD.Core
 {
     public class ResourceManager : MonoBehaviour
     {
+        private const int PrototypeMinimumStartingMana = PrototypeBalance.StartingMana;
+        private const int PrototypeMinimumStartingGold = PrototypeBalance.StartingGold;
+
         public static ResourceManager Instance { get; private set; }
 
-        [SerializeField] private int _startingMana = 100;
+        [SerializeField] private int _startingMana = PrototypeBalance.StartingMana;
+        [SerializeField] private int _startingGold = PrototypeBalance.StartingGold;
         [SerializeField] private int _startingGems = 1500;
 
         public int Mana { get; private set; }
@@ -51,6 +56,14 @@ namespace DragonTD.Core
             OnGoldChanged?.Invoke(Gold);
         }
 
+        public bool TrySpendGold(int amount)
+        {
+            if (Gold < amount) return false;
+            Gold -= amount;
+            OnGoldChanged?.Invoke(Gold);
+            return true;
+        }
+
         public void AddGems(int amount)
         {
             Gems += amount;
@@ -67,8 +80,8 @@ namespace DragonTD.Core
 
         public void ResetForBattle()
         {
-            Mana = _startingMana;
-            Gold = 0;
+            Mana = Mathf.Max(_startingMana, PrototypeMinimumStartingMana);
+            Gold = Mathf.Max(_startingGold, PrototypeMinimumStartingGold);
             if (Gems == 0) Gems = _startingGems;
             OnManaChanged?.Invoke(Mana);
             OnGoldChanged?.Invoke(Gold);

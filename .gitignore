@@ -19,6 +19,10 @@
 [Uu]ser[Ss]ettings/
 [Mm]emoryCaptures/
 [Rr]ecordings/
+*.log
+Assets/_Recovery/
+Unity/Assets/_Recovery/
+Unity/Assets/_Recovery.meta
 
 # Asset meta files for ignored assets
 *.pidb.meta
@@ -90,3 +94,6 @@ Desktop.ini
 
 # ==================== VS Code ====================
 .vscode/
+
+# ==================== Codex / Superpowers ====================
+.superpowers/

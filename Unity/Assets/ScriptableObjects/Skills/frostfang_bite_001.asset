@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e3f07add20ddb24f81d5d5aa4c8795e, type: 3}
+  m_Name: frostfang_bite_001
+  m_EditorClassIdentifier: DragonTD::DragonTD.Dragons.SkillDefinition
+  skillId: frostfang_bite_001
+  displayName: Frost Bite
+  description: Prototype tower attack for Frostfang.
+  skillType: 0
+  targetType: 0
+  baseDamage: 195
+  manaCost: 0
+  cooldown: 1.2
+  levelMultipliers:
+  - 1
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 1.5
+  - 1.65
+  - 1.8
+  - 2
+  - 2.25
+  statusEffects: []
+  vfxKey: 
+  sfxKey: 
+  range: 4.5
+  isAoe: 0
+  aoeRadius: 0

@@ -11,7 +11,7 @@ namespace DragonTD.TowerDefense
 
             Transform target = _waypoints[_waypointIndex];
             Vector3 direction = (target.position - transform.position).normalized;
-            transform.position += direction * (_data.MoveSpeed * 1.2f * Time.deltaTime);
+            transform.position += direction * (CurrentMoveSpeed * 1.2f * Time.deltaTime);
 
             if (Vector3.Distance(transform.position, target.position) < 0.1f)
             {

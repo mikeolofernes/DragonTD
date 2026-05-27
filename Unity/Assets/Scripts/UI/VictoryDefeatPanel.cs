@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DragonTD.Core;
+using DragonTD.TowerDefense;
 
 namespace DragonTD.UI
 {
@@ -11,40 +12,106 @@ namespace DragonTD.UI
         [SerializeField] private Button _retryButton;
         [SerializeField] private Button _quitButton;
 
+        private CanvasGroup _canvasGroup;
+        private bool _subscribedToState;
+
+        private void Awake()
+        {
+            _canvasGroup = GetComponent<CanvasGroup>();
+            if (_canvasGroup == null)
+                _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            Hide();
+        }
+
         private void OnEnable()
         {
-            GameManager.Instance.OnStateChanged += HandleStateChanged;
-            _retryButton.onClick.AddListener(OnRetry);
-            _quitButton.onClick.AddListener(OnQuit);
-            gameObject.SetActive(false);
+            TrySubscribeToState();
+            if (_retryButton != null)
+                _retryButton.onClick.AddListener(OnRetry);
+            if (_quitButton != null)
+                _quitButton.onClick.AddListener(OnQuit);
+        }
+
+        private void Start()
+        {
+            TrySubscribeToState();
         }
 
         private void OnDisable()
         {
-            if (GameManager.Instance != null)
+            if (GameManager.Instance != null && _subscribedToState)
                 GameManager.Instance.OnStateChanged -= HandleStateChanged;
+            _subscribedToState = false;
+            if (_retryButton != null)
+                _retryButton.onClick.RemoveListener(OnRetry);
+            if (_quitButton != null)
+                _quitButton.onClick.RemoveListener(OnQuit);
+        }
+
+        private void TrySubscribeToState()
+        {
+            if (_subscribedToState || GameManager.Instance == null) return;
+            GameManager.Instance.OnStateChanged += HandleStateChanged;
+            _subscribedToState = true;
         }
 
         private void HandleStateChanged(GameState state)
         {
-            if (state != GameState.Victory && state != GameState.Defeat) return;
+            if (state != GameState.Victory && state != GameState.Defeat)
+            {
+                Hide();
+                return;
+            }
 
-            gameObject.SetActive(true);
+            Show();
+            bool victory = state == GameState.Victory;
             if (_resultText != null)
-                _resultText.text = state == GameState.Victory ? "VICTORY!" : "DEFEAT";
+                _resultText.text = victory ? "PROTOTYPE COMPLETE" : "DEFEAT";
             if (_statsText != null)
-                _statsText.text = $"Waves cleared: {GameManager.Instance.CurrentWave}\n" +
-                                  $"Lives remaining: {GameManager.Instance.Lives}\n" +
-                                  $"Gold earned: {ResourceManager.Instance.Gold}";
+            {
+                int totalWaves = WaveManager.Instance != null ? WaveManager.Instance.TotalWaves : GameManager.Instance.CurrentWave;
+                int wavesCleared = victory ? GameManager.Instance.CurrentWave : Mathf.Max(0, GameManager.Instance.CurrentWave - 1);
+                _statsText.text = BattleStatsTracker.Ensure().BuildBattleSummary(
+                    victory,
+                    wavesCleared,
+                    totalWaves,
+                    GameManager.Instance.Lives);
+            }
+
+            SetButtonLabel(_retryButton, victory ? "Replay" : "Retry");
         }
 
         private void OnRetry()
         {
-            gameObject.SetActive(false);
+            Hide();
             GameManager.Instance.StartBattle();
         }
 
         private void OnQuit() =>
             UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+
+        private void Show()
+        {
+            if (_canvasGroup == null) return;
+            _canvasGroup.alpha = 1f;
+            _canvasGroup.interactable = true;
+            _canvasGroup.blocksRaycasts = true;
+        }
+
+        private void Hide()
+        {
+            if (_canvasGroup == null) return;
+            _canvasGroup.alpha = 0f;
+            _canvasGroup.interactable = false;
+            _canvasGroup.blocksRaycasts = false;
+        }
+
+        private static void SetButtonLabel(Button button, string label)
+        {
+            if (button == null) return;
+            Text text = button.GetComponentInChildren<Text>();
+            if (text != null)
+                text.text = label;
+        }
     }
 }

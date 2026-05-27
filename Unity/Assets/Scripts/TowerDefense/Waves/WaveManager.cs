@@ -16,10 +16,19 @@ namespace DragonTD.TowerDefense
         public int TotalWaves => _waves.Length;
         public int ActiveEnemyCount { get; private set; }
         public Transform[] Waypoints => _waypoints;
+        public WaveData GetWaveData(int waveNumber)
+        {
+            int index = waveNumber - 1;
+            if (_waves == null || index < 0 || index >= _waves.Length)
+                return null;
+            return _waves[index];
+        }
 
         public event System.Action OnWaveComplete;
 
         private WaveData _activeWave;
+        private Coroutine _spawnRoutine;
+        private bool _isWaveActive;
 
         private void Awake()
         {
@@ -41,20 +50,65 @@ namespace DragonTD.TowerDefense
         private void HandleStateChanged(GameState state)
         {
             if (state == GameState.Wave)
-                StartCoroutine(SpawnWave(GameManager.Instance.CurrentWave - 1));
+            {
+                if (!_isWaveActive && _spawnRoutine == null)
+                    TryStartWave(GameManager.Instance.CurrentWave);
+            }
+        }
+
+        public bool TryStartWave(int waveNumber)
+        {
+            if (_isWaveActive || _spawnRoutine != null)
+            {
+                Debug.LogWarning($"[WaveManager] Cannot start wave {waveNumber}; wave already active.");
+                return false;
+            }
+
+            int waveIndex = waveNumber - 1;
+            if (_waves == null || waveIndex < 0 || waveIndex >= _waves.Length)
+            {
+                Debug.LogWarning($"[WaveManager] Cannot start wave {waveNumber}; only {_waves?.Length ?? 0} waves are assigned.");
+                return false;
+            }
+
+            if (_waves[waveIndex] == null)
+            {
+                Debug.LogWarning($"[WaveManager] Cannot start wave {waveNumber}; wave asset is missing.");
+                return false;
+            }
+
+            _spawnRoutine = StartCoroutine(SpawnWave(waveIndex));
+            Debug.Log($"[WaveManager] Started wave {waveNumber}.");
+            return true;
         }
 
         private IEnumerator SpawnWave(int waveIndex)
         {
-            if (waveIndex < 0 || waveIndex >= _waves.Length) yield break;
+            if (waveIndex < 0 || waveIndex >= _waves.Length)
+            {
+                _spawnRoutine = null;
+                yield break;
+            }
 
             _activeWave = _waves[waveIndex];
+            _isWaveActive = true;
 
             // Pre-count so deaths during spawning don't prematurely trigger wave complete
             int totalToSpawn = 0;
-            foreach (EnemySpawnEntry group in _activeWave.EnemyGroups)
-                totalToSpawn += group.Count;
+            if (_activeWave != null && _activeWave.EnemyGroups != null)
+            {
+                foreach (EnemySpawnEntry group in _activeWave.EnemyGroups)
+                    if (group.EnemyPrefab != null && group.Count > 0)
+                        totalToSpawn += group.Count;
+            }
             ActiveEnemyCount = totalToSpawn;
+
+            if (ActiveEnemyCount == 0 || _spawnPoints == null || _spawnPoints.Length == 0)
+            {
+                _spawnRoutine = null;
+                CompleteWave();
+                yield break;
+            }
 
             foreach (EnemySpawnEntry group in _activeWave.EnemyGroups)
             {
@@ -62,7 +116,7 @@ namespace DragonTD.TowerDefense
                 {
                     if (group.EnemyPrefab == null)
                     {
-                        ActiveEnemyCount--;
+                        continue;
                     }
                     else
                     {
@@ -82,6 +136,8 @@ namespace DragonTD.TowerDefense
                 }
                 yield return new WaitForSeconds(_activeWave.TimeBetweenGroups);
             }
+
+            _spawnRoutine = null;
         }
 
         public void OnEnemyDied()
@@ -89,10 +145,37 @@ namespace DragonTD.TowerDefense
             ActiveEnemyCount = Mathf.Max(0, ActiveEnemyCount - 1);
             if (ActiveEnemyCount > 0) return;
 
+            CompleteWave();
+        }
+
+        public void ResetForBattle()
+        {
+            if (_spawnRoutine != null)
+            {
+                StopCoroutine(_spawnRoutine);
+                _spawnRoutine = null;
+            }
+
+            _activeWave = null;
+            _isWaveActive = false;
+            ActiveEnemyCount = 0;
+        }
+
+        private void CompleteWave()
+        {
+            if (!_isWaveActive) return;
+            _isWaveActive = false;
+            if (_spawnRoutine != null)
+            {
+                StopCoroutine(_spawnRoutine);
+                _spawnRoutine = null;
+            }
+
             OnWaveComplete?.Invoke();
 
             if (_activeWave != null)
             {
+                BattleStatsTracker.Instance?.RecordReward(_activeWave.GoldReward, _activeWave.ManaReward);
                 ResourceManager.Instance.AddGold(_activeWave.GoldReward);
                 ResourceManager.Instance.AddMana(_activeWave.ManaReward);
             }
