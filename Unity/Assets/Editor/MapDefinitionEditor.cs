@@ -14,13 +14,13 @@ namespace DragonTD.Editor
         private static readonly char[]   Types  = { '.', 'P', 'H', 'M', 'F', 'S', 'X' };
         private static readonly string[] Labels = { "Buildable", "Path", "+R High", "CD Mana", "FIRE", "SLOW", "Blocked" };
         private static readonly Color[]  Colors = {
-            new Color(0.15f, 0.35f, 0.15f, 0.85f), // . buildable
-            new Color(0.55f, 0.38f, 0.18f, 0.95f), // P path
-            new Color(0.30f, 0.75f, 0.25f, 0.95f), // H high ground
-            new Color(0.15f, 0.75f, 1.00f, 0.95f), // M mana crystal
-            new Color(1.00f, 0.45f, 0.10f, 0.95f), // F scorched
-            new Color(0.55f, 0.85f, 1.00f, 0.95f), // S frost
-            new Color(0.25f, 0.08f, 0.08f, 0.95f), // X blocked
+            new Color(0.15f, 0.35f, 0.15f, 0.08f), // . buildable — nearly transparent, map shows through
+            new Color(0.55f, 0.38f, 0.18f, 0.35f), // P path — subtle brown
+            new Color(0.30f, 0.90f, 0.25f, 0.55f), // H high ground
+            new Color(0.15f, 0.75f, 1.00f, 0.55f), // M mana crystal
+            new Color(1.00f, 0.45f, 0.10f, 0.55f), // F scorched
+            new Color(0.55f, 0.85f, 1.00f, 0.55f), // S frost
+            new Color(0.80f, 0.10f, 0.10f, 0.65f), // X blocked
         };
 
         public override void OnInspectorGUI()
@@ -67,8 +67,12 @@ namespace DragonTD.Editor
 
             if (Event.current.type == EventType.Repaint)
             {
-                // Draw grid background
-                EditorGUI.DrawRect(gridRect, new Color(0.1f, 0.1f, 0.1f, 0.8f));
+                // Draw background art if available
+                Texture2D bgTex = GetEditorTexture(map.backgroundSprite);
+                if (bgTex != null)
+                    GUI.DrawTexture(gridRect, bgTex, ScaleMode.StretchToFill);
+                else
+                    EditorGUI.DrawRect(gridRect, new Color(0.1f, 0.1f, 0.1f, 0.9f));
             }
 
             for (int vrow = 0; vrow < MapDefinition.Rows; vrow++)
@@ -181,6 +185,31 @@ namespace DragonTD.Editor
             for (int i = 0; i < Types.Length; i++)
                 if (Types[i] == c) return Colors[i];
             return Colors[0];
+        }
+
+        // Returns a GPU-readable texture for editor GUI drawing.
+        // If the sprite's texture isn't readable, temporarily re-imports it.
+        private static Texture2D GetEditorTexture(UnityEngine.Sprite sprite)
+        {
+            if (sprite == null) return null;
+            Texture2D tex = sprite.texture;
+            if (tex == null) return null;
+            if (tex.isReadable) return tex;
+
+            // Temporarily make readable for GUI preview
+            string path = AssetDatabase.GetAssetPath(tex);
+            var imp = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (imp == null) return tex;
+            imp.isReadable = true;
+            imp.SaveAndReimport();
+            tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            // Restore non-readable to save memory (deferred — don't block the GUI)
+            EditorApplication.delayCall += () =>
+            {
+                var imp2 = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (imp2 != null && imp2.isReadable) { imp2.isReadable = false; imp2.SaveAndReimport(); }
+            };
+            return tex;
         }
     }
 }
