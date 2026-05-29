@@ -38,6 +38,8 @@ namespace DragonTD.TowerDefense
 
         private void Start()
         {
+            if (ChapterContent.Active != null && ChapterContent.Active.waves != null && ChapterContent.Active.waves.Length > 0)
+                _waves = ChapterContent.Active.waves;
             GameManager.Instance.OnStateChanged += HandleStateChanged;
         }
 
@@ -99,20 +101,24 @@ namespace DragonTD.TowerDefense
             {
                 foreach (EnemySpawnEntry group in _activeWave.EnemyGroups)
                     if (group.EnemyPrefab != null && group.Count > 0)
-                        totalToSpawn += group.Count;
+                        totalToSpawn += Mathf.Max(0, group.Count + (GameManager.Instance?.CurrentStage?.extraEnemiesPerGroup ?? 0));
             }
             ActiveEnemyCount = totalToSpawn;
 
             if (ActiveEnemyCount == 0 || _spawnPoints == null || _spawnPoints.Length == 0)
             {
                 _spawnRoutine = null;
+                yield return null;
                 CompleteWave();
                 yield break;
             }
 
             foreach (EnemySpawnEntry group in _activeWave.EnemyGroups)
             {
-                for (int i = 0; i < group.Count; i++)
+                StageDefinition stage = GameManager.Instance?.CurrentStage;
+                int spawnCount = Mathf.Max(0, group.Count + (stage?.extraEnemiesPerGroup ?? 0));
+                float spawnInterval = group.SpawnInterval / Mathf.Max(0.1f, stage?.spawnRateMultiplier ?? 1f);
+                for (int i = 0; i < spawnCount; i++)
                 {
                     if (group.EnemyPrefab == null)
                     {
@@ -125,6 +131,7 @@ namespace DragonTD.TowerDefense
                         if (enemy != null)
                         {
                             enemy.Initialize(_waypoints);
+                            enemy.ApplyDifficultyMultiplier(GameManager.Instance?.StageDifficultyMultiplier ?? 1f);
                             GameDirector.Instance?.OnEnemySpawned(enemy);
                         }
                         else
@@ -132,7 +139,7 @@ namespace DragonTD.TowerDefense
                             ActiveEnemyCount--;
                         }
                     }
-                    yield return new WaitForSeconds(group.SpawnInterval);
+                    yield return new WaitForSeconds(spawnInterval);
                 }
                 yield return new WaitForSeconds(_activeWave.TimeBetweenGroups);
             }
@@ -175,9 +182,12 @@ namespace DragonTD.TowerDefense
 
             if (_activeWave != null)
             {
-                BattleStatsTracker.Instance?.RecordReward(_activeWave.GoldReward, _activeWave.ManaReward);
-                ResourceManager.Instance.AddGold(_activeWave.GoldReward);
-                ResourceManager.Instance.AddMana(_activeWave.ManaReward);
+                float rewardMultiplier = GameManager.Instance?.StageRewardMultiplier ?? 1f;
+                int goldReward = Mathf.RoundToInt(_activeWave.GoldReward * Mathf.Max(1f, rewardMultiplier));
+                int manaReward = Mathf.RoundToInt(_activeWave.ManaReward * Mathf.Max(1f, rewardMultiplier));
+                BattleStatsTracker.Instance?.RecordReward(goldReward, manaReward);
+                ResourceManager.Instance.AddGold(goldReward);
+                ResourceManager.Instance.AddMana(manaReward);
             }
 
             GameManager.Instance.OnWaveCleared();

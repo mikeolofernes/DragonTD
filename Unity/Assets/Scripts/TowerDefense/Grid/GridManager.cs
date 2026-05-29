@@ -53,6 +53,10 @@ namespace DragonTD.TowerDefense
                 Debug.LogWarning("[GridManager] No _tilePrefab assigned — grid will not be built.");
                 return;
             }
+
+            if (ChapterContent.Active != null && ChapterContent.Active.map != null)
+                LoadTilesFromMap(ChapterContent.Active.map);
+
             _grid = new GridTile[_width, _height];
 
             for (int x = 0; x < _width; x++)
@@ -184,6 +188,35 @@ namespace DragonTD.TowerDefense
                 4  or 8  => v,
                 _  => h ?? v
             };
+        }
+
+        private void LoadTilesFromMap(MapDefinition map)
+        {
+            var path = new System.Collections.Generic.List<Vector2Int>();
+            var high = new System.Collections.Generic.List<Vector2Int>();
+            var mana = new System.Collections.Generic.List<Vector2Int>();
+            var scorch = new System.Collections.Generic.List<Vector2Int>();
+            var frost = new System.Collections.Generic.List<Vector2Int>();
+
+            for (int y = 0; y < MapDefinition.Rows; y++)
+            for (int x = 0; x < MapDefinition.Cols; x++)
+            {
+                if (map.GetTileType(x, y) == TileType.Path)
+                    path.Add(new Vector2Int(x, y));
+                switch (map.GetBonusType(x, y))
+                {
+                    case TileBonusType.HighGround:  high.Add(new Vector2Int(x, y)); break;
+                    case TileBonusType.ManaCrystal: mana.Add(new Vector2Int(x, y)); break;
+                    case TileBonusType.Scorched:    scorch.Add(new Vector2Int(x, y)); break;
+                    case TileBonusType.Frost:       frost.Add(new Vector2Int(x, y)); break;
+                }
+            }
+
+            _pathTiles = path.ToArray();
+            _highGroundTiles = high.ToArray();
+            _manaCrystalTiles = mana.ToArray();
+            _scorchedTiles = scorch.ToArray();
+            _frostTiles = frost.ToArray();
         }
     }
 }
