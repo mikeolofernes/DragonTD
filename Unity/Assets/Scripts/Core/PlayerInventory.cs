@@ -75,17 +75,17 @@ namespace DragonTD.Core
 
         public bool TrySummonDragon(out string message)
         {
-            if (!Progression.TrySpendSummonTicket(out message))
+            DragonDefinition summoned = PullFromGacha();
+            if (summoned == null)
             {
+                message = "No dragons available in summon pool";
                 LastSummonSummary = message;
                 OnSummonResult?.Invoke(message);
                 return false;
             }
 
-            DragonDefinition summoned = PullFromGacha();
-            if (summoned == null)
+            if (!Progression.TrySpendSummonTicket(out message))
             {
-                message = "No dragons available in summon pool";
                 LastSummonSummary = message;
                 OnSummonResult?.Invoke(message);
                 return false;
@@ -105,10 +105,6 @@ namespace DragonTD.Core
             if (_summonPool == null)
             {
                 message = "Summon pool not loaded";
-                return false;
-            }
-            if (!Progression.TrySpendGems(_summonPool.SummonCostGems, out message))
-            {
                 LastSummonSummary = message;
                 OnSummonResult?.Invoke(message);
                 return false;
@@ -118,6 +114,13 @@ namespace DragonTD.Core
             if (summoned == null)
             {
                 message = "No dragons available in summon pool";
+                LastSummonSummary = message;
+                OnSummonResult?.Invoke(message);
+                return false;
+            }
+
+            if (!Progression.TrySpendGems(_summonPool.SummonCostGems, out message))
+            {
                 LastSummonSummary = message;
                 OnSummonResult?.Invoke(message);
                 return false;
@@ -138,26 +141,35 @@ namespace DragonTD.Core
             if (_summonPool == null)
             {
                 messages[0] = "Summon pool not loaded";
+                LastSummonSummary = messages[0];
+                OnSummonResult?.Invoke(messages[0]);
                 return false;
             }
-            if (!Progression.TrySpendGems(_summonPool.TenPullCostGems, out string spendMsg))
+
+            // Check gem balance before pulling (don't spend yet)
+            if (Progression.Gems < _summonPool.TenPullCostGems)
             {
-                messages[0] = spendMsg;
-                LastSummonSummary = spendMsg;
-                OnSummonResult?.Invoke(spendMsg);
+                messages[0] = $"Need {_summonPool.TenPullCostGems} gems";
+                LastSummonSummary = messages[0];
+                OnSummonResult?.Invoke(messages[0]);
                 return false;
             }
 
             DragonDefinition[] results = _gachaSystem.TenPull(_summonPool);
             SyncPityToProgression();
+
+            // Now spend gems (balance confirmed above, no refund issue)
+            Progression.TrySpendGems(_summonPool.TenPullCostGems, out _);
             SaveProgressionAsync();
 
+            int summonCount = 0;
             for (int i = 0; i < results.Length; i++)
             {
                 if (results[i] != null)
                 {
                     AddDragon(results[i]);
                     messages[i] = $"{results[i].displayName} ({results[i].rarity})";
+                    summonCount++;
                 }
                 else
                 {
@@ -165,7 +177,9 @@ namespace DragonTD.Core
                 }
             }
 
-            Progression.RecordDailyObjectiveProgress(DailyObjectiveType.SummonDragon);
+            for (int i = 0; i < summonCount; i++)
+                Progression.RecordDailyObjectiveProgress(DailyObjectiveType.SummonDragon);
+
             string summary = $"10-Pull: {string.Join(", ", messages)}";
             LastSummonSummary = summary;
             OnSummonResult?.Invoke(summary);
@@ -1196,7 +1210,6 @@ namespace DragonTD.Core
 
             DragonDefinition result = _gachaSystem.SinglePull(_summonPool);
             SyncPityToProgression();
-            SaveProgressionAsync();
             return result;
         }
 
