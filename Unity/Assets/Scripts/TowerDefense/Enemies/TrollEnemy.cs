@@ -9,6 +9,7 @@ namespace DragonTD.TowerDefense
 
         protected override void Tick()
         {
+            base.Tick(); // run shield regen and other base per-frame logic
             if (_currentHp < _maxHp)
             {
                 _currentHp = Mathf.Min(_maxHp, _currentHp + _regenPerSecond * Time.deltaTime);
