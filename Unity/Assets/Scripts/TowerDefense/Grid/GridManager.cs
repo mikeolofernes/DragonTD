@@ -118,11 +118,6 @@ namespace DragonTD.TowerDefense
             if (ContainsTile(_scorchedTiles, x, y)) return TileBonusType.Scorched;
             if (ContainsTile(_frostTiles, x, y)) return TileBonusType.Frost;
 
-            // Prototype fallback for existing scenes before the generator is rerun.
-            if ((x == 4 && y == 4) || (x == 6 && y == 5)) return TileBonusType.HighGround;
-            if ((x == 1 && y == 2) || (x == 10 && y == 4)) return TileBonusType.ManaCrystal;
-            if ((x == 5 && y == 1) || (x == 9 && y == 5)) return TileBonusType.Scorched;
-            if ((x == 3 && y == 2) || (x == 7 && y == 3)) return TileBonusType.Frost;
             return TileBonusType.None;
         }
 
