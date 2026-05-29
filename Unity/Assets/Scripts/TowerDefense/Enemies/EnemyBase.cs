@@ -23,6 +23,7 @@ namespace DragonTD.TowerDefense
         private float _moveSpeedMultiplier = 1f;
         private float _damageTakenMultiplier = 1f;
         private bool _shieldCracked;
+        private float _shieldBrokenTime = float.NegativeInfinity;
         private float _burnSuppressRegenUntil;
         private TextMesh _traitLabel;
         private SpriteRenderer _traitBadge;
@@ -90,7 +91,21 @@ namespace DragonTD.TowerDefense
             AnimateTraitVisuals();
         }
 
-        protected virtual void Tick() { }
+        protected virtual void Tick()
+        {
+            // Shield regeneration: restore a broken shield after ShieldRegenDelay.
+            if (Trait != EnemyTrait.Shielded) return;
+            if (!_shieldCracked) return;
+            if (_data == null || _data.ShieldRegenDelay <= 0f) return;
+            if (Time.time - _shieldBrokenTime < _data.ShieldRegenDelay) return;
+
+            _shieldCracked = false;
+            if (_shieldRing != null)
+                _shieldRing.enabled = true;
+            UpdateTraitLabel();
+            SkillCastEffect.SpawnPulse(transform.position, 1f, new Color(0.45f, 0.9f, 1f, 0.95f));
+            DamageIndicator.SpawnText(transform.position + Vector3.up * 1.1f, "SHIELD UP", new Color(0.45f, 0.9f, 1f, 1f));
+        }
 
         private void LateUpdate()
         {
@@ -254,6 +269,7 @@ namespace DragonTD.TowerDefense
                 if (source == DamageSource.Skill || source == DamageSource.LightningProjectile)
                 {
                     _shieldCracked = true;
+                    _shieldBrokenTime = Time.time;
                     if (_shieldRing != null)
                         _shieldRing.enabled = false;
                     UpdateTraitLabel();

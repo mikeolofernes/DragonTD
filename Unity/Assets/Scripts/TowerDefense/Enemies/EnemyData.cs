@@ -21,6 +21,7 @@ namespace DragonTD.TowerDefense
         public bool HasElement;
         public EnemyTrait Trait;
         public float RegenPerSecond;
+        public float ShieldRegenDelay; // seconds after shield break before it restores; 0 = never
         public float ProjectileDamageMultiplier = 1f;
         public float SkillDamageMultiplier = 1f;
     }
