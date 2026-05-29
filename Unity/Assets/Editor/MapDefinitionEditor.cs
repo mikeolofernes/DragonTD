@@ -1,0 +1,187 @@
+#if UNITY_EDITOR
+using UnityEngine;
+using UnityEditor;
+using DragonTD.TowerDefense;
+
+namespace DragonTD.Editor
+{
+    [CustomEditor(typeof(MapDefinition))]
+    public class MapDefinitionEditor : UnityEditor.Editor
+    {
+        private char _brush = 'P';
+        private bool _painting;
+
+        private static readonly char[]   Types  = { '.', 'P', 'H', 'M', 'F', 'S', 'X' };
+        private static readonly string[] Labels = { "Buildable", "Path", "+R High", "CD Mana", "FIRE", "SLOW", "Blocked" };
+        private static readonly Color[]  Colors = {
+            new Color(0.15f, 0.35f, 0.15f, 0.85f), // . buildable
+            new Color(0.55f, 0.38f, 0.18f, 0.95f), // P path
+            new Color(0.30f, 0.75f, 0.25f, 0.95f), // H high ground
+            new Color(0.15f, 0.75f, 1.00f, 0.95f), // M mana crystal
+            new Color(1.00f, 0.45f, 0.10f, 0.95f), // F scorched
+            new Color(0.55f, 0.85f, 1.00f, 0.95f), // S frost
+            new Color(0.25f, 0.08f, 0.08f, 0.95f), // X blocked
+        };
+
+        public override void OnInspectorGUI()
+        {
+            var map = (MapDefinition)target;
+            serializedObject.Update();
+
+            // Identity + Art fields (skip grid — we draw it manually)
+            DrawPropertiesExcluding(serializedObject, "grid");
+
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("Visual Grid Editor", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                ". = buildable   P = path   H = +R   M = CD   F = FIRE   S = SLOW   X = blocked\n" +
+                "Click or drag cells to paint. Top row = top of screen.",
+                MessageType.None);
+
+            // ── Brush selector ──────────────────────────────────────────────
+            EditorGUILayout.LabelField("Brush:");
+            EditorGUILayout.BeginHorizontal();
+            for (int i = 0; i < Types.Length; i++)
+            {
+                bool active = _brush == Types[i];
+                Color prev = GUI.backgroundColor;
+                GUI.backgroundColor = active ? Colors[i] * 1.6f : Colors[i] * 0.85f;
+                GUIStyle style = active ? EditorStyles.miniButtonMid : EditorStyles.miniButton;
+                if (GUILayout.Button(Labels[i], style))
+                    _brush = Types[i];
+                GUI.backgroundColor = prev;
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(6);
+
+            // ── Grid ────────────────────────────────────────────────────────
+            string[] lines = SplitGrid(map.grid);
+
+            const float cell = 38f;
+            float gridW = MapDefinition.Cols * cell;
+            float gridH = MapDefinition.Rows * cell;
+
+            Rect gridRect = GUILayoutUtility.GetRect(gridW, gridH,
+                GUILayout.Width(gridW), GUILayout.Height(gridH));
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                // Draw grid background
+                EditorGUI.DrawRect(gridRect, new Color(0.1f, 0.1f, 0.1f, 0.8f));
+            }
+
+            for (int vrow = 0; vrow < MapDefinition.Rows; vrow++)
+            {
+                string line = (vrow < lines.Length ? lines[vrow] : "").TrimEnd('\r');
+                for (int col = 0; col < MapDefinition.Cols; col++)
+                {
+                    char c = col < line.Length ? line[col] : '.';
+
+                    Rect cell2 = new Rect(
+                        gridRect.x + col * cell + 1,
+                        gridRect.y + vrow * cell + 1,
+                        cell - 2, cell - 2);
+
+                    // Cell background
+                    EditorGUI.DrawRect(cell2, GetColor(c));
+
+                    // Tile label
+                    if (c != '.')
+                    {
+                        var labelStyle = new GUIStyle(EditorStyles.boldLabel)
+                        {
+                            alignment = TextAnchor.MiddleCenter,
+                            fontSize  = 14,
+                            normal    = { textColor = Color.white }
+                        };
+                        GUI.Label(cell2, c.ToString(), labelStyle);
+                    }
+
+                    // Column/row numbers on edges
+                    if (Event.current.type == EventType.Repaint)
+                    {
+                        if (vrow == 0)
+                        {
+                            var numStyle = new GUIStyle(EditorStyles.miniLabel)
+                                { alignment = TextAnchor.UpperCenter, normal = { textColor = new Color(1,1,1,0.4f) } };
+                            GUI.Label(new Rect(cell2.x, cell2.y, cell2.width, 14), col.ToString(), numStyle);
+                        }
+                        if (col == 0)
+                        {
+                            var numStyle = new GUIStyle(EditorStyles.miniLabel)
+                                { alignment = TextAnchor.MiddleLeft, normal = { textColor = new Color(1,1,1,0.4f) } };
+                            GUI.Label(new Rect(cell2.x + 2, cell2.y, 16, cell2.height), vrow.ToString(), numStyle);
+                        }
+                    }
+
+                    // Paint on click / drag
+                    Event e = Event.current;
+                    if (cell2.Contains(e.mousePosition))
+                    {
+                        if (e.type == EventType.MouseDown)
+                        {
+                            _painting = true;
+                            PaintTile(map, col, vrow, lines, _brush);
+                            e.Use();
+                        }
+                        else if (e.type == EventType.MouseDrag && _painting)
+                        {
+                            PaintTile(map, col, vrow, lines, _brush);
+                            e.Use();
+                        }
+                    }
+                }
+            }
+
+            if (Event.current.type == EventType.MouseUp)
+                _painting = false;
+
+            // Force repaint while dragging
+            if (_painting)
+                Repaint();
+
+            // ── Raw text fallback ───────────────────────────────────────────
+            EditorGUILayout.Space(6);
+            EditorGUILayout.LabelField("Raw grid text (also editable):");
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("grid"), GUIContent.none);
+
+            if (serializedObject.ApplyModifiedProperties() || GUI.changed)
+                EditorUtility.SetDirty(target);
+        }
+
+        private static void PaintTile(MapDefinition map, int col, int vrow, string[] lines, char brush)
+        {
+            var rows = new string[MapDefinition.Rows];
+            for (int i = 0; i < MapDefinition.Rows; i++)
+                rows[i] = i < lines.Length
+                    ? lines[i].TrimEnd('\r').PadRight(MapDefinition.Cols, '.')
+                    : new string('.', MapDefinition.Cols);
+
+            char[] chars = rows[vrow].ToCharArray();
+            if (col < chars.Length && chars[col] != brush)
+            {
+                chars[col] = brush;
+                rows[vrow] = new string(chars);
+                map.grid = string.Join("\n", rows);
+                // Refresh lines in-place so continued drag uses updated data
+                for (int i = 0; i < rows.Length && i < lines.Length; i++)
+                    lines[i] = rows[i];
+            }
+        }
+
+        private static string[] SplitGrid(string grid)
+        {
+            if (string.IsNullOrEmpty(grid)) return new string[MapDefinition.Rows];
+            return grid.Split('\n');
+        }
+
+        private static Color GetColor(char c)
+        {
+            for (int i = 0; i < Types.Length; i++)
+                if (Types[i] == c) return Colors[i];
+            return Colors[0];
+        }
+    }
+}
+#endif
