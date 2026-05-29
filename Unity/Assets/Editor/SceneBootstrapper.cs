@@ -716,6 +716,19 @@ namespace DragonTD.Editor
 
             var whiteSpr = GetOrCreateWhiteSprite();
 
+            // Fix PPU on all user-assigned sprites so each renders as exactly 1 world unit
+            if (mapDef != null)
+            {
+                FixTileSpritePPU(mapDef.buildableSprite);
+                FixTileSpritePPU(mapDef.pathSprite);
+                FixTileSpritePPU(mapDef.pathStraightH);
+                FixTileSpritePPU(mapDef.pathStraightV);
+                FixTileSpritePPU(mapDef.pathCornerTL);
+                FixTileSpritePPU(mapDef.pathCornerTR);
+                FixTileSpritePPU(mapDef.pathCornerBL);
+                FixTileSpritePPU(mapDef.pathCornerBR);
+            }
+
             // Use tile sprites from MapDefinition if provided, otherwise transparent
             Sprite buildSpr = mapDef?.buildableSprite;
             Sprite pathSpr  = mapDef?.pathSprite;
@@ -1164,6 +1177,26 @@ namespace DragonTD.Editor
         {
             var prop = so.FindProperty(propName);
             if (prop != null) prop.objectReferenceValue = sprite;
+        }
+
+        // Corrects PPU of any sprite drag-assigned by user so it renders as exactly 1 world unit wide.
+        static void FixTileSpritePPU(Sprite sprite)
+        {
+            if (sprite == null) return;
+            string path = AssetDatabase.GetAssetPath(sprite);
+            if (string.IsNullOrEmpty(path)) return;
+            var imp = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (imp == null) return;
+            int pxWidth = ReadPngWidth(path);
+            if (pxWidth <= 0) return;
+            float correct = pxWidth; // PPU = pixel width → sprite = 1 world unit wide
+            if (Mathf.Approximately(imp.spritePixelsPerUnit, correct)) return;
+            imp.spritePixelsPerUnit = correct;
+            imp.textureType         = TextureImporterType.Sprite;
+            imp.spriteImportMode    = SpriteImportMode.Single;
+            imp.mipmapEnabled       = false;
+            imp.SaveAndReimport();
+            Debug.Log($"[SceneBootstrapper] Fixed PPU for {System.IO.Path.GetFileName(path)}: → {correct}");
         }
 
         static void SetVector2IntArray(SerializedProperty prop, Vector2Int[] values)
