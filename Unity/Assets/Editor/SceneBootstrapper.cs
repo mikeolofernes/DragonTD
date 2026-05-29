@@ -231,27 +231,40 @@ namespace DragonTD.Editor
 
         // ── MapDefinition helper ───────────────────────────────────────────────────
 
+        private const string DefaultGrid =
+            "............\n" +
+            "............\n" +
+            "..PPPPPPPPPP\n" +
+            "..P........P\n" +
+            "PPP........P\n" +
+            "...........P\n" +
+            "...........P\n" +
+            "...........P";
+
         static MapDefinition EnsureMapDefinition()
         {
             string path = MapSODir + "/Chapter1Map.asset";
             var existing = AssetDatabase.LoadAssetAtPath<MapDefinition>(path);
-            if (existing != null) return existing;
+
+            // If existing asset has empty/broken grid, repair it
+            if (existing != null)
+            {
+                if (string.IsNullOrWhiteSpace(existing.grid) || !existing.grid.Contains("P"))
+                {
+                    existing.grid = DefaultGrid;
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                    Debug.Log("[SceneBootstrapper] Repaired empty grid in Chapter1Map.asset.");
+                }
+                return existing;
+            }
 
             var def = ScriptableObject.CreateInstance<MapDefinition>();
             def.mapName = "Chapter 1";
-            // Explicitly set grid so it survives serialization to .asset YAML
-            def.grid =
-                "............\n" +
-                "............\n" +
-                "..PPPPPPPPPP\n" +
-                "..P........P\n" +
-                "PPP........P\n" +
-                "...........P\n" +
-                "...........P\n" +
-                "...........P";
+            def.grid    = DefaultGrid;
             AssetDatabase.CreateAsset(def, path);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[SceneBootstrapper] Created MapDefinition at {path} — edit the Grid field in Inspector to change path/tiles.");
+            Debug.Log($"[SceneBootstrapper] Created MapDefinition at {path}.");
             return def;
         }
 
@@ -723,9 +736,17 @@ namespace DragonTD.Editor
         {
             string path = ArtDir + "/battle_background.png";
 
+            // Ensure file exists on disk before asking Unity to import it
+            string fullPath = Path.Combine(Application.dataPath.Replace("Assets",""), path).Replace('/', Path.DirectorySeparatorChar);
+            if (!File.Exists(fullPath))
+            {
+                Debug.LogWarning($"[SceneBootstrapper] battle_background.png not found on disk at {fullPath}");
+                return null;
+            }
+
             // Force Unity to detect the file and create a .meta if missing
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
             AssetDatabase.Refresh();
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
 
             var imp = AssetImporter.GetAtPath(path) as TextureImporter;
             if (imp == null)
@@ -1173,16 +1194,9 @@ namespace DragonTD.Editor
                 wavesProp.GetArrayElementAtIndex(i).objectReferenceValue = waves[i];
 
             var spawnProp = so.FindProperty("_spawnPoints");
+            spawnProp.arraySize = wps.Length > 0 ? 1 : 0;
             if (wps.Length > 0)
-            {
-                spawnProp.arraySize = 1;
                 spawnProp.GetArrayElementAtIndex(0).objectReferenceValue = wps[0];
-            }
-            else
-            {
-                spawnProp.arraySize = 0;
-                Debug.LogError("[SceneBootstrapper] No waypoints computed — check Chapter1Map grid has 'P' tiles in column 0.");
-            }
 
             var wpProp = so.FindProperty("_waypoints");
             wpProp.arraySize = wps.Length;
