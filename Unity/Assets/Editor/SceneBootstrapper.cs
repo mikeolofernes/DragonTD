@@ -40,7 +40,7 @@ namespace DragonTD.Editor
             foreach (var d in new[]{
                 "Assets/ScriptableObjects",
                 SODir+"/Enemies", SODir+"/Waves", SODir+"/Director",
-                SODir+"/Skills",  SODir+"/Dragons", MapSODir,
+                SODir+"/Skills",  SODir+"/Dragons", SODir+"/Chapters", MapSODir,
                 "Assets/Resources",
                 "Assets/Prefabs",
                 PrefDir+"/Enemies", PrefDir+"/Dragons", PrefDir+"/UI",
@@ -77,6 +77,12 @@ namespace DragonTD.Editor
             CreateEnemyPrefab("OrcShielded", shieldedData, new Color(0.25f, 0.7f, 1f), 0.82f);
             CreateEnemyPrefab("OrcRegenerator", regenData, new Color(0.35f, 1f, 0.55f), 0.78f);
             CreateEnemyPrefab("OrcFlying", flyingData, new Color(0.85f, 0.65f, 1f), 0.58f);
+            var iceShardData = CreateIceShardData();
+            var frostBruteData = CreateFrostBruteData();
+            var glacialShieldData = CreateGlacialShieldData();
+            CreateEnemyPrefab("IceShard", iceShardData, new Color(0.7f, 0.9f, 1f), 0.6f);
+            CreateEnemyPrefab("FrostBrute", frostBruteData, new Color(0.55f, 0.75f, 1f), 1.0f);
+            CreateEnemyPrefab("GlacialShield", glacialShieldData, new Color(0.35f, 0.85f, 1f), 0.82f);
             CreateProjectilePrefab();
             ConfigurePortraitImports();
             foreach (var dragon in Phase1DragonData.All)
@@ -185,6 +191,63 @@ namespace DragonTD.Editor
                 new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 20, SpawnInterval = 0.22f },
                 new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 22, SpawnInterval = 0.20f },
                 new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 30, SpawnInterval = 0.14f });
+            var iceShardPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/IceShard.prefab");
+            var frostBrutePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/FrostBrute.prefab");
+            var glacialShieldPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/GlacialShield.prefab");
+            CreateWave("Chapter2_Wave01", 160, 110,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 8, SpawnInterval = 0.7f });
+            CreateWave("Chapter2_Wave02", 200, 130,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 12, SpawnInterval = 0.6f });
+            CreateWave("Chapter2_Wave03", 260, 160,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 10, SpawnInterval = 0.55f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 3, SpawnInterval = 0.9f });
+            CreateWave("Chapter2_Wave04", 340, 200,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 14, SpawnInterval = 0.5f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 4, SpawnInterval = 0.85f });
+            CreateWave("Chapter2_Wave05", 440, 250,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 16, SpawnInterval = 0.46f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 5, SpawnInterval = 0.8f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 2, SpawnInterval = 1.2f });
+            CreateWave("Chapter2_Wave06", 560, 310,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 18, SpawnInterval = 0.42f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 6, SpawnInterval = 0.72f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 3, SpawnInterval = 1.1f });
+            CreateWave("Chapter2_Wave07", 700, 380,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 20, SpawnInterval = 0.38f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 7, SpawnInterval = 0.66f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 4, SpawnInterval = 1.0f });
+            CreateWave("Chapter2_Wave08", 860, 460,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 22, SpawnInterval = 0.35f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 8, SpawnInterval = 0.60f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 5, SpawnInterval = 0.92f });
+            CreateWave("Chapter2_Wave09", 1040, 550,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 24, SpawnInterval = 0.32f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 9, SpawnInterval = 0.54f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 6, SpawnInterval = 0.84f });
+            CreateWave("Chapter2_Wave10", 1240, 650,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 26, SpawnInterval = 0.30f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 10, SpawnInterval = 0.50f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 7, SpawnInterval = 0.76f });
+            CreateWave("Chapter2_Wave11", 1480, 760,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 26, SpawnInterval = 0.28f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 11, SpawnInterval = 0.46f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 8, SpawnInterval = 0.70f });
+            CreateWave("Chapter2_Wave12", 1760, 870,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 28, SpawnInterval = 0.26f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 11, SpawnInterval = 0.42f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 9, SpawnInterval = 0.64f });
+            CreateWave("Chapter2_Wave13", 2080, 990,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 28, SpawnInterval = 0.24f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 12, SpawnInterval = 0.38f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 10, SpawnInterval = 0.58f });
+            CreateWave("Chapter2_Wave14", 2720, 1200,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 28, SpawnInterval = 0.22f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 12, SpawnInterval = 0.36f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 10, SpawnInterval = 0.52f });
+            CreateWave("Chapter2_Wave15", 3400, 1400,
+                new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 30, SpawnInterval = 0.20f },
+                new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 12, SpawnInterval = 0.32f },
+                new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 8, SpawnInterval = 0.46f });
             CreateCardPrefab();
             CreateUIPrefabs();
 
@@ -212,6 +275,9 @@ namespace DragonTD.Editor
 
             // Prefer background from MapDefinition; fall back to battle_background.png
             var bgSprite = mapDef?.backgroundSprite ?? ImportBattleBackground();
+
+            var ch2Map = EnsureChapter2Map();
+            EnsureChapterContents(mapDef, ch2Map);
 
             SetupCamera();
             if (bgSprite != null) CreateBattleBackground(bgSprite);
@@ -272,6 +338,27 @@ namespace DragonTD.Editor
             AssetDatabase.CreateAsset(def, path);
             AssetDatabase.SaveAssets();
             Debug.Log($"[SceneBootstrapper] Created MapDefinition at {path}.");
+            return def;
+        }
+
+        static MapDefinition EnsureChapter2Map()
+        {
+            string path = MapSODir + "/Chapter2Map.asset";
+            var existing = AssetDatabase.LoadAssetAtPath<MapDefinition>(path);
+            if (existing != null) return existing;
+            var def = ScriptableObject.CreateInstance<MapDefinition>();
+            def.mapName = "Chapter 2";
+            def.grid =
+                "BBBBBBBBBBBB\n" +
+                "PPPPPPPBBBBB\n" +
+                "BBBBBBPBBBBB\n" +
+                "BBBBBBPPPPPB\n" +
+                "BBBBBBBBBBPB\n" +
+                "BBBBBBBBBBPB\n" +
+                "BBBBBBBBBBPP\n" +
+                "BBBBBBBBBBBB";
+            AssetDatabase.CreateAsset(def, path);
+            AssetDatabase.SaveAssets();
             return def;
         }
 
@@ -397,6 +484,27 @@ namespace DragonTD.Editor
                 EnemyTrait.Flying, 0f, 1f, 1f, DragonElement.Wind, true);
         }
 
+        static EnemyData CreateIceShardData()
+        {
+            return CreateEnemyData("IceShard", "Ice Shard", 240f, 2.9f, 8f, 14, 1, EnemyFaction.Undead,
+                EnemyTrait.Runner, 0f, 1f, 1f, DragonElement.Ice, true);
+        }
+
+        static EnemyData CreateFrostBruteData()
+        {
+            return CreateEnemyData("FrostBrute", "Frost Brute", 1600f, 1.0f, 120f, 32, 2, EnemyFaction.Troll,
+                EnemyTrait.Brute, 0f, 1f, 1f, DragonElement.Ice, true);
+        }
+
+        static EnemyData CreateGlacialShieldData()
+        {
+            var d = CreateEnemyData("GlacialShield", "Glacial Shield", 900f, 1.5f, 60f, 26, 1, EnemyFaction.Undead,
+                EnemyTrait.Shielded, 0f, PrototypeBalance.ShieldProjectileMultiplier, PrototypeBalance.ShieldSkillMultiplier, DragonElement.Ice, true);
+            d.ShieldRegenDelay = 4f;
+            EditorUtility.SetDirty(d);
+            return d;
+        }
+
         static EnemyData CreateEnemyData(string assetName, string enemyName, float hp, float speed,
                                          float armor, int gold, int baseDamage, EnemyFaction faction,
                                          EnemyTrait trait, float regenPerSecond = 0f,
@@ -490,6 +598,34 @@ namespace DragonTD.Editor
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(w);
             return w;
+        }
+
+        static void EnsureChapterContents(MapDefinition ch1Map, MapDefinition ch2Map)
+        {
+            CreateChapterContent("Chapter1Content", 1, ch1Map, "Wave", 15);
+            CreateChapterContent("Chapter2Content", 2, ch2Map, "Chapter2_Wave", 15);
+        }
+
+        static ChapterContent CreateChapterContent(string assetName, int number, MapDefinition map, string wavePrefix, int waveCount)
+        {
+            const string dir = "Assets/ScriptableObjects/Chapters";
+            EnsureDir(dir);
+            string path = dir + "/" + assetName + ".asset";
+            var content = AssetDatabase.LoadAssetAtPath<ChapterContent>(path);
+            if (content == null)
+            {
+                content = ScriptableObject.CreateInstance<ChapterContent>();
+                AssetDatabase.CreateAsset(content, path);
+            }
+            content.chapterNumber = number;
+            content.map = map;
+            var waves = new WaveData[waveCount];
+            for (int w = 1; w <= waveCount; w++)
+                waves[w - 1] = AssetDatabase.LoadAssetAtPath<WaveData>($"{SODir}/Waves/{wavePrefix}{w:D2}.asset");
+            content.waves = waves;
+            EditorUtility.SetDirty(content);
+            AssetDatabase.SaveAssets();
+            return content;
         }
 
         static void CreateNormalAttack(Phase1DragonData.Def dragon)
@@ -1118,6 +1254,23 @@ namespace DragonTD.Editor
             dSO.FindProperty("_config").objectReferenceValue = dirCfg;
             dSO.ApplyModifiedProperties();
             EditorUtility.SetDirty(dir);
+
+            // Wire chapter content into GameManager
+            var gm   = gmGO.GetComponent<GameManager>();
+            var gmSO = new SerializedObject(gm);
+            var ch1Content = AssetDatabase.LoadAssetAtPath<ChapterContent>("Assets/ScriptableObjects/Chapters/Chapter1Content.asset");
+            var ch2Content = AssetDatabase.LoadAssetAtPath<ChapterContent>("Assets/ScriptableObjects/Chapters/Chapter2Content.asset");
+            var chaptersProp = gmSO.FindProperty("_chapters");
+            if (chaptersProp != null)
+            {
+                int n = (ch1Content != null ? 1 : 0) + (ch2Content != null ? 1 : 0);
+                chaptersProp.arraySize = n;
+                int idx = 0;
+                if (ch1Content != null) chaptersProp.GetArrayElementAtIndex(idx++).objectReferenceValue = ch1Content;
+                if (ch2Content != null) chaptersProp.GetArrayElementAtIndex(idx++).objectReferenceValue = ch2Content;
+                gmSO.ApplyModifiedProperties();
+                EditorUtility.SetDirty(gm);
+            }
         }
 
         static void SetupGridManager(GridTile tilePref, Sprite grassSpr, Sprite dirtSpr, MapDefinition mapDef)
