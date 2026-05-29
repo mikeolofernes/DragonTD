@@ -132,7 +132,7 @@ namespace DragonTD.TowerDefense
                     _                         => null
                 };
                 if (bonusSprite != null) _spriteRenderer.sprite = bonusSprite;
-                _spriteRenderer.color = IsOccupied ? new Color(0.7f, 0.7f, 0.3f, 1f) : Color.white;
+                _spriteRenderer.color = IsOccupied ? new Color(0.7f, 0.7f, 0.3f, 1f) : new Color(1f, 1f, 1f, 0.85f);
                 return;
             }
 

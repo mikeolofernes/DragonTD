@@ -23,27 +23,26 @@ namespace DragonTD.Editor
         private const string DragonArtDir = "Assets/Art/Dragons";
 
         // Path layout on a 12×8 grid, origin (-5.5, -3.5):
-        //   Entry  row 4: cols 0-2
-        //   Up     col 2: rows 5-6
-        //   Across row 6: cols 3-8
-        //   Down   col 8: rows 5-1
-        //   Exit   row 1: cols 9-11
+        //   Entry  row 3: cols 0-2   (right 2)
+        //   Up     col 2: rows 3-5   (up 2)
+        //   Across row 5: cols 2-11  (right 9)
+        //   Down   col 11: rows 5-0  (down 5)
+        //   Exit   row 0: off-screen right (right 4)
         private static readonly Vector2Int[] PathTiles = {
-            new(0,4),new(1,4),new(2,4),
-            new(2,5),new(2,6),
-            new(3,6),new(4,6),new(5,6),new(6,6),new(7,6),new(8,6),
-            new(8,5),new(8,4),new(8,3),new(8,2),new(8,1),
-            new(9,1),new(10,1),new(11,1)
+            new(0,3),new(1,3),new(2,3),
+            new(2,4),new(2,5),
+            new(3,5),new(4,5),new(5,5),new(6,5),new(7,5),new(8,5),new(9,5),new(10,5),new(11,5),
+            new(11,4),new(11,3),new(11,2),new(11,1),new(11,0)
         };
 
-        // Waypoints matching the path corners
+        // Waypoints matching the path corners — world pos = (col-5.5, row-3.5)
         private static readonly Vector3[] WaypointPositions = {
-            new(-6.5f,  0.5f, 0f), // WP_00 spawn (off-screen left)
-            new(-3.5f,  0.5f, 0f), // WP_01 first turn
-            new(-3.5f,  2.5f, 0f), // WP_02 second turn
-            new( 2.5f,  2.5f, 0f), // WP_03 third turn
-            new( 2.5f, -2.5f, 0f), // WP_04 fourth turn
-            new( 6.5f, -2.5f, 0f), // WP_05 exit (off-screen right)
+            new(-6.5f, -0.5f, 0f), // WP_00 spawn (off-screen left, row 3)
+            new(-3.5f, -0.5f, 0f), // WP_01 turn up  (col 2, row 3)
+            new(-3.5f,  1.5f, 0f), // WP_02 turn right (col 2, row 5)
+            new( 5.5f,  1.5f, 0f), // WP_03 turn down (col 11, row 5)
+            new( 5.5f, -3.5f, 0f), // WP_04 turn right (col 11, row 0)
+            new( 9.5f, -3.5f, 0f), // WP_05 exit (off-screen right)
         };
 
         [MenuItem("Dragon Dominion/★ Build Battle Scene")]
@@ -226,10 +225,7 @@ namespace DragonTD.Editor
             CreateSummonPool(starters);
             var cardPref  = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/UI/PlacementCard.prefab");
 
-            var bgSprite = ImportBattleBackground();
-
             SetupCamera();
-            CreateBattleBackground(bgSprite);
             CreateManagerRoot(dirCfg, starters);
             SetupGridManager(tilePref, grassSpr, dirtSpr);
             CreatePathDirectionMarkers(whiteSpr);
@@ -675,7 +671,8 @@ namespace DragonTD.Editor
         {
             const string path = PrefDir+"/GridTile.prefab";
 
-            var whiteSpr = GetOrCreateWhiteSprite();
+            var grassSpr = AssetDatabase.LoadAssetAtPath<Sprite>(ArtDir+"/grass.png");
+            if (grassSpr == null) grassSpr = CreateGrassSprite();
             var dirtSpr  = AssetDatabase.LoadAssetAtPath<Sprite>(ArtDir+"/dirt.png");
             if (dirtSpr == null) dirtSpr = CreateDirtSprite();
 
@@ -688,21 +685,21 @@ namespace DragonTD.Editor
             go.transform.localScale = new Vector3(0.94f, 0.94f, 1f);
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = whiteSpr;
-            sr.color  = new Color(1f, 1f, 1f, 0f); // transparent by default; background art shows through
+            sr.sprite = grassSpr;
+            sr.color  = Color.white;
             go.AddComponent<BoxCollider2D>();
 
             var tile = go.AddComponent<GridTile>();
             var so   = new SerializedObject(tile);
             so.FindProperty("_spriteRenderer").objectReferenceValue    = sr;
-            so.FindProperty("_buildableSprite").objectReferenceValue   = null;      // transparent — background visible
-            so.FindProperty("_pathSprite").objectReferenceValue        = dirtSpr;   // dirt path — always aligned
+            so.FindProperty("_buildableSprite").objectReferenceValue   = grassSpr;
+            so.FindProperty("_pathSprite").objectReferenceValue        = dirtSpr;
             so.FindProperty("_highGroundSprite").objectReferenceValue  = highGroundSpr;
             so.FindProperty("_manaCrystalSprite").objectReferenceValue = manaSpr;
             so.FindProperty("_scorchedSprite").objectReferenceValue    = scorchSpr;
             so.FindProperty("_frostSprite").objectReferenceValue       = frostSpr;
-            so.FindProperty("_buildableColor").colorValue = new Color(1f, 1f, 1f, 0f);
-            so.FindProperty("_pathColor").colorValue      = Color.white;
+            so.FindProperty("_buildableColor").colorValue = Color.green;
+            so.FindProperty("_pathColor").colorValue      = Color.gray;
             so.ApplyModifiedProperties();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
