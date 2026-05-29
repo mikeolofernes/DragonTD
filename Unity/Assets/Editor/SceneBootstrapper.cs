@@ -218,7 +218,10 @@ namespace DragonTD.Editor
             CreateSummonPool(starters);
             var cardPref  = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/UI/PlacementCard.prefab");
 
+            var bgSprite = ImportBattleBackground();
+
             SetupCamera();
+            CreateBattleBackground(bgSprite);
             CreateManagerRoot(dirCfg, starters);
             SetupGridManager(tilePref, grassSpr, dirtSpr);
             CreatePathDirectionMarkers(whiteSpr);
@@ -637,29 +640,65 @@ namespace DragonTD.Editor
         {
             const string path = PrefDir+"/GridTile.prefab";
 
-            // Always rebuild tile prefab so grass/dirt sprites are wired fresh
-            var grassSpr = AssetDatabase.LoadAssetAtPath<Sprite>(ArtDir+"/grass.png");
-            var dirtSpr  = AssetDatabase.LoadAssetAtPath<Sprite>(ArtDir+"/dirt.png");
-            if (grassSpr == null) grassSpr = CreateGrassSprite();
-            if (dirtSpr  == null) dirtSpr  = CreateDirtSprite();
+            var whiteSpr = GetOrCreateWhiteSprite();
 
             var go = new GameObject("GridTile");
-            go.transform.localScale = new Vector3(0.94f, 0.94f, 1f); // small gap
+            go.transform.localScale = new Vector3(0.94f, 0.94f, 1f);
 
-            var sr   = go.AddComponent<SpriteRenderer>();
-            sr.sprite = grassSpr;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = whiteSpr;
+            sr.color  = new Color(1f, 1f, 1f, 0f); // transparent — background art shows through
             go.AddComponent<BoxCollider2D>();
 
             var tile = go.AddComponent<GridTile>();
             var so   = new SerializedObject(tile);
             so.FindProperty("_spriteRenderer").objectReferenceValue  = sr;
-            so.FindProperty("_buildableSprite").objectReferenceValue = grassSpr;
-            so.FindProperty("_pathSprite").objectReferenceValue      = dirtSpr;
+            // No buildable/path sprites — GridTile falls back to _buildableColor/_pathColor
+            so.FindProperty("_buildableSprite").objectReferenceValue = null;
+            so.FindProperty("_pathSprite").objectReferenceValue      = null;
+            // Transparent for non-interactive states; green/red still show during placement preview
+            so.FindProperty("_buildableColor").colorValue = new Color(1f, 1f, 1f, 0f);
+            so.FindProperty("_pathColor").colorValue      = new Color(1f, 1f, 1f, 0f);
             so.ApplyModifiedProperties();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
             return prefab.GetComponent<GridTile>();
+        }
+
+        static Sprite ImportBattleBackground()
+        {
+            string path = ArtDir + "/battle_background.png";
+            var imp = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (imp == null) return null;
+
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            float ppu = tex != null ? tex.width / 12f : 100f;
+
+            bool changed = false;
+            if (imp.textureType != TextureImporterType.Sprite)        { imp.textureType = TextureImporterType.Sprite; changed = true; }
+            if (imp.spriteImportMode != SpriteImportMode.Single)      { imp.spriteImportMode = SpriteImportMode.Single; changed = true; }
+            if (imp.mipmapEnabled)                                     { imp.mipmapEnabled = false; changed = true; }
+            if (!Mathf.Approximately(imp.spritePixelsPerUnit, ppu))   { imp.spritePixelsPerUnit = ppu; changed = true; }
+            if (changed) imp.SaveAndReimport();
+
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        static void CreateBattleBackground(Sprite bgSprite)
+        {
+            if (bgSprite == null) return;
+            var go = new GameObject("BattleBackground");
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = bgSprite;
+            sr.sortingOrder = -10;
+            // Center on the 12×8 grid (world origin at tile 0,0 = (-5.5, -3.5), so center = (0.5, 0.5))
+            go.transform.position = new Vector3(0.5f, 0.5f, 0.1f);
+            // Sprite is 12 units wide by PPU definition; scale Y so height = 8 units
+            float naturalH = bgSprite.texture != null
+                ? bgSprite.texture.height / (bgSprite.texture.width / 12f)
+                : 12f;
+            go.transform.localScale = new Vector3(1f, 8f / naturalH, 1f);
         }
 
         static void CreateOrcPrefab(EnemyData data)
