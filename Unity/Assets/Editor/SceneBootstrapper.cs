@@ -668,34 +668,36 @@ namespace DragonTD.Editor
 
         // ── Prefabs ───────────────────────────────────────────────────────────────
 
+        // Read PNG pixel width from file header bytes — no Unity import cycle needed.
+        static int ReadPngWidth(string unityAssetPath)
+        {
+            string full = Path.GetFullPath(
+                Path.Combine(Application.dataPath, "..", unityAssetPath));
+            if (!File.Exists(full)) return 0;
+            byte[] b = File.ReadAllBytes(full);
+            if (b.Length < 24) return 0;
+            // PNG signature is 8 bytes, then IHDR chunk: 4-byte length, 4-byte "IHDR", then width (4 bytes BE)
+            return (b[16] << 24) | (b[17] << 16) | (b[18] << 8) | b[19];
+        }
+
         static Sprite ImportTileSprite(string filename)
         {
             string path = ArtDir + "/" + filename;
-
-            // Force Unity to detect the file first
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
 
             var imp = AssetImporter.GetAtPath(path) as TextureImporter;
             if (imp == null) return null;
 
-            // Pass 1: make readable so we can read actual pixel dimensions
+            // Read actual pixel width directly from PNG header — reliable regardless of import state
+            int pxWidth = ReadPngWidth(path);
+            float ppu   = pxWidth > 0 ? pxWidth : 512f;
+
             imp.textureType         = TextureImporterType.Sprite;
             imp.spriteImportMode    = SpriteImportMode.Single;
-            imp.isReadable          = true;
+            imp.isReadable          = false;
             imp.mipmapEnabled       = false;
             imp.alphaIsTransparency = true;
-            imp.spritePixelsPerUnit = 100f;
-            imp.SaveAndReimport();
-            AssetDatabase.Refresh();
-
-            Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            // PPU = imported pixel width → sprite = exactly 1 world unit wide at scale 1
-            // Tile GO uses scale 0.94, so final visual = 0.94 world units (same as hover cursor tile)
-            float ppu = (tex != null && tex.width > 0) ? tex.width : 100f;
-
-            // Pass 2: apply correct PPU, lock down
             imp.spritePixelsPerUnit = ppu;
-            imp.isReadable          = false;
             imp.SaveAndReimport();
 
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
@@ -761,26 +763,20 @@ namespace DragonTD.Editor
                 return null;
             }
 
-            // Pass 1: readable so we can get dimensions
-            imp.textureType        = TextureImporterType.Sprite;
-            imp.spriteImportMode   = SpriteImportMode.Single;
-            imp.isReadable         = true;
-            imp.mipmapEnabled      = false;
-            imp.spritePixelsPerUnit = 100f;
-            imp.SaveAndReimport();
-            AssetDatabase.Refresh();
+            // Read width from PNG header (works even before Unity import)
+            int pxWidth = ReadPngWidth(path);
+            float ppu   = pxWidth > 0 ? pxWidth / 18f : 100f;
 
-            Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            float ppu = (tex != null && tex.width > 0) ? tex.width / 18f : 100f;
-
-            // Pass 2: apply correct PPU
-            imp.spritePixelsPerUnit = ppu;
+            imp.textureType         = TextureImporterType.Sprite;
+            imp.spriteImportMode    = SpriteImportMode.Single;
             imp.isReadable          = false;
+            imp.mipmapEnabled       = false;
+            imp.spritePixelsPerUnit = ppu;
             imp.SaveAndReimport();
 
             Sprite spr = AssetDatabase.LoadAssetAtPath<Sprite>(path);
             if (spr == null)
-                Debug.LogWarning("[SceneBootstrapper] battle_background.png loaded as null sprite — check the file is a valid PNG/JPG.");
+                Debug.LogWarning("[SceneBootstrapper] battle_background.png loaded as null sprite.");
             return spr;
         }
 
