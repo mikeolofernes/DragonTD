@@ -671,27 +671,33 @@ namespace DragonTD.Editor
         static Sprite ImportTileSprite(string filename)
         {
             string path = ArtDir + "/" + filename;
+
+            // Force Unity to detect the file first
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+
             var imp = AssetImporter.GetAtPath(path) as TextureImporter;
             if (imp == null) return null;
 
-            // First pass: import as readable so we can read texture dimensions
-            if (!imp.isReadable || imp.textureType != TextureImporterType.Sprite)
-            {
-                imp.textureType      = TextureImporterType.Sprite;
-                imp.spriteImportMode = SpriteImportMode.Single;
-                imp.isReadable       = true;
-                imp.mipmapEnabled    = false;
-                imp.SaveAndReimport();
-            }
-            Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            // PPU = texture width → sprite is exactly 1 world unit wide → fits in 0.94-scaled tile
-            float ppu = tex != null ? tex.width : 512f;
+            // Pass 1: make readable so we can read actual pixel dimensions
+            imp.textureType         = TextureImporterType.Sprite;
+            imp.spriteImportMode    = SpriteImportMode.Single;
+            imp.isReadable          = true;
+            imp.mipmapEnabled       = false;
+            imp.alphaIsTransparency = true;
+            imp.spritePixelsPerUnit = 100f;
+            imp.SaveAndReimport();
+            AssetDatabase.Refresh();
 
-            bool changed = false;
-            if (!Mathf.Approximately(imp.spritePixelsPerUnit, ppu)) { imp.spritePixelsPerUnit = ppu; changed = true; }
-            if (imp.isReadable)                                      { imp.isReadable = false; changed = true; }
-            if (imp.alphaIsTransparency != true)                     { imp.alphaIsTransparency = true; changed = true; }
-            if (changed) imp.SaveAndReimport();
+            Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            // PPU = imported pixel width → sprite = exactly 1 world unit wide at scale 1
+            // Tile GO uses scale 0.94, so final visual = 0.94 world units (same as hover cursor tile)
+            float ppu = (tex != null && tex.width > 0) ? tex.width : 100f;
+
+            // Pass 2: apply correct PPU, lock down
+            imp.spritePixelsPerUnit = ppu;
+            imp.isReadable          = false;
+            imp.SaveAndReimport();
+
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
 
@@ -755,23 +761,27 @@ namespace DragonTD.Editor
                 return null;
             }
 
-            // First pass: import as Texture2D so we can read dimensions
-            imp.textureType = TextureImporterType.Default;
-            imp.isReadable  = true;
-            imp.SaveAndReimport();
-
-            Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            float ppu = tex != null ? tex.width / 18f : 100f; // 18 world units wide = full camera width
-
-            // Second pass: configure as Sprite with correct PPU
+            // Pass 1: readable so we can get dimensions
             imp.textureType        = TextureImporterType.Sprite;
             imp.spriteImportMode   = SpriteImportMode.Single;
-            imp.isReadable         = false;
+            imp.isReadable         = true;
             imp.mipmapEnabled      = false;
+            imp.spritePixelsPerUnit = 100f;
+            imp.SaveAndReimport();
+            AssetDatabase.Refresh();
+
+            Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            float ppu = (tex != null && tex.width > 0) ? tex.width / 18f : 100f;
+
+            // Pass 2: apply correct PPU
             imp.spritePixelsPerUnit = ppu;
+            imp.isReadable          = false;
             imp.SaveAndReimport();
 
-            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            Sprite spr = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (spr == null)
+                Debug.LogWarning("[SceneBootstrapper] battle_background.png loaded as null sprite — check the file is a valid PNG/JPG.");
+            return spr;
         }
 
         static void CreateBattleBackground(Sprite bgSprite)
