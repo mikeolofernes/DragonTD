@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using DragonTD.Core;
 using DragonTD.Dragons;
+using DragonTD.Summoning;
 using DragonTD.TowerDefense;
 using DragonTD.UI;
 
@@ -214,6 +215,7 @@ namespace DragonTD.Editor
                 .Select(d => AssetDatabase.LoadAssetAtPath<DragonDefinition>(SODir+"/Dragons/"+d.Id+".asset"))
                 .Where(d => d != null)
                 .ToArray();
+            CreateSummonPool(starters);
             var cardPref  = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/UI/PlacementCard.prefab");
 
             SetupCamera();
@@ -535,6 +537,59 @@ namespace DragonTD.Editor
 
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(def);
+        }
+
+        static void CreateSummonPool(DragonDefinition[] allDragons)
+        {
+            string poolPath = "Assets/Resources/SummonPool_Phase1.asset";
+            var pool = AssetDatabase.LoadAssetAtPath<SummonPool>(poolPath);
+            if (pool == null)
+            {
+                pool = ScriptableObject.CreateInstance<SummonPool>();
+                AssetDatabase.CreateAsset(pool, poolPath);
+            }
+
+            pool.BannerName = "Phase1";
+            pool.SummonCostGems = 300;
+            pool.TenPullCostGems = 2700;
+            pool.HasRateUp = false;
+            pool.RateUpDragon = null;
+
+            if (pool.RarityRates == null || pool.RarityRates.Length != 6)
+            {
+                pool.RarityRates = new RarityRate[]
+                {
+                    new RarityRate { Rarity = DragonRarity.Common,    Rate = 0.400f },
+                    new RarityRate { Rarity = DragonRarity.Uncommon,  Rate = 0.300f },
+                    new RarityRate { Rarity = DragonRarity.Rare,      Rate = 0.200f },
+                    new RarityRate { Rarity = DragonRarity.Epic,      Rate = 0.070f },
+                    new RarityRate { Rarity = DragonRarity.Legendary, Rate = 0.025f },
+                    new RarityRate { Rarity = DragonRarity.Mythic,    Rate = 0.005f },
+                };
+            }
+
+            var weightMap = new System.Collections.Generic.Dictionary<DragonRarity, int>
+            {
+                { DragonRarity.Common,    10 },
+                { DragonRarity.Uncommon,   8 },
+                { DragonRarity.Rare,       6 },
+                { DragonRarity.Epic,       4 },
+                { DragonRarity.Legendary,  3 },
+                { DragonRarity.Mythic,     1 },
+            };
+
+            var dragonWeights = new System.Collections.Generic.List<DragonWeight>();
+            foreach (DragonDefinition def in allDragons)
+            {
+                if (def == null) continue;
+                int w = weightMap.TryGetValue(def.rarity, out int wt) ? wt : 5;
+                dragonWeights.Add(new DragonWeight { Dragon = def, Weight = w });
+            }
+            pool.AvailableDragons = dragonWeights.ToArray();
+
+            EditorUtility.SetDirty(pool);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[SceneBootstrapper] SummonPool created/updated: {dragonWeights.Count} dragons");
         }
 
         static string ActiveSkillId(Phase1DragonData.Def dragon)

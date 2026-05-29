@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DragonTD.Dragons;
+using DragonTD.Summoning;
 
 namespace DragonTD.Core
 {
@@ -34,6 +35,8 @@ namespace DragonTD.Core
         private IProgressionPersistenceService _persistenceService;
         private IStorePurchaseService _purchaseService;
         private AuthSessionData _authSession;
+        private GachaSystem _gachaSystem;
+        private SummonPool _summonPool;
 
         private void Awake()
         {
@@ -49,6 +52,8 @@ namespace DragonTD.Core
             _persistenceService = new LocalProgressionPersistenceService(SavePath);
             _purchaseService = CreatePurchaseService(new LocalIapReceiptValidator());
             SetSyncStatus(_persistenceService.ModeLabel);
+            _gachaSystem = new GachaSystem();
+            _summonPool = Resources.Load<SummonPool>("SummonPool_Phase1");
         }
 
         private async void Start()
@@ -70,15 +75,6 @@ namespace DragonTD.Core
 
         public bool TrySummonDragon(out string message)
         {
-            DragonDefinition summoned = PickSummonDragon();
-            if (summoned == null)
-            {
-                message = "No new dragons are available to summon";
-                LastSummonSummary = message;
-                OnSummonResult?.Invoke(message);
-                return false;
-            }
-
             if (!Progression.TrySpendSummonTicket(out message))
             {
                 LastSummonSummary = message;
@@ -86,11 +82,93 @@ namespace DragonTD.Core
                 return false;
             }
 
+            DragonDefinition summoned = PullFromGacha();
+            if (summoned == null)
+            {
+                message = "No dragons available in summon pool";
+                LastSummonSummary = message;
+                OnSummonResult?.Invoke(message);
+                return false;
+            }
+
             AddDragon(summoned);
-            message = $"Summoned {summoned.displayName}";
+            message = $"Summoned {summoned.displayName} ({summoned.rarity})";
             LastSummonSummary = message;
             Progression.RecordDailyObjectiveProgress(DailyObjectiveType.SummonDragon);
             OnSummonResult?.Invoke(message);
+            OnProgressionChanged?.Invoke();
+            return true;
+        }
+
+        public bool TrySummonDragonWithGems(out string message)
+        {
+            if (_summonPool == null)
+            {
+                message = "Summon pool not loaded";
+                return false;
+            }
+            if (!Progression.TrySpendGems(_summonPool.SummonCostGems, out message))
+            {
+                LastSummonSummary = message;
+                OnSummonResult?.Invoke(message);
+                return false;
+            }
+
+            DragonDefinition summoned = PullFromGacha();
+            if (summoned == null)
+            {
+                message = "No dragons available in summon pool";
+                LastSummonSummary = message;
+                OnSummonResult?.Invoke(message);
+                return false;
+            }
+
+            AddDragon(summoned);
+            message = $"Summoned {summoned.displayName} ({summoned.rarity})";
+            LastSummonSummary = message;
+            Progression.RecordDailyObjectiveProgress(DailyObjectiveType.SummonDragon);
+            OnSummonResult?.Invoke(message);
+            OnProgressionChanged?.Invoke();
+            return true;
+        }
+
+        public bool TryTenPullWithGems(out string[] messages)
+        {
+            messages = new string[10];
+            if (_summonPool == null)
+            {
+                messages[0] = "Summon pool not loaded";
+                return false;
+            }
+            if (!Progression.TrySpendGems(_summonPool.TenPullCostGems, out string spendMsg))
+            {
+                messages[0] = spendMsg;
+                LastSummonSummary = spendMsg;
+                OnSummonResult?.Invoke(spendMsg);
+                return false;
+            }
+
+            DragonDefinition[] results = _gachaSystem.TenPull(_summonPool);
+            SyncPityToProgression();
+            SaveProgressionAsync();
+
+            for (int i = 0; i < results.Length; i++)
+            {
+                if (results[i] != null)
+                {
+                    AddDragon(results[i]);
+                    messages[i] = $"{results[i].displayName} ({results[i].rarity})";
+                }
+                else
+                {
+                    messages[i] = "—";
+                }
+            }
+
+            Progression.RecordDailyObjectiveProgress(DailyObjectiveType.SummonDragon);
+            string summary = $"10-Pull: {string.Join(", ", messages)}";
+            LastSummonSummary = summary;
+            OnSummonResult?.Invoke(summary);
             OnProgressionChanged?.Invoke();
             return true;
         }
@@ -793,6 +871,8 @@ namespace DragonTD.Core
                 gold = saveData.gold,
                 gems = saveData.gems,
                 summon_tickets = saveData.summonTickets,
+                gacha_pulls_since_last_epic = saveData.gachaPullsSinceLastEpic,
+                gacha_total_pulls = saveData.gachaTotalPulls,
                 damage_buff_level = saveData.damageBuffLevel,
                 attack_speed_buff_level = saveData.attackSpeedBuffLevel,
                 starting_mana_buff_level = saveData.startingManaBuffLevel,
@@ -873,6 +953,8 @@ namespace DragonTD.Core
             EnsureValidLoadout();
 
             Progression.Load(saveData);
+            if (_gachaSystem != null && _summonPool != null)
+                _gachaSystem.RestorePity(_summonPool.BannerName, Progression.GachaPullsSinceLastEpic, Progression.GachaTotalPulls);
             if (OwnedDragons.Count == 0 && Progression.SummonTickets == 0)
                 Progression.GrantSummonTickets(PlayerProgression.StartingSummonTickets);
             LastBattleRewardResult = saveData.lastBattleReward;
@@ -1105,6 +1187,24 @@ namespace DragonTD.Core
                     return dragon;
             }
             return null;
+        }
+
+        private DragonDefinition PullFromGacha()
+        {
+            if (_gachaSystem == null || _summonPool == null)
+                return PickSummonDragon();
+
+            DragonDefinition result = _gachaSystem.SinglePull(_summonPool);
+            SyncPityToProgression();
+            SaveProgressionAsync();
+            return result;
+        }
+
+        private void SyncPityToProgression()
+        {
+            if (_gachaSystem == null || _summonPool == null) return;
+            var pity = _gachaSystem.GetPity(_summonPool.BannerName);
+            Progression.SyncGachaPity(pity.PullsSinceLastEpic, pity.TotalPulls);
         }
 
         private DragonDefinition PickSummonDragon()

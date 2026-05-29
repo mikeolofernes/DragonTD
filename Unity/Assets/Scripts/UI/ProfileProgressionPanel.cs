@@ -486,7 +486,26 @@ namespace DragonTD.UI
             _summonConfirmButton = CreateRuntimeButton(_summonPanel.transform, "ConfirmSummonButton", "Use Ticket", font,
                 new Vector2(0.35f, 0.18f), new Vector2(170f, 42f));
             _summonCancelButton = CreateRuntimeButton(_summonPanel.transform, "CancelSummonButton", "Close", font,
-                new Vector2(0.65f, 0.18f), new Vector2(140f, 42f));
+                new Vector2(0.84f, 0.18f), new Vector2(140f, 42f));
+
+            var gemPullButton = CreateRuntimeButton(_summonPanel.transform, "GemSinglePullButton", "300 Gems", font,
+                new Vector2(0.50f, 0.18f), new Vector2(140f, 42f));
+            gemPullButton.onClick.AddListener(() =>
+            {
+                PlayerInventory.Instance?.TrySummonDragonWithGems(out _);
+                UpdateSummonPanelText();
+                Refresh();
+            });
+
+            var tenPullButton = CreateRuntimeButton(_summonPanel.transform, "TenPullButton", "2700\n(10x)", font,
+                new Vector2(0.65f, 0.18f), new Vector2(130f, 42f));
+            tenPullButton.onClick.AddListener(() =>
+            {
+                PlayerInventory.Instance?.TryTenPullWithGems(out _);
+                UpdateSummonPanelText();
+                Refresh();
+            });
+
             _summonPanel.SetActive(false);
         }
 
@@ -495,9 +514,18 @@ namespace DragonTD.UI
             PlayerInventory inventory = PlayerInventory.Instance;
             if (_summonPanelText != null && inventory != null)
             {
+                int pullsSince = inventory.Progression.GachaPullsSinceLastEpic;
+                int totalPulls = inventory.Progression.GachaTotalPulls;
+                string pityInfo = pullsSince >= 50
+                    ? $"Soft pity active! ({pullsSince}/100)"
+                    : $"Pity: {pullsSince}/100 pulls since Epic+";
                 _summonPanelText.text =
-                    $"Dragon Summon\n\nTickets: {inventory.Progression.SummonTickets}\n" +
-                    $"{(string.IsNullOrWhiteSpace(inventory.LastSummonSummary) ? "Use 1 ticket to summon a new unowned Phase 1 dragon." : inventory.LastSummonSummary)}";
+                    $"Dragon Summon\n\n" +
+                    $"Tickets: {inventory.Progression.SummonTickets}  |  Gems: {inventory.Progression.Gems}\n" +
+                    $"1 Ticket or 300 Gems per pull  |  10-Pull: 2700 Gems\n" +
+                    $"{pityInfo}\n" +
+                    $"Total pulls: {totalPulls}\n" +
+                    $"{(string.IsNullOrWhiteSpace(inventory.LastSummonSummary) ? "Use a ticket or gems to summon." : inventory.LastSummonSummary)}";
             }
 
             if (_summonConfirmButton != null && inventory != null)

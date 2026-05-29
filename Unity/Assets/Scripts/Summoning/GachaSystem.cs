@@ -162,5 +162,16 @@ namespace DragonTD.Summoning
                 return tracker;
             return new PityTracker();
         }
+
+        public void RestorePity(string bannerName, int pullsSinceLastEpic, int totalPulls)
+        {
+            if (!_pity.TryGetValue(bannerName, out PityTracker tracker))
+            {
+                tracker = new PityTracker();
+                _pity[bannerName] = tracker;
+            }
+            tracker.PullsSinceLastEpic = Mathf.Max(0, pullsSinceLastEpic);
+            tracker.TotalPulls         = Mathf.Max(0, totalPulls);
+        }
     }
 }
