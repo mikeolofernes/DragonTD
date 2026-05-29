@@ -1617,15 +1617,7 @@ namespace DragonTD.Editor
             artCaption.GetComponent<RectTransform>().sizeDelta = new Vector2(300f, 48f);
             artCaption.color = new Color(1f, 0.92f, 0.64f, 1f);
 
-            var prevBtn = MakeButton(go, "PreviousDragonButton", "Prev", sprite,
-                new Vector2(0.57f, 0.24f), new Vector2(0.57f, 0.24f), new Vector2(0.5f, 0.5f),
-                Vector2.zero, new Vector2(120f, 38f));
-            var nextBtn = MakeButton(go, "NextDragonButton", "Next", sprite,
-                new Vector2(0.68f, 0.24f), new Vector2(0.68f, 0.24f), new Vector2(0.5f, 0.5f),
-                Vector2.zero, new Vector2(120f, 38f));
-            var equipBtn = MakeButton(go, "EquipDragonButton", "Equip To Battle", sprite,
-                new Vector2(0.82f, 0.24f), new Vector2(0.82f, 0.24f), new Vector2(0.5f, 0.5f),
-                Vector2.zero, new Vector2(240f, 38f));
+            // Prev/Next/Equip buttons removed — replaced by drag-and-drop deck system
             var summonBtn = MakeButton(go, "SummonDragonButton", "Summon Dragon", sprite,
                 new Vector2(0.23f, 0.47f), new Vector2(0.23f, 0.47f), new Vector2(0.5f, 0.5f),
                 Vector2.zero, new Vector2(230f, 42f));
@@ -1656,9 +1648,7 @@ namespace DragonTD.Editor
             so.FindProperty("_dragonDetailText").objectReferenceValue = detailText;
             so.FindProperty("_dragonPortrait").objectReferenceValue = portraitImage;
             so.FindProperty("_dragonArtCaption").objectReferenceValue = artCaption;
-            so.FindProperty("_previousDragonButton").objectReferenceValue = prevBtn;
-            so.FindProperty("_nextDragonButton").objectReferenceValue = nextBtn;
-            so.FindProperty("_equipButton").objectReferenceValue = equipBtn;
+            so.FindProperty("_equipButton").objectReferenceValue = null;
             so.FindProperty("_summonButton").objectReferenceValue = summonBtn;
             so.FindProperty("_damageButton").objectReferenceValue = damageBtn;
             so.FindProperty("_attackSpeedButton").objectReferenceValue = speedBtn;
