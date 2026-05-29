@@ -8,10 +8,16 @@ namespace DragonTD.Core
         public static GameManager Instance { get; private set; }
 
         [SerializeField] private int _startingLives = 20;
+        [SerializeField] private DragonTD.TowerDefense.ChapterContent[] _chapters;
 
         public int Lives { get; private set; }
         public int CurrentWave { get; private set; }
         public GameState State { get; private set; }
+        public bool IsPlanningPhase => State == GameState.Planning || State == GameState.Setup || State == GameState.BetweenWaves;
+        public string CurrentStageId { get; private set; } = StageCatalog.DefaultStageId;
+        public StageDefinition CurrentStage => StageCatalog.Get(CurrentStageId);
+        public float StageDifficultyMultiplier => CurrentStage.difficultyMultiplier;
+        public float StageRewardMultiplier => CurrentStage.rewardMultiplier;
 
         public event System.Action<GameState> OnStateChanged;
         public event System.Action<int> OnLivesChanged;
@@ -39,18 +45,41 @@ namespace DragonTD.Core
 
         public void StartBattle()
         {
+            CurrentStageId = PlayerInventory.Instance?.Progression?.CurrentStageId ?? StageCatalog.DefaultStageId;
+            ApplyActiveChapter();
             CleanupBattlefield();
             Lives = _startingLives;
             CurrentWave = 0;
             OnLivesChanged?.Invoke(Lives);
             ResourceManager.Instance?.ResetForBattle();
             BattleStatsTracker.Ensure().ResetBattle();
-            SetState(GameState.Setup);
+            SetState(GameState.Planning);
+        }
+
+        public void SelectStageForNextBattle(string stageId)
+        {
+            CurrentStageId = StageCatalog.Get(stageId).stageId;
+            ApplyActiveChapter();
+        }
+
+        private void ApplyActiveChapter()
+        {
+            DragonTD.TowerDefense.ChapterContent.Active = null;
+            if (_chapters == null) return;
+            int chapterNum = StageCatalog.Get(CurrentStageId).chapter;
+            foreach (var c in _chapters)
+            {
+                if (c != null && c.chapterNumber == chapterNum)
+                {
+                    DragonTD.TowerDefense.ChapterContent.Active = c;
+                    return;
+                }
+            }
         }
 
         public void StartNextWave()
         {
-            if (State != GameState.Setup && State != GameState.BetweenWaves)
+            if (!IsPlanningPhase)
             {
                 Debug.Log($"[GameManager] Ignoring next wave request while state is {State}.");
                 return;
@@ -73,8 +102,9 @@ namespace DragonTD.Core
             Lives -= amount;
             if (Lives <= 0) Lives = 0;
             OnLivesChanged?.Invoke(Lives);
-            if (Lives <= 0)
+            if (Lives <= 0 && State != GameState.Defeat)
             {
+                GrantBattleRewards(false);
                 SetState(GameState.Defeat);
                 ShowBattleMessage("Defeat - the base fell");
             }
@@ -90,15 +120,18 @@ namespace DragonTD.Core
             if (CurrentWave >= WaveManager.Instance.TotalWaves)
             {
                 Debug.Log("[GameManager] Prototype complete - all configured waves cleared.");
-                GrantBattleRewards();
+                BattleRewardResult rewards = GrantBattleRewards(true);
                 SetState(GameState.Victory);
-                ShowBattleMessage(string.IsNullOrEmpty(summary)
-                    ? "Prototype complete - all 3 waves cleared"
-                    : summary);
+                string message = string.IsNullOrEmpty(summary)
+                    ? "Prototype complete - all configured waves cleared"
+                    : summary;
+                if (!string.IsNullOrWhiteSpace(rewards?.summary))
+                    message = $"{message}\n{rewards.summary}";
+                ShowBattleMessage(message);
             }
             else
             {
-                SetState(GameState.BetweenWaves);
+                SetState(GameState.Planning);
                 ShowBattleMessage(string.IsNullOrEmpty(summary)
                     ? $"Wave {CurrentWave} cleared - prepare defenses"
                     : summary);
@@ -147,12 +180,10 @@ namespace DragonTD.Core
                 Destroy(effect.gameObject);
         }
 
-        private void GrantBattleRewards()
+        private BattleRewardResult GrantBattleRewards(bool victory)
         {
-            if (PlayerInventory.Instance == null) return;
-
-            foreach (var dragon in PlayerInventory.Instance.OwnedDragons)
-                dragon.RecordBattle();
+            if (PlayerInventory.Instance == null) return null;
+            return PlayerInventory.Instance.GrantBattleCompletionRewards(CurrentWave, victory);
         }
     }
 }
