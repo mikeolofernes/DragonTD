@@ -34,8 +34,8 @@ namespace DragonTD.Editor
             EditorGUILayout.Space(10);
             EditorGUILayout.LabelField("Visual Grid Editor", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                ". = buildable   P = path   H = +R   M = CD   F = FIRE   S = SLOW   X = blocked\n" +
-                "Click or drag cells to paint. Top row = top of screen.",
+                "B = buildable   P = path   H = +R   M = CD   F = FIRE   S = SLOW   X = blocked\n" +
+                "Click or drag cells to paint. Sprites show when assigned in Tile Art section above.",
                 MessageType.None);
 
             // ── Brush selector ──────────────────────────────────────────────
@@ -87,20 +87,23 @@ namespace DragonTD.Editor
                     // Draw tile sprite if available, else color overlay
                     Texture2D cellTex = GetCellTexture(c, map, lines, col, vrow);
                     if (cellTex != null)
-                        GUI.DrawTexture(cell2, cellTex, ScaleMode.StretchToFill);
-                    else
-                        EditorGUI.DrawRect(cell2, GetColor(c));
-
-                    // Tile label
-                    if (c != '.')
                     {
-                        var labelStyle = new GUIStyle(EditorStyles.boldLabel)
+                        GUI.DrawTexture(cell2, cellTex, ScaleMode.StretchToFill);
+                    }
+                    else
+                    {
+                        EditorGUI.DrawRect(cell2, GetColor(c));
+                        // Only show letter when no sprite assigned
+                        if (c != 'B' && c != '.')
                         {
-                            alignment = TextAnchor.MiddleCenter,
-                            fontSize  = 14,
-                            normal    = { textColor = Color.white }
-                        };
-                        GUI.Label(cell2, c.ToString(), labelStyle);
+                            var labelStyle = new GUIStyle(EditorStyles.boldLabel)
+                            {
+                                alignment = TextAnchor.MiddleCenter,
+                                fontSize  = 14,
+                                normal    = { textColor = Color.white }
+                            };
+                            GUI.Label(cell2, c.ToString(), labelStyle);
+                        }
                     }
 
                     // Column/row numbers on edges
