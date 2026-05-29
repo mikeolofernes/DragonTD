@@ -11,6 +11,10 @@ namespace DragonTD.TowerDefense
         [SerializeField] private SpriteRenderer _spriteRenderer;
         [SerializeField] private Sprite _buildableSprite;
         [SerializeField] private Sprite _pathSprite;
+        [SerializeField] private Sprite _highGroundSprite;
+        [SerializeField] private Sprite _manaCrystalSprite;
+        [SerializeField] private Sprite _scorchedSprite;
+        [SerializeField] private Sprite _frostSprite;
         [SerializeField] private Color _buildableColor = Color.green;
         [SerializeField] private Color _pathColor = Color.gray;
         [SerializeField] private Color _blockedColor = Color.red;
@@ -119,15 +123,16 @@ namespace DragonTD.TowerDefense
 
             if (_tileType == TileType.Buildable && BonusType != TileBonusType.None)
             {
-                Color bonusColor = BonusType switch
+                Sprite bonusSprite = BonusType switch
                 {
-                    TileBonusType.HighGround => new Color(0.72f, 0.9f, 0.55f, 0.45f),
-                    TileBonusType.ManaCrystal => new Color(0.25f, 0.85f, 1f, 0.45f),
-                    TileBonusType.Scorched => new Color(1f, 0.45f, 0.18f, 0.45f),
-                    TileBonusType.Frost => new Color(0.62f, 0.88f, 1f, 0.45f),
-                    _ => new Color(1f, 1f, 1f, 0.45f)
+                    TileBonusType.HighGround  => _highGroundSprite,
+                    TileBonusType.ManaCrystal => _manaCrystalSprite,
+                    TileBonusType.Scorched    => _scorchedSprite,
+                    TileBonusType.Frost       => _frostSprite,
+                    _                         => null
                 };
-                _spriteRenderer.color = IsOccupied ? Color.Lerp(bonusColor, Color.gray, 0.35f) : bonusColor;
+                if (bonusSprite != null) _spriteRenderer.sprite = bonusSprite;
+                _spriteRenderer.color = IsOccupied ? new Color(0.7f, 0.7f, 0.3f, 1f) : Color.white;
                 return;
             }
 

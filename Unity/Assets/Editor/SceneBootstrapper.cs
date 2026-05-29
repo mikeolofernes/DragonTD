@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -78,7 +79,8 @@ namespace DragonTD.Editor
             var shieldedData = CreateShieldedData();
             var regenData = CreateRegenData();
             var flyingData = CreateFlyingData();
-            CreateTilePrefab();
+            var runeTiles = ImportRuneTileSheet();
+            CreateTilePrefab(runeTiles);
             CreateOrcPrefab(orcData);
             CreateEnemyPrefab("OrcRunner", runnerData, new Color(0.55f, 1f, 0.35f), 0.62f);
             CreateEnemyPrefab("OrcBrute", bruteData, new Color(0.62f, 0.38f, 0.18f), 0.95f);
@@ -636,28 +638,96 @@ namespace DragonTD.Editor
 
         // ── Prefabs ───────────────────────────────────────────────────────────────
 
-        static GridTile CreateTilePrefab()
+        static Dictionary<string, Sprite> ImportRuneTileSheet()
+        {
+            const string sheetPath = ArtDir + "/rune_tiles.jpg";
+            var imp = AssetImporter.GetAtPath(sheetPath) as TextureImporter;
+            if (imp == null) return new Dictionary<string, Sprite>();
+
+            imp.textureType        = TextureImporterType.Sprite;
+            imp.spriteImportMode   = SpriteImportMode.Multiple;
+            imp.isReadable         = true;
+            imp.mipmapEnabled      = false;
+            imp.filterMode         = FilterMode.Bilinear;
+            imp.spritePixelsPerUnit = 100f;
+            imp.alphaIsTransparency = false;
+            imp.SaveAndReimport();
+
+            Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(sheetPath);
+            if (tex == null) return new Dictionary<string, Sprite>();
+
+            // 3 columns × 2 rows of panels; stone tile is inset ~12% each side, 11% top, 7% bottom
+            int panelW = tex.width  / 3;
+            int panelH = tex.height / 2;
+            int insetX  = Mathf.RoundToInt(panelW * 0.12f);
+            int insetTop = Mathf.RoundToInt(panelH * 0.11f);
+            int insetBot = Mathf.RoundToInt(panelH * 0.07f);
+            int tileW = panelW - insetX * 2;
+            int tileH = panelH - insetTop - insetBot;
+
+            // Name mapping: visual top-left → image bottom in Unity coords
+            // Visual layout: [cd_compass|plus_r|blank_rune] / [plain|slow|cd_rune2]
+            var names = new[,]
+            {
+                { "tile_cd_compass", "tile_plus_r",  "tile_blank_rune" }, // visual top row
+                { "tile_plain",      "tile_slow",    "tile_cd_rune2"   }  // visual bottom row
+            };
+
+            var metas = new System.Collections.Generic.List<SpriteMetaData>();
+            for (int col = 0; col < 3; col++)
+            for (int vrow = 0; vrow < 2; vrow++)
+            {
+                // Unity Y: visual top row → higher Y values
+                int unityY = (1 - vrow) * panelH + insetBot;
+                metas.Add(new SpriteMetaData
+                {
+                    name      = names[vrow, col],
+                    rect      = new Rect(col * panelW + insetX, unityY, tileW, tileH),
+                    pivot     = new Vector2(0.5f, 0.5f),
+                    alignment = (int)SpriteAlignment.Center
+                });
+            }
+
+            imp.spritesheet = metas.ToArray();
+            imp.SaveAndReimport();
+
+            var result = new Dictionary<string, Sprite>();
+            foreach (Object obj in AssetDatabase.LoadAllAssetsAtPath(sheetPath))
+            {
+                if (obj is Sprite s) result[s.name] = s;
+            }
+            return result;
+        }
+
+        static GridTile CreateTilePrefab(Dictionary<string, Sprite> runeTiles)
         {
             const string path = PrefDir+"/GridTile.prefab";
 
             var whiteSpr = GetOrCreateWhiteSprite();
+            runeTiles.TryGetValue("tile_plain",      out Sprite buildSpr);
+            runeTiles.TryGetValue("tile_plus_r",     out Sprite highGroundSpr);
+            runeTiles.TryGetValue("tile_cd_compass", out Sprite manaSpr);
+            runeTiles.TryGetValue("tile_blank_rune", out Sprite scorchSpr);
+            runeTiles.TryGetValue("tile_slow",       out Sprite frostSpr);
 
             var go = new GameObject("GridTile");
             go.transform.localScale = new Vector3(0.94f, 0.94f, 1f);
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = whiteSpr;
-            sr.color  = new Color(1f, 1f, 1f, 0f); // transparent — background art shows through
+            sr.sprite = buildSpr != null ? buildSpr : whiteSpr;
+            sr.color  = buildSpr != null ? Color.white : new Color(1f, 1f, 1f, 0f);
             go.AddComponent<BoxCollider2D>();
 
             var tile = go.AddComponent<GridTile>();
             var so   = new SerializedObject(tile);
-            so.FindProperty("_spriteRenderer").objectReferenceValue  = sr;
-            // No buildable/path sprites — GridTile falls back to _buildableColor/_pathColor
-            so.FindProperty("_buildableSprite").objectReferenceValue = null;
-            so.FindProperty("_pathSprite").objectReferenceValue      = null;
-            // Transparent for non-interactive states; green/red still show during placement preview
-            so.FindProperty("_buildableColor").colorValue = new Color(1f, 1f, 1f, 0f);
+            so.FindProperty("_spriteRenderer").objectReferenceValue    = sr;
+            so.FindProperty("_buildableSprite").objectReferenceValue   = buildSpr;
+            so.FindProperty("_pathSprite").objectReferenceValue        = null; // path is transparent — background shows through
+            so.FindProperty("_highGroundSprite").objectReferenceValue  = highGroundSpr;
+            so.FindProperty("_manaCrystalSprite").objectReferenceValue = manaSpr;
+            so.FindProperty("_scorchedSprite").objectReferenceValue    = scorchSpr;
+            so.FindProperty("_frostSprite").objectReferenceValue       = frostSpr;
+            so.FindProperty("_buildableColor").colorValue = Color.white;
             so.FindProperty("_pathColor").colorValue      = new Color(1f, 1f, 1f, 0f);
             so.ApplyModifiedProperties();
 
