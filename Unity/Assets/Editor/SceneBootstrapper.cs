@@ -70,7 +70,7 @@ namespace DragonTD.Editor
                 ["fire"]       = ImportTileSprite("rune_tile_fire.png"),
                 ["slow"]       = ImportTileSprite("rune_tile_slow.png"),
             };
-            CreateTilePrefab(runeTiles);
+            CreateTilePrefab(runeTiles, mapDef);
             CreateOrcPrefab(orcData);
             CreateEnemyPrefab("OrcRunner", runnerData, new Color(0.55f, 1f, 0.35f), 0.62f);
             CreateEnemyPrefab("OrcBrute", bruteData, new Color(0.62f, 0.38f, 0.18f), 0.95f);
@@ -710,11 +710,15 @@ namespace DragonTD.Editor
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
 
-        static GridTile CreateTilePrefab(Dictionary<string, Sprite> runeTiles)
+        static GridTile CreateTilePrefab(Dictionary<string, Sprite> runeTiles, MapDefinition mapDef = null)
         {
             const string path = PrefDir+"/GridTile.prefab";
 
             var whiteSpr = GetOrCreateWhiteSprite();
+
+            // Use tile sprites from MapDefinition if provided, otherwise transparent
+            Sprite buildSpr = mapDef?.buildableSprite;
+            Sprite pathSpr  = mapDef?.pathSprite;
 
             runeTiles.TryGetValue("highground", out Sprite highGroundSpr);
             runeTiles.TryGetValue("cd",         out Sprite manaSpr);
@@ -725,21 +729,21 @@ namespace DragonTD.Editor
             go.transform.localScale = new Vector3(0.94f, 0.94f, 1f);
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = whiteSpr;
-            sr.color  = new Color(1f, 1f, 1f, 0f);
+            sr.sprite = buildSpr != null ? buildSpr : whiteSpr;
+            sr.color  = buildSpr != null ? Color.white : new Color(1f, 1f, 1f, 0f);
             go.AddComponent<BoxCollider2D>();
 
             var tile = go.AddComponent<GridTile>();
             var so   = new SerializedObject(tile);
             so.FindProperty("_spriteRenderer").objectReferenceValue    = sr;
-            so.FindProperty("_buildableSprite").objectReferenceValue   = null;
-            so.FindProperty("_pathSprite").objectReferenceValue        = null;
+            so.FindProperty("_buildableSprite").objectReferenceValue   = buildSpr;
+            so.FindProperty("_pathSprite").objectReferenceValue        = pathSpr;
             so.FindProperty("_highGroundSprite").objectReferenceValue  = highGroundSpr;
             so.FindProperty("_manaCrystalSprite").objectReferenceValue = manaSpr;
             so.FindProperty("_scorchedSprite").objectReferenceValue    = scorchSpr;
             so.FindProperty("_frostSprite").objectReferenceValue       = frostSpr;
-            so.FindProperty("_buildableColor").colorValue = new Color(1f, 1f, 1f, 0f);
-            so.FindProperty("_pathColor").colorValue      = new Color(1f, 1f, 1f, 0f);
+            so.FindProperty("_buildableColor").colorValue = buildSpr != null ? Color.white : new Color(1f, 1f, 1f, 0f);
+            so.FindProperty("_pathColor").colorValue      = pathSpr  != null ? Color.white : new Color(1f, 1f, 1f, 0f);
             so.ApplyModifiedProperties();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);

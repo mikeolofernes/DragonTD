@@ -23,7 +23,10 @@ namespace DragonTD.TowerDefense
         [Header("Identity")]
         public string mapName = "Chapter 1";
 
-        [Header("Art")]
+        [Header("Tile Art — each tile type has its own sprite, together they form the map")]
+        public Sprite buildableSprite;   // B tiles — grass/terrain
+        public Sprite pathSprite;        // P tiles — dirt/stone path
+        [Header("Background (optional — shown behind tiles if sprites are missing)")]
         public Sprite backgroundSprite;
 
         [Header("Grid — 12 wide × 8 tall, top row = top of screen")]

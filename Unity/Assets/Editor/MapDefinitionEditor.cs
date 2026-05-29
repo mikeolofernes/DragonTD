@@ -68,20 +68,8 @@ namespace DragonTD.Editor
             if (Event.current.type == EventType.Repaint)
             {
                 // Draw background art if available
-                Texture2D bgTex = GetEditorTexture(map.backgroundSprite);
-                if (bgTex != null)
-                {
-                    // The background covers 18 world units wide x 10 tall, centered at (0.5, 0).
-                    // The grid covers cols 0-11 = world x -5.5 to 6.5, world y -3.5 to 4.5.
-                    // Show only the portion of the background that corresponds to the grid.
-                    float uvX = 3f / 18f;           // (-5.5 - (-8.5)) / 18
-                    float uvY = 1.5f / 10f;         // (-3.5 - (-5)) / 10  (bottom)
-                    float uvW = 12f / 18f;           // grid is 12 of 18 units wide
-                    float uvH = 8f / 10f;            // grid is 8 of 10 units tall
-                    GUI.DrawTextureWithTexCoords(gridRect, bgTex, new Rect(uvX, uvY, uvW, uvH));
-                }
-                else
-                    EditorGUI.DrawRect(gridRect, new Color(0.1f, 0.1f, 0.1f, 0.9f));
+                // Draw solid dark background — cell sprites will tile on top
+                EditorGUI.DrawRect(gridRect, new Color(0.08f, 0.08f, 0.1f, 1f));
             }
 
             for (int vrow = 0; vrow < MapDefinition.Rows; vrow++)
@@ -96,8 +84,12 @@ namespace DragonTD.Editor
                         gridRect.y + vrow * cell + 1,
                         cell - 2, cell - 2);
 
-                    // Cell background
-                    EditorGUI.DrawRect(cell2, GetColor(c));
+                    // Draw tile sprite if available, else color overlay
+                    Texture2D cellTex = GetCellTexture(c, map);
+                    if (cellTex != null)
+                        GUI.DrawTexture(cell2, cellTex, ScaleMode.StretchToFill);
+                    else
+                        EditorGUI.DrawRect(cell2, GetColor(c));
 
                     // Tile label
                     if (c != '.')
@@ -216,6 +208,27 @@ namespace DragonTD.Editor
             for (int i = 0; i < Types.Length; i++)
                 if (Types[i] == c) return Colors[i];
             return Colors[0];
+        }
+
+        private static Texture2D GetCellTexture(char c, MapDefinition map)
+        {
+            UnityEngine.Sprite sprite = c switch
+            {
+                'B' => map.buildableSprite,
+                'P' => map.pathSprite,
+                'H' => FindRuneTileSprite("rune_tile_highground"),
+                'M' => FindRuneTileSprite("rune_tile_cd"),
+                'F' => FindRuneTileSprite("rune_tile_fire"),
+                'S' => FindRuneTileSprite("rune_tile_slow"),
+                _   => null
+            };
+            return sprite != null ? GetEditorTexture(sprite) : null;
+        }
+
+        private static UnityEngine.Sprite FindRuneTileSprite(string name)
+        {
+            string path = $"Assets/Art/UI/{name}.png";
+            return AssetDatabase.LoadAssetAtPath<UnityEngine.Sprite>(path);
         }
 
         // Returns a GPU-readable texture for editor GUI drawing.
