@@ -113,6 +113,36 @@ namespace DragonTD.Dragons
                 AtkCd = 0.8f, AtkMult = 1.1f,
                 SkillName = "Void Strike", SkillCd = 11f, SkillMult = 3.2f, SkillAoe = false, SkillRadius = 0f,
             },
+            new Def
+            {
+                Id = "emberveil_008", Name = "Emberveil",
+                Rarity = DragonRarity.Epic, Element = DragonElement.Fire, Class = DragonClass.Celestial,
+                Hp = 1200f, Atk = 310f, Armor = 85f, Range = 4f, AttackSpeed = 1.1f, Mana = 220f,
+                ManaCost = 100,
+                NormalSkillId = "emberveil_ray_001", NormalAttackName = "Ember Ray",
+                AtkCd = 0.91f, AtkMult = 0.9f,
+                SkillName = "Celestial Fire", SkillCd = 14f, SkillMult = 2.6f, SkillAoe = true, SkillRadius = 3f,
+            },
+            new Def
+            {
+                Id = "tideclaw_009", Name = "Tideclaw",
+                Rarity = DragonRarity.Rare, Element = DragonElement.Water, Class = DragonClass.Frost,
+                Hp = 1050f, Atk = 200f, Armor = 110f, Range = 3.5f, AttackSpeed = 0.9f, Mana = 160f,
+                ManaCost = 70,
+                NormalSkillId = "tideclaw_strike_001", NormalAttackName = "Tidal Strike",
+                AtkCd = 1.11f, AtkMult = 1.1f,
+                SkillName = "Whirlpool", SkillCd = 10f, SkillMult = 2.2f, SkillAoe = true, SkillRadius = 2.5f,
+            },
+            new Def
+            {
+                Id = "zephyrwing_010", Name = "Zephyrwing",
+                Rarity = DragonRarity.Uncommon, Element = DragonElement.Wind, Class = DragonClass.Storm,
+                Hp = 700f, Atk = 165f, Armor = 45f, Range = 5.5f, AttackSpeed = 1.7f, Mana = 180f,
+                ManaCost = 60,
+                NormalSkillId = "zephyrwing_slash_001", NormalAttackName = "Wind Slash",
+                AtkCd = 0.59f, AtkMult = 0.75f,
+                SkillName = "Gust Burst", SkillCd = 8f, SkillMult = 2.0f, SkillAoe = false, SkillRadius = 0f,
+            },
         };
     }
 }
