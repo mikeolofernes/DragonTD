@@ -739,7 +739,7 @@ namespace DragonTD.Editor
             runeTiles.TryGetValue("slow",       out Sprite frostSpr);
 
             var go = new GameObject("GridTile");
-            go.transform.localScale = new Vector3(0.94f, 0.94f, 1f);
+            go.transform.localScale = new Vector3(1f, 1f, 1f); // fill cell fully — no gaps
 
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = buildSpr != null ? buildSpr : whiteSpr;
