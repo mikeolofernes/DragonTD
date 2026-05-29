@@ -38,6 +38,9 @@ namespace DragonTD.Core
         private AuthSessionData _authSession;
         private GachaSystem _gachaSystem;
         private SummonPool _summonPool;
+        private NakamaAuthService _nakamaAuth;
+        private NakamaLeaderboardService _nakamaLeaderboard;
+        private NakamaConfig _nakamaConfig;
 
         private void Awake()
         {
@@ -55,6 +58,7 @@ namespace DragonTD.Core
             SetSyncStatus(_persistenceService.ModeLabel);
             _gachaSystem = new GachaSystem();
             _summonPool = Resources.Load<SummonPool>("SummonPool_Phase1");
+            _nakamaConfig = Resources.Load<NakamaConfig>("NakamaConfig");
         }
 
         private async void Start()
@@ -430,6 +434,8 @@ namespace DragonTD.Core
             LastBattleRewardResult = result;
             OnBattleRewardsGranted?.Invoke(LastBattleRewardSummary);
             OnBattleRewardResultGranted?.Invoke(result);
+            if (victory)
+                SubmitBattleScoreToNakama(result.wavesCleared * 100 + result.starsEarned * 50);
             SaveProgressionAsync();
             SyncBattleRewardAsync(result);
             OnInventoryChanged?.Invoke();
@@ -750,6 +756,32 @@ namespace DragonTD.Core
             SetSyncStatus(_persistenceService.ModeLabel);
             await SaveProgressionAsync();
             return true;
+        }
+
+        public async Task<bool> LoginWithNakamaAsync(string deviceId)
+        {
+            if (_nakamaConfig == null)
+            {
+                SetSyncStatus("Nakama config missing");
+                return false;
+            }
+            _nakamaAuth = new NakamaAuthService(_nakamaConfig);
+            SetSyncStatus("Nakama sign-in...");
+            bool ok = await _nakamaAuth.AuthenticateDeviceAsync(deviceId);
+            if (!ok)
+            {
+                SetSyncStatus("Nakama sign-in failed");
+                return false;
+            }
+            _nakamaLeaderboard = new NakamaLeaderboardService(_nakamaAuth.Client, _nakamaAuth.Session);
+            SetSyncStatus("Nakama connected");
+            return true;
+        }
+
+        public async void SubmitBattleScoreToNakama(int score)
+        {
+            if (_nakamaLeaderboard == null || _nakamaConfig == null) return;
+            await _nakamaLeaderboard.SubmitScoreAsync(_nakamaConfig.battleLeaderboardId, score);
         }
 
         public void UseLocalPersistence()
