@@ -58,6 +58,7 @@ namespace DragonTD.Editor
                 "Assets/ScriptableObjects",
                 SODir+"/Enemies", SODir+"/Waves", SODir+"/Director",
                 SODir+"/Skills",  SODir+"/Dragons",
+                "Assets/Resources",
                 "Assets/Prefabs",
                 PrefDir+"/Enemies", PrefDir+"/Dragons", PrefDir+"/UI",
                 "Assets/Art", ArtDir, DragonArtDir, "Assets/Scenes"})
@@ -68,6 +69,7 @@ namespace DragonTD.Editor
             // ── Create assets (before NewScene) ──────────────────────────────────
             CreateGrassSprite();
             CreateDirtSprite();
+            CreatePrototypeBalanceConfig();
             CreateDirectorConfig();
             var orcData = CreateOrcData();
             var runnerData = CreateRunnerData();
@@ -112,7 +114,86 @@ namespace DragonTD.Editor
                 new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 3, SpawnInterval = 1.08f },
                 new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 2, SpawnInterval = 0.7f },
                 new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 2, SpawnInterval = 0.7f });
+            CreateWave("Wave04", 420, 240,
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 6, SpawnInterval = 0.72f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 5, SpawnInterval = 0.82f },
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 8, SpawnInterval = 0.52f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 5, SpawnInterval = 0.74f },
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 4, SpawnInterval = 0.92f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 3, SpawnInterval = 0.62f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 4, SpawnInterval = 0.58f });
+            CreateWave("Wave05", 600, 320,
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 10, SpawnInterval = 0.42f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 6, SpawnInterval = 0.68f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 7, SpawnInterval = 0.66f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 7, SpawnInterval = 0.58f },
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 5, SpawnInterval = 0.82f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 4, SpawnInterval = 0.56f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 4, SpawnInterval = 0.54f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 5, SpawnInterval = 0.5f },
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 3, SpawnInterval = 0.74f });
+            CreateWave("Wave06", 700, 380,
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 12, SpawnInterval = 0.38f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 7, SpawnInterval = 0.62f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 8, SpawnInterval = 0.60f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 9, SpawnInterval = 0.48f },
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 5, SpawnInterval = 0.40f });
+            CreateWave("Wave07", 820, 430,
+                new EnemySpawnEntry{ EnemyPrefab = orcPrefab, Count = 8, SpawnInterval = 0.55f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 8, SpawnInterval = 0.56f },
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 12, SpawnInterval = 0.34f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 10, SpawnInterval = 0.44f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 6, SpawnInterval = 0.54f });
+            CreateWave("Wave08", 950, 490,
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 7, SpawnInterval = 0.36f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 9, SpawnInterval = 0.50f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 9, SpawnInterval = 0.52f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 10, SpawnInterval = 0.40f },
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 14, SpawnInterval = 0.30f });
+            CreateWave("Wave09", 1100, 560,
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 10, SpawnInterval = 0.46f },
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 8, SpawnInterval = 0.34f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 12, SpawnInterval = 0.38f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 10, SpawnInterval = 0.46f },
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 15, SpawnInterval = 0.28f });
+            CreateWave("Wave10", 1300, 640,
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 10, SpawnInterval = 0.30f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 12, SpawnInterval = 0.42f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 12, SpawnInterval = 0.42f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 14, SpawnInterval = 0.34f },
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 18, SpawnInterval = 0.24f });
+            CreateWave("Wave11", 1450, 700,
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 15, SpawnInterval = 0.30f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 12, SpawnInterval = 0.38f },
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 10, SpawnInterval = 0.28f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 12, SpawnInterval = 0.38f },
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 20, SpawnInterval = 0.22f });
+            CreateWave("Wave12", 1650, 780,
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 12, SpawnInterval = 0.26f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 14, SpawnInterval = 0.34f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 16, SpawnInterval = 0.28f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 14, SpawnInterval = 0.34f },
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 22, SpawnInterval = 0.20f });
+            CreateWave("Wave13", 1900, 860,
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 16, SpawnInterval = 0.30f },
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 14, SpawnInterval = 0.24f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 16, SpawnInterval = 0.30f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 18, SpawnInterval = 0.26f },
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 24, SpawnInterval = 0.18f });
+            CreateWave("Wave14", 2200, 950,
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 16, SpawnInterval = 0.22f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 18, SpawnInterval = 0.28f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 20, SpawnInterval = 0.22f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 18, SpawnInterval = 0.26f },
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 26, SpawnInterval = 0.16f });
+            CreateWave("Wave15", 2600, 1100,
+                new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 20, SpawnInterval = 0.18f },
+                new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 20, SpawnInterval = 0.24f },
+                new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 20, SpawnInterval = 0.22f },
+                new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 22, SpawnInterval = 0.20f },
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 30, SpawnInterval = 0.14f });
             CreateCardPrefab();
+            CreateUIPrefabs();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -126,11 +207,9 @@ namespace DragonTD.Editor
             var dirCfg    = AssetDatabase.LoadAssetAtPath<GameDirectorConfig>(SODir+"/Director/DefaultDirectorConfig.asset");
             var tilePref  = AssetDatabase.LoadAssetAtPath<GridTile>(PrefDir+"/GridTile.prefab");
             var orcPref   = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcBrute.prefab");
-            var waves     = new[]{
-                AssetDatabase.LoadAssetAtPath<WaveData>(SODir+"/Waves/Wave01.asset"),
-                AssetDatabase.LoadAssetAtPath<WaveData>(SODir+"/Waves/Wave02.asset"),
-                AssetDatabase.LoadAssetAtPath<WaveData>(SODir+"/Waves/Wave03.asset")
-            };
+            var waves = new WaveData[15];
+            for (int w = 1; w <= 15; w++)
+                waves[w - 1] = AssetDatabase.LoadAssetAtPath<WaveData>($"{SODir}/Waves/Wave{w:D2}.asset");
             var starters  = Phase1DragonData.All
                 .Select(d => AssetDatabase.LoadAssetAtPath<DragonDefinition>(SODir+"/Dragons/"+d.Id+".asset"))
                 .Where(d => d != null)
@@ -148,7 +227,8 @@ namespace DragonTD.Editor
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, "Assets/Scenes/BattleScene.unity");
-            Debug.Log("[Dragon Dominion] BattleScene ready — press Play!");
+            BuildMainMenuScene(starters, whiteSpr, dirCfg);
+            Debug.Log("[Dragon Dominion] BattleScene and MainMenu ready - press Play!");
         }
 
         // ── Folder helper ──────────────────────────────────────────────────────────
@@ -225,6 +305,17 @@ namespace DragonTD.Editor
             var ex = AssetDatabase.LoadAssetAtPath<GameDirectorConfig>(path);
             if (ex != null) return ex;
             var cfg = ScriptableObject.CreateInstance<GameDirectorConfig>();
+            AssetDatabase.CreateAsset(cfg, path);
+            return cfg;
+        }
+
+        static PrototypeBalanceConfig CreatePrototypeBalanceConfig()
+        {
+            const string path = "Assets/Resources/PrototypeBalanceConfig.asset";
+            var existing = AssetDatabase.LoadAssetAtPath<PrototypeBalanceConfig>(path);
+            if (existing != null) return existing;
+
+            var cfg = ScriptableObject.CreateInstance<PrototypeBalanceConfig>();
             AssetDatabase.CreateAsset(cfg, path);
             return cfg;
         }
@@ -657,11 +748,15 @@ namespace DragonTD.Editor
         static void CreateCardPrefab()
         {
             const string path = PrefDir+"/UI/PlacementCard.prefab";
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null)
+                return;
+
             var whiteSpr = GetOrCreateWhiteSprite();
 
             var root = new GameObject("PlacementCard");
             var rootRt = root.AddComponent<RectTransform>();
             rootRt.sizeDelta = new Vector2(100f, 130f);
+            var canvasGroup = root.AddComponent<CanvasGroup>();
 
             // Background
             var bg = root.AddComponent<Image>();
@@ -687,7 +782,7 @@ namespace DragonTD.Editor
             nameRt.anchorMax = new Vector2(1,0.38f);
             nameRt.sizeDelta = Vector2.zero;
             var nameT  = nameGO.AddComponent<Text>();
-            nameT.font = GetFont(); nameT.fontSize = 13; nameT.color = Color.white;
+            nameT.font = GetFont(); nameT.fontSize = 16; nameT.color = Color.white;
             nameT.alignment = TextAnchor.MiddleCenter; nameT.text = "Dragon";
 
             // Cost text
@@ -698,7 +793,7 @@ namespace DragonTD.Editor
             costRt.anchorMax = new Vector2(1,0.32f);
             costRt.sizeDelta = Vector2.zero;
             var costT  = costGO.AddComponent<Text>();
-            costT.font = GetFont(); costT.fontSize = 12; costT.color = new Color(0.4f,0.8f,1f);
+            costT.font = GetFont(); costT.fontSize = 15; costT.color = new Color(0.4f,0.8f,1f);
             costT.alignment = TextAnchor.MiddleCenter; costT.text = "80 MP";
 
             var detailsGO = new GameObject("DetailsText");
@@ -708,7 +803,7 @@ namespace DragonTD.Editor
             detailsRt.anchorMax = new Vector2(0.97f,0.18f);
             detailsRt.sizeDelta = Vector2.zero;
             var detailsT = detailsGO.AddComponent<Text>();
-            detailsT.font = GetFont(); detailsT.fontSize = 9; detailsT.color = new Color(0.84f,0.9f,1f,1f);
+            detailsT.font = GetFont(); detailsT.fontSize = 12; detailsT.color = new Color(0.84f,0.9f,1f,1f);
             detailsT.alignment = TextAnchor.MiddleCenter; detailsT.text = "Role R4\nSkill";
 
             // Transparent button overlay (full card)
@@ -728,9 +823,33 @@ namespace DragonTD.Editor
             so.FindProperty("_manaCostText").objectReferenceValue  = costT;
             so.FindProperty("_detailsText").objectReferenceValue   = detailsT;
             so.FindProperty("_selectButton").objectReferenceValue  = btn;
+            so.FindProperty("_canvasGroup").objectReferenceValue   = canvasGroup;
             so.ApplyModifiedProperties();
 
             PrefabUtility.SaveAsPrefabAsset(root, path);
+            Object.DestroyImmediate(root);
+        }
+
+        static void CreateUIPrefabs()
+        {
+            var whiteSpr = GetOrCreateWhiteSprite();
+            var cardPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/UI/PlacementCard.prefab");
+            CreateUIPrefabIfMissing(PrefDir+"/UI/BattleHUD.prefab", "BattleHUD", root => BuildHUD(root, whiteSpr));
+            CreateUIPrefabIfMissing(PrefDir+"/UI/DragonCollectionPanel.prefab", "DragonCollectionPanel", root => BuildDragonPanel(root, whiteSpr, cardPrefab));
+            CreateUIPrefabIfMissing(PrefDir+"/UI/VictoryDefeatPanel.prefab", "VictoryDefeatPanel", root => BuildVictoryPanel(root, whiteSpr));
+            CreateUIPrefabIfMissing(PrefDir+"/UI/ProfileProgressionPanel.prefab", "ProfileProgressionPanel", root => BuildProfileProgressionPanel(root, whiteSpr));
+        }
+
+        static void CreateUIPrefabIfMissing(string path, string childName, System.Action<GameObject> build)
+        {
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null)
+                return;
+
+            var root = new GameObject("PrefabBuildRoot");
+            build(root);
+            Transform child = root.transform.Find(childName);
+            if (child != null)
+                PrefabUtility.SaveAsPrefabAsset(child.gameObject, path);
             Object.DestroyImmediate(root);
         }
 
@@ -890,6 +1009,132 @@ namespace DragonTD.Editor
 
         // ── UI ────────────────────────────────────────────────────────────────────
 
+        static void BuildMainMenuScene(DragonDefinition[] starters, Sprite whiteSpr, GameDirectorConfig dirCfg)
+        {
+            starters = Phase1DragonData.All
+                .Select(d => AssetDatabase.LoadAssetAtPath<DragonDefinition>(SODir+"/Dragons/"+d.Id+".asset"))
+                .Where(d => d != null)
+                .ToArray();
+
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            SetupCamera();
+            CreateManagerRoot(dirCfg, starters);
+
+            var canvasGO = new GameObject("Canvas");
+            var canvas = canvasGO.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 10;
+            var scaler = canvasGO.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            canvasGO.AddComponent<GraphicRaycaster>();
+
+            var bg = MakePanel(canvasGO, "MenuBackground", whiteSpr,
+                new Color(0.04f, 0.07f, 0.08f, 1f),
+                Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f),
+                Vector2.zero, Vector2.zero);
+            StretchFull(bg);
+
+            var title = MakeCenteredLabel(canvasGO, "TitleText", "DRAGON DOMINION", 0.5f, 0.86f, 44);
+            title.color = new Color(1f, 0.9f, 0.58f, 1f);
+            var subtitle = MakeCenteredLabel(canvasGO, "SubtitleText", "Tower Defense RPG Prototype", 0.5f, 0.8f, 22);
+            subtitle.color = new Color(0.78f, 0.9f, 1f, 1f);
+
+            var currencyText = MakeCenteredLabel(canvasGO, "CurrencyText", "Gold 0    Gems 0", 0.5f, 0.94f, 24);
+            currencyText.GetComponent<RectTransform>().sizeDelta = new Vector2(560f, 42f);
+            var syncText = MakeCenteredLabel(canvasGO, "HubSyncStatusText", "Save: Local", 0.22f, 0.94f, 15);
+            syncText.GetComponent<RectTransform>().sizeDelta = new Vector2(260f, 30f);
+            var eventText = MakeCenteredLabel(canvasGO, "EventsText", "Events\nDaily Hunt\nGem Rush\nClan Raid", 0.16f, 0.61f, 19);
+            eventText.GetComponent<RectTransform>().sizeDelta = new Vector2(280f, 190f);
+            eventText.gameObject.AddComponent<Button>();
+            var messageText = MakeCenteredLabel(canvasGO, "HubMessageText", "Welcome back", 0.5f, 0.39f, 20);
+            messageText.GetComponent<RectTransform>().sizeDelta = new Vector2(720f, 42f);
+            var chestText = MakeCenteredLabel(canvasGO, "ChestText", "Chest Slots", 0.5f, 0.31f, 22);
+            chestText.GetComponent<RectTransform>().sizeDelta = new Vector2(360f, 34f);
+
+            var storeBtn = MakeButton(canvasGO, "StoreButton", "Store", whiteSpr,
+                new Vector2(0.78f, 0.94f), new Vector2(0.78f, 0.94f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(190f, 44f));
+            var battleBtn = MakeButton(canvasGO, "BattleButton", "BATTLE", whiteSpr,
+                new Vector2(0.5f, 0.52f), new Vector2(0.5f, 0.52f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(300f, 92f));
+            var dragonsBtn = MakeButton(canvasGO, "DragonsNavButton", "Dragons", whiteSpr,
+                new Vector2(0.18f, 0.07f), new Vector2(0.18f, 0.07f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(180f, 58f));
+            var profileBtn = MakeButton(canvasGO, "ProfileNavButton", "Profile", whiteSpr,
+                new Vector2(0.38f, 0.07f), new Vector2(0.38f, 0.07f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(180f, 58f));
+            var battleNavBtn = MakeButton(canvasGO, "BattleNavButton", "Battle", whiteSpr,
+                new Vector2(0.60f, 0.07f), new Vector2(0.60f, 0.07f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(180f, 58f));
+            var clanBtn = MakeButton(canvasGO, "ClanNavButton", "Clan", whiteSpr,
+                new Vector2(0.82f, 0.07f), new Vector2(0.82f, 0.07f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(180f, 58f));
+            var quitBtn = MakeCenteredButton(canvasGO, "QuitButton", "Quit", whiteSpr, 0.95f, 0.07f);
+            quitBtn.gameObject.SetActive(false);
+
+            var chestButtons = new Button[PlayerProgression.ChestSlotCount];
+            for (int i = 0; i < chestButtons.Length; i++)
+            {
+                chestButtons[i] = MakeButton(canvasGO, $"ChestSlotButton{i + 1}", "CHEST\nTap to unlock", whiteSpr,
+                    new Vector2(0.20f + i * 0.20f, 0.20f), new Vector2(0.20f + i * 0.20f, 0.20f), new Vector2(0.5f, 0.5f),
+                    Vector2.zero, new Vector2(150f, 88f));
+            }
+
+            GameObject profileGO = InstantiateUIPrefab(PrefDir+"/UI/ProfileProgressionPanel.prefab", canvasGO.transform);
+            if (profileGO == null)
+            {
+                BuildProfileProgressionPanel(canvasGO, whiteSpr);
+                profileGO = canvasGO.transform.Find("ProfileProgressionPanel")?.gameObject;
+            }
+            GameObject storeGO = BuildStorePanel(canvasGO, whiteSpr);
+            GameObject eventsGO = BuildEventsPanel(canvasGO, whiteSpr);
+            GameObject clanGO = BuildClanPanel(canvasGO, whiteSpr);
+            GameObject chestRewardGO = BuildChestRewardPanel(canvasGO, whiteSpr, out Text chestRewardText, out Button chestRewardCloseButton);
+            GameObject confirmGO = BuildConfirmationPanel(canvasGO, whiteSpr, out Text confirmationText, out Button confirmationYesButton, out Button confirmationNoButton);
+
+            var controller = canvasGO.AddComponent<MainMenuController>();
+            var so = new SerializedObject(controller);
+            so.FindProperty("_battleButton").objectReferenceValue = battleBtn;
+            so.FindProperty("_battleNavButton").objectReferenceValue = battleNavBtn;
+            so.FindProperty("_dragonsButton").objectReferenceValue = dragonsBtn;
+            so.FindProperty("_profileButton").objectReferenceValue = profileBtn;
+            so.FindProperty("_clanButton").objectReferenceValue = clanBtn;
+            so.FindProperty("_storeButton").objectReferenceValue = storeBtn;
+            so.FindProperty("_currencyText").objectReferenceValue = currencyText;
+            so.FindProperty("_chestText").objectReferenceValue = chestText;
+            so.FindProperty("_eventText").objectReferenceValue = eventText;
+            so.FindProperty("_messageText").objectReferenceValue = messageText;
+            so.FindProperty("_chestRewardPanel").objectReferenceValue = chestRewardGO;
+            so.FindProperty("_chestRewardText").objectReferenceValue = chestRewardText;
+            so.FindProperty("_chestRewardCloseButton").objectReferenceValue = chestRewardCloseButton;
+            so.FindProperty("_confirmationPanel").objectReferenceValue = confirmGO;
+            so.FindProperty("_confirmationText").objectReferenceValue = confirmationText;
+            so.FindProperty("_confirmationYesButton").objectReferenceValue = confirmationYesButton;
+            so.FindProperty("_confirmationNoButton").objectReferenceValue = confirmationNoButton;
+            so.FindProperty("_syncStatusText").objectReferenceValue = syncText;
+            var chestProp = so.FindProperty("_chestButtons");
+            chestProp.arraySize = chestButtons.Length;
+            for (int i = 0; i < chestButtons.Length; i++)
+                chestProp.GetArrayElementAtIndex(i).objectReferenceValue = chestButtons[i];
+            so.FindProperty("_quitButton").objectReferenceValue = quitBtn;
+            so.FindProperty("_profilePanel").objectReferenceValue = profileGO != null ? profileGO.GetComponent<ProfileProgressionPanel>() : null;
+            so.FindProperty("_storePanel").objectReferenceValue = storeGO != null ? storeGO.GetComponent<StorePanel>() : null;
+            so.FindProperty("_eventsPanel").objectReferenceValue = eventsGO != null ? eventsGO.GetComponent<EventsPanel>() : null;
+            so.FindProperty("_clanPanel").objectReferenceValue = clanGO != null ? clanGO.GetComponent<ClanPanel>() : null;
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(controller);
+
+            EnsureEventSystem();
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene, "Assets/Scenes/MainMenu.unity");
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene("Assets/Scenes/MainMenu.unity", true),
+                new EditorBuildSettingsScene("Assets/Scenes/BattleScene.unity", true)
+            };
+        }
+
         static void BuildUI(Sprite whiteSpr, GameObject cardPrefab)
         {
             var canvasGO = new GameObject("Canvas");
@@ -901,10 +1146,29 @@ namespace DragonTD.Editor
             scaler.referenceResolution = new Vector2(1920, 1080);
             canvasGO.AddComponent<GraphicRaycaster>();
 
-            BuildHUD(canvasGO, whiteSpr);
-            BuildDragonPanel(canvasGO, whiteSpr, cardPrefab);
-            BuildVictoryPanel(canvasGO, whiteSpr);
-            canvasGO.transform.Find("BattleHUD")?.SetAsLastSibling();
+            var safeAreaGO = new GameObject("SafeAreaRoot", typeof(RectTransform));
+            safeAreaGO.transform.SetParent(canvasGO.transform, false);
+            StretchFull(safeAreaGO);
+            safeAreaGO.AddComponent<SafeAreaPanel>();
+            safeAreaGO.AddComponent<ResponsiveBattleUILayout>();
+
+            if (InstantiateUIPrefab(PrefDir+"/UI/BattleHUD.prefab", safeAreaGO.transform) == null)
+                BuildHUD(safeAreaGO, whiteSpr);
+            if (InstantiateUIPrefab(PrefDir+"/UI/DragonCollectionPanel.prefab", safeAreaGO.transform) == null)
+                BuildDragonPanel(safeAreaGO, whiteSpr, cardPrefab);
+            if (InstantiateUIPrefab(PrefDir+"/UI/VictoryDefeatPanel.prefab", safeAreaGO.transform) == null)
+                BuildVictoryPanel(safeAreaGO, whiteSpr);
+            safeAreaGO.transform.Find("BattleHUD")?.SetAsLastSibling();
+        }
+
+        static GameObject InstantiateUIPrefab(string path, Transform parent)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null) return null;
+            var instance = PrefabUtility.InstantiatePrefab(prefab, parent) as GameObject;
+            if (instance != null)
+                instance.name = prefab.name;
+            return instance;
         }
 
         static void BuildHUD(GameObject canvas, Sprite sprite)
@@ -1093,7 +1357,262 @@ namespace DragonTD.Editor
             EditorUtility.SetDirty(panel);
         }
 
+        static void BuildAccountBuffPanel(GameObject canvas, Sprite sprite)
+        {
+            var go = MakePanel(canvas, "AccountBuffPanel", sprite,
+                new Color(0f, 0f, 0f, 0.68f),
+                new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
+                new Vector2(-12f, -236f), new Vector2(300f, 204f));
+
+            var summaryText = MakeLabel(go, "BuffSummaryText", "Essence: 0", new Vector2(12f, -10f), 15);
+            var summaryRt = summaryText.GetComponent<RectTransform>();
+            summaryRt.anchorMin = new Vector2(0f, 1f);
+            summaryRt.anchorMax = new Vector2(1f, 1f);
+            summaryRt.pivot = new Vector2(0f, 1f);
+            summaryRt.anchoredPosition = new Vector2(12f, -10f);
+            summaryRt.sizeDelta = new Vector2(-24f, 86f);
+            summaryText.alignment = TextAnchor.UpperLeft;
+            summaryText.color = new Color(0.9f, 1f, 0.86f, 1f);
+
+            var damageBtn = MakeButton(go, "DamageBuffButton", "Damage", sprite,
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(0f, -104f), new Vector2(-24f, 30f));
+            var speedBtn = MakeButton(go, "AttackSpeedBuffButton", "Attack Speed", sprite,
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(0f, -138f), new Vector2(-24f, 30f));
+            var manaBtn = MakeButton(go, "ManaBuffButton", "Mana Reserve", sprite,
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(0f, -172f), new Vector2(-24f, 30f));
+            var resetBtn = MakeButton(go, "ResetSaveButton", "Reset Save", sprite,
+                new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
+                new Vector2(-12f, 10f), new Vector2(108f, 28f));
+
+            var canvasGroup = go.AddComponent<CanvasGroup>();
+            var panel = go.AddComponent<AccountBuffPanel>();
+            var so = new SerializedObject(panel);
+            so.FindProperty("_summaryText").objectReferenceValue = summaryText;
+            so.FindProperty("_damageButton").objectReferenceValue = damageBtn;
+            so.FindProperty("_attackSpeedButton").objectReferenceValue = speedBtn;
+            so.FindProperty("_manaButton").objectReferenceValue = manaBtn;
+            so.FindProperty("_resetSaveButton").objectReferenceValue = resetBtn;
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(panel);
+            EditorUtility.SetDirty(canvasGroup);
+        }
+
         // ── UI helpers ─────────────────────────────────────────────────────────────
+
+        static GameObject BuildStorePanel(GameObject canvas, Sprite sprite)
+        {
+            var go = MakePanel(canvas, "StorePanel", sprite,
+                new Color(0.02f, 0.06f, 0.12f, 0.94f),
+                new Vector2(0.16f, 0.14f), new Vector2(0.84f, 0.88f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, Vector2.zero);
+
+            var title = MakeCenteredLabel(go, "StoreTitleText", "Gem Store", 0.5f, 0.9f, 34);
+            title.GetComponent<RectTransform>().sizeDelta = new Vector2(520f, 48f);
+            var currency = MakeCenteredLabel(go, "StoreCurrencyText", "Gems: 0", 0.5f, 0.82f, 22);
+            currency.GetComponent<RectTransform>().sizeDelta = new Vector2(520f, 36f);
+            var message = MakeCenteredLabel(go, "StoreMessageText", "Purchases validate receipts before Gems are granted.", 0.5f, 0.18f, 18);
+            message.GetComponent<RectTransform>().sizeDelta = new Vector2(720f, 70f);
+
+            string[] labels =
+            {
+                "Small Gem Pouch   +500 Gems   $0.99",
+                "Gem Bundle   +1200 Gems   $1.99",
+                "Dragon Hoard   +3000 Gems   $4.99",
+                "Epic Vault   +6500 Gems   $9.99",
+                "Legendary Treasury   +14000 Gems   $19.99"
+            };
+            var packButtons = new Button[labels.Length];
+            for (int i = 0; i < labels.Length; i++)
+            {
+                packButtons[i] = MakeButton(go, $"GemPackButton{i + 1}", labels[i], sprite,
+                    new Vector2(0.5f, 0.7f - i * 0.11f), new Vector2(0.5f, 0.7f - i * 0.11f), new Vector2(0.5f, 0.5f),
+                    Vector2.zero, new Vector2(620f, 54f));
+            }
+
+            var closeBtn = MakeButton(go, "StoreCloseButton", "Close", sprite,
+                new Vector2(0.5f, 0.08f), new Vector2(0.5f, 0.08f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(180f, 42f));
+
+            var panel = go.AddComponent<StorePanel>();
+            var so = new SerializedObject(panel);
+            so.FindProperty("_titleText").objectReferenceValue = title;
+            so.FindProperty("_currencyText").objectReferenceValue = currency;
+            so.FindProperty("_messageText").objectReferenceValue = message;
+            var buttonsProp = so.FindProperty("_packButtons");
+            buttonsProp.arraySize = packButtons.Length;
+            for (int i = 0; i < packButtons.Length; i++)
+                buttonsProp.GetArrayElementAtIndex(i).objectReferenceValue = packButtons[i];
+            so.FindProperty("_closeButton").objectReferenceValue = closeBtn;
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(panel);
+            go.SetActive(false);
+            return go;
+        }
+
+        static GameObject BuildEventsPanel(GameObject canvas, Sprite sprite)
+        {
+            var go = MakePanel(canvas, "EventsPanel", sprite,
+                new Color(0.02f, 0.08f, 0.13f, 0.96f),
+                new Vector2(0.13f, 0.12f), new Vector2(0.87f, 0.88f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, Vector2.zero);
+            go.AddComponent<EventsPanel>();
+            go.SetActive(false);
+            return go;
+        }
+
+        static GameObject BuildClanPanel(GameObject canvas, Sprite sprite)
+        {
+            var go = MakePanel(canvas, "ClanPanel", sprite,
+                new Color(0.04f, 0.07f, 0.12f, 0.96f),
+                new Vector2(0.2f, 0.2f), new Vector2(0.8f, 0.82f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, Vector2.zero);
+            go.AddComponent<ClanPanel>();
+            go.SetActive(false);
+            return go;
+        }
+
+        static GameObject BuildChestRewardPanel(GameObject canvas, Sprite sprite, out Text rewardText, out Button closeButton)
+        {
+            var go = MakePanel(canvas, "ChestRewardPanel", sprite,
+                new Color(0.03f, 0.09f, 0.16f, 0.96f),
+                new Vector2(0.32f, 0.36f), new Vector2(0.68f, 0.68f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, Vector2.zero);
+
+            rewardText = MakeCenteredLabel(go, "RewardText", "Chest Reward", 0.5f, 0.62f, 28);
+            rewardText.GetComponent<RectTransform>().sizeDelta = new Vector2(520f, 160f);
+            closeButton = MakeButton(go, "RewardCloseButton", "Close", sprite,
+                new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(180f, 54f));
+
+            go.SetActive(false);
+            return go;
+        }
+
+        static GameObject BuildConfirmationPanel(GameObject canvas, Sprite sprite, out Text confirmationText, out Button yesButton, out Button noButton)
+        {
+            var go = MakePanel(canvas, "ConfirmationPanel", sprite,
+                new Color(0.03f, 0.08f, 0.13f, 0.97f),
+                new Vector2(0.34f, 0.39f), new Vector2(0.66f, 0.64f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, Vector2.zero);
+
+            confirmationText = MakeCenteredLabel(go, "ConfirmationText", "Confirm", 0.5f, 0.64f, 22);
+            confirmationText.GetComponent<RectTransform>().sizeDelta = new Vector2(440f, 90f);
+            yesButton = MakeButton(go, "ConfirmationYesButton", "Spend Gems", sprite,
+                new Vector2(0.35f, 0.22f), new Vector2(0.35f, 0.22f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(160f, 46f));
+            noButton = MakeButton(go, "ConfirmationNoButton", "Cancel", sprite,
+                new Vector2(0.65f, 0.22f), new Vector2(0.65f, 0.22f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(140f, 46f));
+
+            go.SetActive(false);
+            return go;
+        }
+
+        static void BuildProfileProgressionPanel(GameObject canvas, Sprite sprite)
+        {
+            var go = MakePanel(canvas, "ProfileProgressionPanel", sprite,
+                new Color(0f, 0f, 0f, 0.86f),
+                new Vector2(0.08f, 0.1f), new Vector2(0.92f, 0.92f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, Vector2.zero);
+
+            var title = MakeCenteredLabel(go, "ProfileTitleText", "Profile & Progression", 0.5f, 0.92f, 30);
+            title.color = new Color(1f, 0.9f, 0.58f, 1f);
+            var accountText = MakeLabel(go, "AccountText", "Essence: 0", new Vector2(36f, -78f), 18);
+            accountText.GetComponent<RectTransform>().anchoredPosition = new Vector2(36f, -72f);
+            accountText.GetComponent<RectTransform>().sizeDelta = new Vector2(430f, 130f);
+            accountText.alignment = TextAnchor.UpperLeft;
+            var syncText = MakeLabel(go, "SyncStatusText", "Save: Local", new Vector2(36f, -244f), 15);
+            syncText.GetComponent<RectTransform>().anchoredPosition = new Vector2(36f, -206f);
+            syncText.GetComponent<RectTransform>().sizeDelta = new Vector2(430f, 28f);
+            syncText.alignment = TextAnchor.UpperLeft;
+            var summonText = MakeLabel(go, "SummonText", "Summon Tickets: 0", new Vector2(36f, -282f), 16);
+            summonText.GetComponent<RectTransform>().anchoredPosition = new Vector2(36f, -238f);
+            summonText.GetComponent<RectTransform>().sizeDelta = new Vector2(500f, 54f);
+            summonText.alignment = TextAnchor.UpperLeft;
+            var dragonListText = MakeLabel(go, "DragonListText", "Dragons", new Vector2(36f, -350f), 16);
+            dragonListText.GetComponent<RectTransform>().anchoredPosition = new Vector2(36f, -300f);
+            dragonListText.GetComponent<RectTransform>().sizeDelta = new Vector2(500f, 32f);
+            dragonListText.alignment = TextAnchor.UpperLeft;
+            var dragonButtonContainer = new GameObject("DragonButtonContainer");
+            dragonButtonContainer.transform.SetParent(go.transform, false);
+            var buttonContainerRt = dragonButtonContainer.AddComponent<RectTransform>();
+            buttonContainerRt.anchorMin = new Vector2(0.24f, 0.42f);
+            buttonContainerRt.anchorMax = new Vector2(0.24f, 0.42f);
+            buttonContainerRt.pivot = new Vector2(0.5f, 0.5f);
+            buttonContainerRt.anchoredPosition = Vector2.zero;
+            buttonContainerRt.sizeDelta = new Vector2(470f, 240f);
+            var detailText = MakeLabel(go, "DragonDetailText", "Select a dragon", new Vector2(700f, -78f), 18);
+            var detailRt = detailText.GetComponent<RectTransform>();
+            detailRt.anchorMin = new Vector2(0.56f, 0.36f);
+            detailRt.anchorMax = new Vector2(0.94f, 0.36f);
+            detailRt.pivot = new Vector2(0f, 1f);
+            detailRt.anchoredPosition = Vector2.zero;
+            detailRt.sizeDelta = new Vector2(0f, 220f);
+            detailText.alignment = TextAnchor.UpperLeft;
+            var portraitGO = MakePanel(go, "SelectedDragonPortrait", sprite,
+                new Color(0.22f, 0.32f, 0.42f, 0.9f),
+                new Vector2(0.69f, 0.68f), new Vector2(0.69f, 0.68f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(150f, 150f));
+            var portraitImage = portraitGO.GetComponent<Image>();
+            portraitImage.preserveAspect = true;
+            var artCaption = MakeCenteredLabel(go, "DragonArtCaption", "", 0.69f, 0.52f, 16);
+            artCaption.GetComponent<RectTransform>().sizeDelta = new Vector2(300f, 48f);
+            artCaption.color = new Color(1f, 0.92f, 0.64f, 1f);
+
+            var prevBtn = MakeButton(go, "PreviousDragonButton", "Prev", sprite,
+                new Vector2(0.57f, 0.24f), new Vector2(0.57f, 0.24f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(120f, 38f));
+            var nextBtn = MakeButton(go, "NextDragonButton", "Next", sprite,
+                new Vector2(0.68f, 0.24f), new Vector2(0.68f, 0.24f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(120f, 38f));
+            var equipBtn = MakeButton(go, "EquipDragonButton", "Equip To Battle", sprite,
+                new Vector2(0.82f, 0.24f), new Vector2(0.82f, 0.24f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(240f, 38f));
+            var summonBtn = MakeButton(go, "SummonDragonButton", "Summon Dragon", sprite,
+                new Vector2(0.23f, 0.47f), new Vector2(0.23f, 0.47f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(230f, 42f));
+
+            var damageBtn = MakeButton(go, "ProfileDamageBuffButton", "Damage", sprite,
+                new Vector2(0.28f, 0.14f), new Vector2(0.28f, 0.14f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(260f, 40f));
+            var speedBtn = MakeButton(go, "ProfileAttackSpeedBuffButton", "Attack Speed", sprite,
+                new Vector2(0.50f, 0.14f), new Vector2(0.50f, 0.14f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(260f, 40f));
+            var manaBtn = MakeButton(go, "ProfileManaBuffButton", "Mana Reserve", sprite,
+                new Vector2(0.72f, 0.14f), new Vector2(0.72f, 0.14f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(260f, 40f));
+            var resetBtn = MakeButton(go, "ProfileResetSaveButton", "Reset Save", sprite,
+                new Vector2(0.42f, 0.055f), new Vector2(0.42f, 0.055f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(170f, 38f));
+            var closeBtn = MakeButton(go, "ProfileCloseButton", "Close", sprite,
+                new Vector2(0.58f, 0.055f), new Vector2(0.58f, 0.055f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(170f, 38f));
+
+            var panel = go.AddComponent<ProfileProgressionPanel>();
+            var so = new SerializedObject(panel);
+            so.FindProperty("_accountText").objectReferenceValue = accountText;
+            so.FindProperty("_syncStatusText").objectReferenceValue = syncText;
+            so.FindProperty("_summonText").objectReferenceValue = summonText;
+            so.FindProperty("_dragonListText").objectReferenceValue = dragonListText;
+            so.FindProperty("_dragonButtonContainer").objectReferenceValue = dragonButtonContainer.transform;
+            so.FindProperty("_dragonDetailText").objectReferenceValue = detailText;
+            so.FindProperty("_dragonPortrait").objectReferenceValue = portraitImage;
+            so.FindProperty("_dragonArtCaption").objectReferenceValue = artCaption;
+            so.FindProperty("_previousDragonButton").objectReferenceValue = prevBtn;
+            so.FindProperty("_nextDragonButton").objectReferenceValue = nextBtn;
+            so.FindProperty("_equipButton").objectReferenceValue = equipBtn;
+            so.FindProperty("_summonButton").objectReferenceValue = summonBtn;
+            so.FindProperty("_damageButton").objectReferenceValue = damageBtn;
+            so.FindProperty("_attackSpeedButton").objectReferenceValue = speedBtn;
+            so.FindProperty("_manaButton").objectReferenceValue = manaBtn;
+            so.FindProperty("_resetSaveButton").objectReferenceValue = resetBtn;
+            so.FindProperty("_closeButton").objectReferenceValue = closeBtn;
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(panel);
+        }
 
         static Font GetFont() =>
             Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
@@ -1101,7 +1620,7 @@ namespace DragonTD.Editor
 
         static void StretchFull(GameObject go)
         {
-            var rt = go.AddComponent<RectTransform>();
+            var rt = go.GetComponent<RectTransform>() ?? go.AddComponent<RectTransform>();
             rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.sizeDelta = Vector2.zero;
         }
 
@@ -1129,7 +1648,7 @@ namespace DragonTD.Editor
             rt.sizeDelta = new Vector2(0,32);
             var t = go.AddComponent<Text>();
             t.text = content; t.font = GetFont();
-            t.fontSize = fontSize; t.color = Color.white;
+            t.fontSize = UiFontSize(fontSize); t.color = Color.white;
             t.alignment = TextAnchor.MiddleLeft;
             return t;
         }
@@ -1144,7 +1663,7 @@ namespace DragonTD.Editor
             rt.anchoredPosition = Vector2.zero; rt.sizeDelta = new Vector2(420,55);
             var t = go.AddComponent<Text>();
             t.text = content; t.font = GetFont();
-            t.fontSize = fontSize; t.color = Color.white;
+            t.fontSize = UiFontSize(fontSize); t.color = Color.white;
             t.alignment = TextAnchor.MiddleCenter;
             return t;
         }
@@ -1166,7 +1685,7 @@ namespace DragonTD.Editor
             lblRt.anchorMin = Vector2.zero; lblRt.anchorMax = Vector2.one; lblRt.sizeDelta = Vector2.zero;
             var lbl = lblGO.AddComponent<Text>();
             lbl.text = label; lbl.font = GetFont();
-            lbl.fontSize = 18; lbl.color = Color.white;
+            lbl.fontSize = UiFontSize(18); lbl.color = Color.white;
             lbl.alignment = TextAnchor.MiddleCenter;
             return btn;
         }
@@ -1178,6 +1697,8 @@ namespace DragonTD.Editor
                 Vector2.zero, new Vector2(130,46));
 
         // ── Misc ──────────────────────────────────────────────────────────────────
+
+        static int UiFontSize(int baseSize) => Mathf.CeilToInt(baseSize * 1.18f) + 1;
 
         static GameObject Root<T>(string name) where T : Component
         {
