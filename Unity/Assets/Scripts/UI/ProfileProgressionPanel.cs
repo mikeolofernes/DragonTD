@@ -893,6 +893,21 @@ namespace DragonTD.UI
             var dropHandler = go.AddComponent<DeckSlotDropHandler>();
             dropHandler.EquippedDragonId = dragon?.Definition?.dragonId ?? string.Empty;
 
+            Sprite slotPortrait = dragon?.Definition?.visualData?.portrait;
+            if (slotPortrait != null)
+            {
+                var pGO = new GameObject("Portrait");
+                pGO.transform.SetParent(go.transform, false);
+                var pRt = pGO.AddComponent<RectTransform>();
+                pRt.anchorMin = Vector2.zero;
+                pRt.anchorMax = Vector2.one;
+                pRt.offsetMin = Vector2.zero;
+                pRt.offsetMax = Vector2.zero;
+                var pImg = pGO.AddComponent<Image>();
+                pImg.sprite = slotPortrait;
+                pImg.preserveAspect = true;
+            }
+
             string label = dragon?.Definition == null
                 ? $"Slot {slot + 1}\nEmpty\nEquip Dragon"
                 : $"[{slot + 1}] {dragon.Definition.displayName}\nLv {dragon.Level}  {dragon.Definition.rarity}\n{dragon.Definition.element}\n{ShortRoleText(dragon)}";
@@ -920,6 +935,21 @@ namespace DragonTD.UI
             go.AddComponent<CanvasGroup>();
             var dragHandler = go.AddComponent<DragCardHandler>();
             dragHandler.DragonId = dragon?.Definition?.dragonId ?? string.Empty;
+
+            Sprite portrait = dragon?.Definition?.visualData?.portrait;
+            if (portrait != null)
+            {
+                var pGO = new GameObject("Portrait");
+                pGO.transform.SetParent(go.transform, false);
+                var pRt = pGO.AddComponent<RectTransform>();
+                pRt.anchorMin = Vector2.zero;
+                pRt.anchorMax = Vector2.one;
+                pRt.offsetMin = Vector2.zero;
+                pRt.offsetMax = Vector2.zero;
+                var pImg = pGO.AddComponent<Image>();
+                pImg.sprite = portrait;
+                pImg.preserveAspect = true;
+            }
 
             string equipped = inventory.IsEquipped(dragon) ? "EQUIPPED" : "OWNED";
             string label =
