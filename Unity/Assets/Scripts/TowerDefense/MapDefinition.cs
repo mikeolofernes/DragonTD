@@ -90,6 +90,8 @@ namespace DragonTD.TowerDefense
         // including off-screen entry and exit points.
         public Vector3[] ComputeWaypoints()
         {
+            if (string.IsNullOrWhiteSpace(grid)) return new Vector3[0];
+
             bool[,] isPath = new bool[Cols, Rows];
             for (int r = 0; r < Rows; r++)
                 for (int c = 0; c < Cols; c++)
@@ -101,7 +103,11 @@ namespace DragonTD.TowerDefense
             {
                 if (isPath[0, r]) { entryRow = r; break; }
             }
-            if (entryRow < 0) return new Vector3[0];
+            if (entryRow < 0)
+            {
+                Debug.LogWarning("[MapDefinition] No path tile found at column 0 — cannot compute waypoints. Make sure the entry column has 'P' tiles.");
+                return new Vector3[0];
+            }
 
             var wps = new List<Vector3>();
             wps.Add(new Vector3(-6.5f, entryRow - 3.5f, 0f)); // off-screen entry

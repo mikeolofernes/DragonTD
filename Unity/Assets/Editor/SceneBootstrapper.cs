@@ -239,10 +239,19 @@ namespace DragonTD.Editor
 
             var def = ScriptableObject.CreateInstance<MapDefinition>();
             def.mapName = "Chapter 1";
-            // Default grid is already set in MapDefinition field initializer
+            // Explicitly set grid so it survives serialization to .asset YAML
+            def.grid =
+                "............\n" +
+                "............\n" +
+                "..PPPPPPPPPP\n" +
+                "..P........P\n" +
+                "PPP........P\n" +
+                "...........P\n" +
+                "...........P\n" +
+                "...........P";
             AssetDatabase.CreateAsset(def, path);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[SceneBootstrapper] Created MapDefinition at {path} — edit it in the Inspector to change path/tiles.");
+            Debug.Log($"[SceneBootstrapper] Created MapDefinition at {path} — edit the Grid field in Inspector to change path/tiles.");
             return def;
         }
 
@@ -1164,8 +1173,16 @@ namespace DragonTD.Editor
                 wavesProp.GetArrayElementAtIndex(i).objectReferenceValue = waves[i];
 
             var spawnProp = so.FindProperty("_spawnPoints");
-            spawnProp.arraySize = 1;
-            spawnProp.GetArrayElementAtIndex(0).objectReferenceValue = wps[0];
+            if (wps.Length > 0)
+            {
+                spawnProp.arraySize = 1;
+                spawnProp.GetArrayElementAtIndex(0).objectReferenceValue = wps[0];
+            }
+            else
+            {
+                spawnProp.arraySize = 0;
+                Debug.LogError("[SceneBootstrapper] No waypoints computed — check Chapter1Map grid has 'P' tiles in column 0.");
+            }
 
             var wpProp = so.FindProperty("_waypoints");
             wpProp.arraySize = wps.Length;
