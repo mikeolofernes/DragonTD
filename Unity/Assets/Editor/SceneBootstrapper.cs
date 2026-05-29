@@ -22,28 +22,7 @@ namespace DragonTD.Editor
         private const string ArtDir  = "Assets/Art/UI";
         private const string DragonArtDir = "Assets/Art/Dragons";
 
-        // Path layout on a 12×8 grid, origin (-5.5, -3.5):
-        //   Entry  row 3: cols 0-2   (right 2)
-        //   Up     col 2: rows 3-5   (up 2)
-        //   Across row 5: cols 2-11  (right 9)
-        //   Down   col 11: rows 5-0  (down 5)
-        //   Exit   row 0: off-screen right (right 4)
-        private static readonly Vector2Int[] PathTiles = {
-            new(0,3),new(1,3),new(2,3),
-            new(2,4),new(2,5),
-            new(3,5),new(4,5),new(5,5),new(6,5),new(7,5),new(8,5),new(9,5),new(10,5),new(11,5),
-            new(11,4),new(11,3),new(11,2),new(11,1),new(11,0)
-        };
-
-        // Waypoints matching the path corners — world pos = (col-5.5, row-3.5)
-        private static readonly Vector3[] WaypointPositions = {
-            new(-6.5f, -0.5f, 0f), // WP_00 spawn (off-screen left, row 3)
-            new(-3.5f, -0.5f, 0f), // WP_01 turn up  (col 2, row 3)
-            new(-3.5f,  1.5f, 0f), // WP_02 turn right (col 2, row 5)
-            new( 5.5f,  1.5f, 0f), // WP_03 turn down (col 11, row 5)
-            new( 5.5f, -3.5f, 0f), // WP_04 turn right (col 11, row 0)
-            new( 9.5f, -3.5f, 0f), // WP_05 exit (off-screen right)
-        };
+        private const string MapSODir = "Assets/ScriptableObjects/Maps";
 
         [MenuItem("Dragon Dominion/★ Build Battle Scene")]
         public static void Build()
@@ -58,7 +37,7 @@ namespace DragonTD.Editor
             foreach (var d in new[]{
                 "Assets/ScriptableObjects",
                 SODir+"/Enemies", SODir+"/Waves", SODir+"/Director",
-                SODir+"/Skills",  SODir+"/Dragons",
+                SODir+"/Skills",  SODir+"/Dragons", MapSODir,
                 "Assets/Resources",
                 "Assets/Prefabs",
                 PrefDir+"/Enemies", PrefDir+"/Dragons", PrefDir+"/UI",
@@ -66,6 +45,9 @@ namespace DragonTD.Editor
                 EnsureDir(d);
             foreach (var dragon in Phase1DragonData.All)
                 EnsureDir(DragonArtDir+"/"+dragon.Id);
+
+            // ── Load or create MapDefinition ──────────────────────────────────────
+            var mapDef = EnsureMapDefinition();
 
             // ── Create assets (before NewScene) ──────────────────────────────────
             CreateGrassSprite();
@@ -225,14 +207,18 @@ namespace DragonTD.Editor
             CreateSummonPool(starters);
             var cardPref  = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/UI/PlacementCard.prefab");
 
-            var bgSprite = ImportBattleBackground();
+            // Prefer background from MapDefinition; fall back to battle_background.png
+            var bgSprite = mapDef?.backgroundSprite ?? ImportBattleBackground();
 
             SetupCamera();
-            CreateBattleBackground(bgSprite);
+            if (bgSprite != null) CreateBattleBackground(bgSprite);
             CreateManagerRoot(dirCfg, starters);
-            SetupGridManager(tilePref, grassSpr, dirtSpr);
-            CreatePathDirectionMarkers(whiteSpr);
-            CreateWaveManager(waves, orcPref);
+            SetupGridManager(tilePref, grassSpr, dirtSpr, mapDef);
+
+            var pathTileList  = mapDef != null ? mapDef.GetPathTiles() : new List<Vector2Int>();
+            var waypointList  = mapDef != null ? mapDef.ComputeWaypoints() : new Vector3[0];
+            CreatePathDirectionMarkers(whiteSpr, pathTileList);
+            CreateWaveManager(waves, orcPref, waypointList);
             AddSceneBootstrap();
             BuildUI(whiteSpr, cardPref);
             EnsureEventSystem();
@@ -241,6 +227,23 @@ namespace DragonTD.Editor
             EditorSceneManager.SaveScene(scene, "Assets/Scenes/BattleScene.unity");
             BuildMainMenuScene(starters, whiteSpr, dirCfg);
             Debug.Log("[Dragon Dominion] BattleScene and MainMenu ready - press Play!");
+        }
+
+        // ── MapDefinition helper ───────────────────────────────────────────────────
+
+        static MapDefinition EnsureMapDefinition()
+        {
+            string path = MapSODir + "/Chapter1Map.asset";
+            var existing = AssetDatabase.LoadAssetAtPath<MapDefinition>(path);
+            if (existing != null) return existing;
+
+            var def = ScriptableObject.CreateInstance<MapDefinition>();
+            def.mapName = "Chapter 1";
+            // Default grid is already set in MapDefinition field initializer
+            AssetDatabase.CreateAsset(def, path);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[SceneBootstrapper] Created MapDefinition at {path} — edit it in the Inspector to change path/tiles.");
+            return def;
         }
 
         // ── Folder helper ──────────────────────────────────────────────────────────
@@ -1055,28 +1058,49 @@ namespace DragonTD.Editor
             EditorUtility.SetDirty(dir);
         }
 
-        static void SetupGridManager(GridTile tilePref, Sprite grassSpr, Sprite dirtSpr)
+        static void SetupGridManager(GridTile tilePref, Sprite grassSpr, Sprite dirtSpr, MapDefinition mapDef)
         {
             var go = new GameObject("GridManager");
             var gm = go.AddComponent<GridManager>();
             var so = new SerializedObject(gm);
             so.FindProperty("_tilePrefab").objectReferenceValue  = tilePref;
-            so.FindProperty("_width").intValue                   = 12;
-            so.FindProperty("_height").intValue                  = 8;
+            so.FindProperty("_width").intValue                   = MapDefinition.Cols;
+            so.FindProperty("_height").intValue                  = MapDefinition.Rows;
             so.FindProperty("_originPosition").vector3Value      = new Vector3(-5.5f, -3.5f, 0f);
 
-            var pathProp = so.FindProperty("_pathTiles");
-            pathProp.arraySize = PathTiles.Length;
-            for (int i = 0; i < PathTiles.Length; i++)
+            if (mapDef != null)
             {
-                var elem = pathProp.GetArrayElementAtIndex(i);
-                elem.FindPropertyRelative("x").intValue = PathTiles[i].x;
-                elem.FindPropertyRelative("y").intValue = PathTiles[i].y;
+                // Path tiles from grid string
+                var pathTiles = mapDef.GetPathTiles();
+                SetVector2IntArray(so.FindProperty("_pathTiles"), pathTiles.ToArray());
+
+                // Bonus tiles from grid string
+                var hg = new List<Vector2Int>(); var mc = new List<Vector2Int>();
+                var sc = new List<Vector2Int>(); var fr = new List<Vector2Int>();
+                for (int r = 0; r < MapDefinition.Rows; r++)
+                    for (int c = 0; c < MapDefinition.Cols; c++)
+                    {
+                        var bonus = mapDef.GetBonusType(c, r);
+                        if (bonus == TileBonusType.HighGround)  hg.Add(new Vector2Int(c, r));
+                        if (bonus == TileBonusType.ManaCrystal) mc.Add(new Vector2Int(c, r));
+                        if (bonus == TileBonusType.Scorched)    sc.Add(new Vector2Int(c, r));
+                        if (bonus == TileBonusType.Frost)       fr.Add(new Vector2Int(c, r));
+                    }
+                SetVector2IntArray(so.FindProperty("_highGroundTiles"),   hg.ToArray());
+                SetVector2IntArray(so.FindProperty("_manaCrystalTiles"),  mc.ToArray());
+                SetVector2IntArray(so.FindProperty("_scorchedTiles"),     sc.ToArray());
+                SetVector2IntArray(so.FindProperty("_frostTiles"),        fr.ToArray());
             }
-            SetVector2IntArray(so.FindProperty("_highGroundTiles"), new[]{ new Vector2Int(4,4), new Vector2Int(6,5) });
-            SetVector2IntArray(so.FindProperty("_manaCrystalTiles"), new[]{ new Vector2Int(1,2), new Vector2Int(10,4) });
-            SetVector2IntArray(so.FindProperty("_scorchedTiles"), new[]{ new Vector2Int(5,1), new Vector2Int(9,5) });
-            SetVector2IntArray(so.FindProperty("_frostTiles"), new[]{ new Vector2Int(3,2), new Vector2Int(7,3) });
+            else
+            {
+                // Fallback defaults
+                SetVector2IntArray(so.FindProperty("_pathTiles"), new Vector2Int[0]);
+                SetVector2IntArray(so.FindProperty("_highGroundTiles"), new Vector2Int[0]);
+                SetVector2IntArray(so.FindProperty("_manaCrystalTiles"), new Vector2Int[0]);
+                SetVector2IntArray(so.FindProperty("_scorchedTiles"), new Vector2Int[0]);
+                SetVector2IntArray(so.FindProperty("_frostTiles"), new Vector2Int[0]);
+            }
+
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(gm);
         }
@@ -1092,13 +1116,13 @@ namespace DragonTD.Editor
             }
         }
 
-        static void CreatePathDirectionMarkers(Sprite sprite)
+        static void CreatePathDirectionMarkers(Sprite sprite, List<Vector2Int> pathTiles)
         {
             var root = new GameObject("PathDirectionMarkers");
-            for (int i = 1; i < PathTiles.Length - 1; i += 2)
+            for (int i = 1; i < pathTiles.Count - 1; i += 2)
             {
-                Vector2Int current = PathTiles[i];
-                Vector2Int next = PathTiles[Mathf.Min(i + 1, PathTiles.Length - 1)];
+                Vector2Int current = pathTiles[i];
+                Vector2Int next = pathTiles[Mathf.Min(i + 1, pathTiles.Count - 1)];
                 Vector2 direction = new Vector2(next.x - current.x, next.y - current.y);
                 if (direction.sqrMagnitude < 0.01f) continue;
 
@@ -1115,7 +1139,7 @@ namespace DragonTD.Editor
             }
         }
 
-        static void CreateWaveManager(WaveData[] waves, GameObject elitePrefab)
+        static void CreateWaveManager(WaveData[] waves, GameObject elitePrefab, Vector3[] waypointPositions)
         {
             var root = new GameObject("WaveSetup");
             var wm   = root.AddComponent<WaveManager>();
@@ -1124,12 +1148,12 @@ namespace DragonTD.Editor
             pathViz.transform.SetParent(root.transform);
             pathViz.AddComponent<WaypointPath>();
 
-            var wps = new Transform[WaypointPositions.Length];
-            for (int i = 0; i < WaypointPositions.Length; i++)
+            var wps = new Transform[waypointPositions.Length];
+            for (int i = 0; i < waypointPositions.Length; i++)
             {
                 var wp = new GameObject($"WP_{i:00}");
                 wp.transform.SetParent(pathViz.transform);
-                wp.transform.position = WaypointPositions[i];
+                wp.transform.position = waypointPositions[i];
                 wps[i] = wp.transform;
             }
 
