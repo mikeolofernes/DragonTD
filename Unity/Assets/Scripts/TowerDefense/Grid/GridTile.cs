@@ -106,7 +106,14 @@ namespace DragonTD.TowerDefense
         }
 
         public bool CanPlace() => _tileType == TileType.Buildable && !IsOccupied;
-        public void SetOccupied(bool occupied) { IsOccupied = occupied; UpdateVisual(); }
+        public void SetOccupied(bool occupied)
+        {
+            IsOccupied = occupied;
+            // Disable collider when tower placed so clicks pass through to the tower above
+            var col = GetComponent<Collider2D>();
+            if (col != null) col.enabled = !occupied;
+            UpdateVisual();
+        }
 
         public void SetPlacementPreview(bool active, bool valid)
         {
