@@ -14,7 +14,9 @@ namespace DragonTD.UI
 
         private void Awake()
         {
-            _canvasGroup = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
+            _canvasGroup = GetComponent<CanvasGroup>();
+            if (_canvasGroup == null)
+                _canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
 
         public void OnBeginDrag(PointerEventData eventData)

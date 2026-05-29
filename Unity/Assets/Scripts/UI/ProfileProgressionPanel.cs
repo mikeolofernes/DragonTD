@@ -917,6 +917,7 @@ namespace DragonTD.UI
             Color rarity = GetRarityColor(dragon);
             image.color = selected ? new Color(0.95f, 0.66f, 0.16f, 0.96f) : Color.Lerp(rarity, new Color(0.03f, 0.07f, 0.12f, 1f), 0.22f);
             Button button = go.AddComponent<Button>();
+            go.AddComponent<CanvasGroup>();
             var dragHandler = go.AddComponent<DragCardHandler>();
             dragHandler.DragonId = dragon?.Definition?.dragonId ?? string.Empty;
 
