@@ -7,7 +7,7 @@ namespace DragonTD.TowerDefense
     // Grid is 12 wide × 8 tall, read top-to-bottom.
     //
     // Tile characters:
-    //   .  buildable (dragon can be placed)
+    //   B  buildable (dragon can be placed)
     //   P  path (enemies walk here)
     //   H  HighGround   (+1 range)
     //   M  ManaCrystal  (-25% skill cooldown)
@@ -29,14 +29,14 @@ namespace DragonTD.TowerDefense
         [Header("Grid — 12 wide × 8 tall, top row = top of screen")]
         [TextArea(8, 8)]
         public string grid =
-            "............\n" +
-            "............\n" +
-            "..PPPPPPPPPP\n" +
-            "..P........P\n" +
-            "PPP........P\n" +
-            "...........P\n" +
-            "...........P\n" +
-            "...........P";
+            "BBBBBBBBBBBB\n" +
+            "BBBBBBBBBBBB\n" +
+            "BBPPPPPPPPPP\n" +
+            "BBPBBBBBBBBP\n" +
+            "PPPBBBBBBBBP\n" +
+            "BBBBBBBBBBBP\n" +
+            "BBBBBBBBBBBP\n" +
+            "BBBBBBBBBBBP";
 
         // Returns the raw char at (col, worldRow) where worldRow=0 is the bottom.
         public char GetTile(int col, int worldRow)
@@ -55,7 +55,7 @@ namespace DragonTD.TowerDefense
             {
                 'P' => TileType.Path,
                 'X' => TileType.Blocked,
-                _   => TileType.Buildable
+                _   => TileType.Buildable  // 'B' or any unrecognised char
             };
         }
 

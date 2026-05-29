@@ -235,14 +235,14 @@ namespace DragonTD.Editor
         // ── MapDefinition helper ───────────────────────────────────────────────────
 
         private const string DefaultGrid =
-            "............\n" +
-            "............\n" +
-            "..PPPPPPPPPP\n" +
-            "..P........P\n" +
-            "PPP........P\n" +
-            "...........P\n" +
-            "...........P\n" +
-            "...........P";
+            "BBBBBBBBBBBB\n" +
+            "BBBBBBBBBBBB\n" +
+            "BBPPPPPPPPPP\n" +
+            "BBPBBBBBBBBP\n" +
+            "PPPBBBBBBBBP\n" +
+            "BBBBBBBBBBBP\n" +
+            "BBBBBBBBBBBP\n" +
+            "BBBBBBBBBBBP";
 
         static MapDefinition EnsureMapDefinition()
         {

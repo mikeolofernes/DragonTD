@@ -11,7 +11,7 @@ namespace DragonTD.Editor
         private char _brush = 'P';
         private bool _painting;
 
-        private static readonly char[]   Types  = { '.', 'P', 'H', 'M', 'F', 'S', 'X' };
+        private static readonly char[]   Types  = { 'B', 'P', 'H', 'M', 'F', 'S', 'X' };
         private static readonly string[] Labels = { "Buildable", "Path", "+R High", "CD Mana", "FIRE", "SLOW", "Blocked" };
         private static readonly Color[]  Colors = {
             new Color(0.15f, 0.35f, 0.15f, 0.08f), // . buildable — nearly transparent, map shows through
