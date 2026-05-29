@@ -762,13 +762,27 @@ namespace DragonTD.Editor
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = bgSprite;
             sr.sortingOrder = -10;
-            // Center on the 12×8 grid (world origin at tile 0,0 = (-5.5, -3.5), so center = (0.5, 0.5))
-            go.transform.position = new Vector3(0.5f, 0.5f, 0.1f);
-            // Sprite is 12 units wide by PPU definition; scale Y so height = 8 units
-            float naturalH = bgSprite.texture != null
-                ? bgSprite.texture.height / (bgSprite.texture.width / 12f)
-                : 12f;
-            go.transform.localScale = new Vector3(1f, 8f / naturalH, 1f);
+            // Center on grid; camera orthographicSize=5 → 10 units tall, 17.78 wide at 16:9
+            go.transform.position = new Vector3(0.5f, 0f, 0.1f);
+            // Scale to fill full camera view (18×10) regardless of image aspect ratio
+            const float camW = 18f;
+            const float camH = 10f;
+            if (bgSprite.texture != null)
+            {
+                float ppu = bgSprite.texture.width / camW; // sprite naturally camW units wide
+                // Reconfigure PPU so sprite is camW units wide at scale 1
+                string assetPath = UnityEditor.AssetDatabase.GetAssetPath(bgSprite);
+                var imp2 = UnityEditor.AssetImporter.GetAtPath(assetPath) as UnityEditor.TextureImporter;
+                if (imp2 != null && !Mathf.Approximately(imp2.spritePixelsPerUnit, ppu))
+                {
+                    imp2.spritePixelsPerUnit = ppu;
+                    imp2.SaveAndReimport();
+                    bgSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+                    sr.sprite = bgSprite;
+                }
+                float naturalH = bgSprite.texture != null ? bgSprite.texture.height / ppu : camW;
+                go.transform.localScale = new Vector3(1f, camH / naturalH, 1f);
+            }
         }
 
         static void CreateOrcPrefab(EnemyData data)
