@@ -121,11 +121,11 @@ namespace DragonTD.TowerDefense
             {
                 Color bonusColor = BonusType switch
                 {
-                    TileBonusType.HighGround => new Color(0.72f, 0.9f, 0.55f, 1f),
-                    TileBonusType.ManaCrystal => new Color(0.25f, 0.85f, 1f, 1f),
-                    TileBonusType.Scorched => new Color(1f, 0.45f, 0.18f, 1f),
-                    TileBonusType.Frost => new Color(0.62f, 0.88f, 1f, 1f),
-                    _ => Color.white
+                    TileBonusType.HighGround => new Color(0.72f, 0.9f, 0.55f, 0.45f),
+                    TileBonusType.ManaCrystal => new Color(0.25f, 0.85f, 1f, 0.45f),
+                    TileBonusType.Scorched => new Color(1f, 0.45f, 0.18f, 0.45f),
+                    TileBonusType.Frost => new Color(0.62f, 0.88f, 1f, 0.45f),
+                    _ => new Color(1f, 1f, 1f, 0.45f)
                 };
                 _spriteRenderer.color = IsOccupied ? Color.Lerp(bonusColor, Color.gray, 0.35f) : bonusColor;
                 return;
