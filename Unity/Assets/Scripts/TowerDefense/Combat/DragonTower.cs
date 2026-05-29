@@ -64,9 +64,24 @@ namespace DragonTD.TowerDefense
             _baseScale = transform.localScale;
             _manaRefund = Mathf.CeilToInt(manaCost * PrototypeBalance.SellManaRefundPercent);
             _projectileColor = instance.Definition.visualData.primaryColor;
+            var spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                Sprite portrait = instance.Definition.visualData != null ? instance.Definition.visualData.portrait : null;
+                if (portrait != null)
+                {
+                    spriteRenderer.sprite = portrait;
+                    spriteRenderer.color  = Color.white;
+                }
+                else
+                {
+                    spriteRenderer.color = _projectileColor;
+                }
+            }
             EnsureClickableCollider();
-            _attackCooldown = instance.Definition.NormalAttack != null
+            float baseAttackCooldown = instance.Definition.NormalAttack != null
                 ? instance.Definition.NormalAttack.cooldown : 1f;
+            _attackCooldown = baseAttackCooldown / Mathf.Max(0.1f, instance.AttackSpeed);
             _activeSkillCooldown = instance.Definition.ActiveSkill != null
                 ? instance.Definition.ActiveSkill.cooldown : 10f;
             ApplyTileBonus();
@@ -161,6 +176,12 @@ namespace DragonTD.TowerDefense
         public bool TryUpgrade()
         {
             if (_dragonInstance == null || ResourceManager.Instance == null) return false;
+            if (GameManager.Instance != null && !GameManager.Instance.IsPlanningPhase)
+            {
+                GameManager.Instance.ShowBattleMessage("Upgrade between waves");
+                return false;
+            }
+
             if (_upgradeLevel >= PrototypeBalance.MaxUpgradeLevel)
             {
                 GameManager.Instance?.ShowBattleMessage($"{_dragonInstance.Definition.displayName} is max level");
@@ -214,6 +235,12 @@ namespace DragonTD.TowerDefense
 
         public bool TryMergeWith(DragonTower other)
         {
+            if (GameManager.Instance != null && !GameManager.Instance.IsPlanningPhase)
+            {
+                GameManager.Instance.ShowBattleMessage("Fuse between waves");
+                return false;
+            }
+
             if (!CanMergeWith(other, out string reason))
             {
                 GameManager.Instance?.ShowBattleMessage(reason);
@@ -266,6 +293,12 @@ namespace DragonTD.TowerDefense
 
         public bool TryCastActiveSkill(EnemyBase target)
         {
+            if (GameManager.Instance != null && GameManager.Instance.State != GameState.Wave)
+            {
+                GameManager.Instance.ShowBattleMessage("Active skills are available during waves");
+                return false;
+            }
+
             if (!CanCastActiveSkill(out string reason))
             {
                 GameManager.Instance?.ShowBattleMessage(reason);
@@ -288,6 +321,12 @@ namespace DragonTD.TowerDefense
 
         public void Sell()
         {
+            if (GameManager.Instance != null && !GameManager.Instance.IsPlanningPhase)
+            {
+                GameManager.Instance.ShowBattleMessage("Sell between waves");
+                return;
+            }
+
             if (_placedTile != null)
                 _placedTile.SetOccupied(false);
             ResourceManager.Instance?.AddMana(_manaRefund);
