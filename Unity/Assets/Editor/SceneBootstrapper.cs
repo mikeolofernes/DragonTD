@@ -739,9 +739,10 @@ namespace DragonTD.Editor
             runeTiles.TryGetValue("slow",       out Sprite frostSpr);
 
             var go = new GameObject("GridTile");
-            go.transform.localScale = new Vector3(1f, 1f, 1f); // fill cell fully — no gaps
+            go.transform.localScale = new Vector3(1.01f, 1.01f, 1f); // 1% overdraw eliminates subpixel gaps
 
             var sr = go.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = -2; // below enemies (0) and towers (2)
             sr.sprite = buildSpr != null ? buildSpr : whiteSpr;
             sr.color  = buildSpr != null ? Color.white : new Color(1f, 1f, 1f, 0f);
             go.AddComponent<BoxCollider2D>();
@@ -837,6 +838,7 @@ namespace DragonTD.Editor
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = whiteSpr;
             sr.color  = color;
+            sr.sortingOrder = 1; // above tiles (-2) and below towers (2)
             go.AddComponent<BoxCollider2D>();
 
             var orc = go.AddComponent<OrcEnemy>();
