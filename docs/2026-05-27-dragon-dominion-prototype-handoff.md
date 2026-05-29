@@ -1136,6 +1136,45 @@ Endpoints:
 
 Migration `AddClanMembership` generated. Backend tests: 24 passed (includes 5 new clan tests).
 
+## Phase 2 — Waves, Dragons, Gacha — 2026-05-29
+
+### Waves 5 → 15
+
+SceneBootstrapper now generates 15 waves (Wave01–Wave15). Waves 06–15 added with
+escalating enemy counts (up to 30 runners + 20 of each other type in Wave15) and
+faster spawn intervals. Gold rewards scale 700→2600, mana rewards 380→1100.
+
+Run `Dragon Dominion > Build Battle Scene` in the Unity editor to generate the 10 new
+wave assets and update BattleScene.unity.
+
+### Dragons 7 → 10
+
+Three new dragons added to `Phase1DragonData.All`:
+- `emberveil_008` — Epic, Fire, Celestial class — 1200 HP, 310 ATK, AoE active skill "Celestial Fire"
+- `tideclaw_009` — Rare, Water, Frost class — 1050 HP, 200 ATK, AoE active skill "Whirlpool"
+- `zephyrwing_010` — Uncommon, Wind, Storm class — 700 HP, 165 ATK, single-target active "Gust Burst"
+
+Run `Dragon Dominion > Build Battle Scene` to generate dragon assets, skill assets, and prefabs.
+
+### Gacha System
+
+GachaSystem (already implemented in `Scripts/Summoning/`) is now wired into the summon flow:
+
+- Pity persisted in `PlayerProgressionSaveData`: `gachaPullsSinceLastEpic`, `gachaTotalPulls`
+- Pity synced to/from `GachaSystem.PityTracker` via `PlayerProgression.SyncGachaPity` and `GachaSystem.RestorePity`
+- `SummonPool_Phase1.asset` created at `Assets/Resources/SummonPool_Phase1.asset` on scene regeneration, containing all 10 Phase 1 dragons with standard rates (Common 40%, Uncommon 30%, Rare 20%, Epic 7%, Legendary 2.5%, Mythic 0.5%)
+- Soft pity at pull 50 (Epic+ rates tripled), hard pity at pull 100 (force Mythic), 10-pull Rare+ guarantee
+- Pull-before-spend pattern: currency spent only after a dragon is confirmed available
+
+New `PlayerInventory` methods:
+- `TrySummonDragon` (ticket) — uses GachaSystem with fallback to PickSummonDragon if pool not loaded
+- `TrySummonDragonWithGems` — spends 300 Gems per pull
+- `TryTenPullWithGems` — spends 2700 Gems for 10 pulls, records DailyObjective per summoned dragon
+
+Summon panel updated: shows pity counter, soft-pity indicator, gem costs, and "300 Gems" / "2700 (10x)" buttons.
+
+Pending: Run `Dragon Dominion > Build Battle Scene` to create `SummonPool_Phase1.asset`.
+
 ## Main Files To Read First
 
 - `AGENTS.md`
