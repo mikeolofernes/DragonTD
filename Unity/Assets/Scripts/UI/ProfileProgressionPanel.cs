@@ -74,7 +74,6 @@ namespace DragonTD.UI
             EnsureSummonPanel();
             EnsureDragonActionControls();
             EnsureRoleFilterControls();
-            EnsurePresetControls();
             EnsureDragonButtonContainer();
             EnsureBattleDeckControls();
             RuntimeFontScaler.Apply(gameObject);
@@ -658,7 +657,10 @@ namespace DragonTD.UI
             SetActive(_trainBondButton, dragonTab);
             SetActive(_evolveButton, dragonTab);
             SetActive(_roleFilterButtons, false);
-            SetActive(_presetButtons, dragonsMode);
+            SetActive(_presetButtons, false);
+            SetActive(_previousDragonButton, false);
+            SetActive(_nextDragonButton, false);
+            SetActive(_equipButton, false);
 
             SetActive(_damageButton, profileMode);
             SetActive(_attackSpeedButton, profileMode);
