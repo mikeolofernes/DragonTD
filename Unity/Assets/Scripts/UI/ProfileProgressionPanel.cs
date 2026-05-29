@@ -68,6 +68,7 @@ namespace DragonTD.UI
 
         private void OnEnable()
         {
+            DestroyLegacyButtons();
             EnsureSyncStatusText();
             EnsureDragonMenuControls();
             EnsureSummonControls();
@@ -702,6 +703,16 @@ namespace DragonTD.UI
             SetChildActive("ProfileTitleText", visible);
             SetChildActive("ProfileSubtitleText", visible);
             SetChildActive("SubtitleText", visible);
+        }
+
+        private void DestroyLegacyButtons()
+        {
+            foreach (string name in new[] { "PreviousDragonButton", "NextDragonButton", "EquipDragonButton" })
+            {
+                Transform child = transform.Find(name);
+                if (child != null)
+                    Destroy(child.gameObject);
+            }
         }
 
         private void SetChildActive(string childName, bool active)
