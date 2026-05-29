@@ -53,7 +53,7 @@ public class EventsAndClanControllerTests
     }
 
     [Fact]
-    public async Task ClanShellReportsLockedUntilSocialBackendExists()
+    public async Task ClanShellReportsNotInClanWhenPlayerHasNoClan()
     {
         using var factory = new TestApiFactory();
         using var client = factory.CreateClient();
@@ -63,7 +63,92 @@ public class EventsAndClanControllerTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        Assert.True(body.RootElement.GetProperty("data").GetProperty("locked").GetBoolean());
+        Assert.Equal("not_in_clan", body.RootElement.GetProperty("data").GetProperty("status").GetString());
+    }
+
+    [Fact]
+    public async Task CreateClan_ReturnsNewClanAndPlayerIsOwner()
+    {
+        using var factory = new TestApiFactory();
+        using var client = factory.CreateClient();
+        await client.AuthorizeAsync("clan-create-device");
+
+        var response = await client.PostAsJsonAsync("/api/v1/clan", new
+        {
+            name = "Dragon Lords",
+            tag = "DL",
+            description = "Top guild"
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("Dragon Lords", body.RootElement.GetProperty("data").GetProperty("name").GetString());
+        Assert.Equal("Owner", body.RootElement.GetProperty("data").GetProperty("my_role").GetString());
+    }
+
+    [Fact]
+    public async Task GetMyClan_AfterCreating_ReturnsClanData()
+    {
+        using var factory = new TestApiFactory();
+        using var client = factory.CreateClient();
+        await client.AuthorizeAsync("clan-getme-device");
+
+        await client.PostAsJsonAsync("/api/v1/clan", new { name = "Test Clan", tag = "TC", description = "" });
+        var response = await client.GetAsync("/api/v1/clan/me");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.False(body.RootElement.GetProperty("data").GetProperty("locked").GetBoolean());
+        Assert.Equal("Test Clan", body.RootElement.GetProperty("data").GetProperty("clan").GetProperty("name").GetString());
+    }
+
+    [Fact]
+    public async Task JoinClan_PlayerCanJoinAnExistingClan()
+    {
+        using var factory = new TestApiFactory();
+        using var creatorClient = factory.CreateClient();
+        using var joinerClient = factory.CreateClient();
+        await creatorClient.AuthorizeAsync("clan-owner-device");
+        await joinerClient.AuthorizeAsync("clan-joiner-device");
+
+        var createResponse = await creatorClient.PostAsJsonAsync("/api/v1/clan", new { name = "Open Clan", tag = "OC", description = "" });
+        using JsonDocument createBody = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync());
+        int clanId = createBody.RootElement.GetProperty("data").GetProperty("id").GetInt32();
+
+        var joinResponse = await joinerClient.PostAsync($"/api/v1/clan/{clanId}/join", null);
+
+        Assert.Equal(HttpStatusCode.OK, joinResponse.StatusCode);
+        using JsonDocument joinBody = JsonDocument.Parse(await joinResponse.Content.ReadAsStringAsync());
+        Assert.Equal("Member", joinBody.RootElement.GetProperty("data").GetProperty("role").GetString());
+    }
+
+    [Fact]
+    public async Task CreateClan_WhenAlreadyInClan_Returns409()
+    {
+        using var factory = new TestApiFactory();
+        using var client = factory.CreateClient();
+        await client.AuthorizeAsync("clan-duplicate-device");
+
+        await client.PostAsJsonAsync("/api/v1/clan", new { name = "First Clan", tag = "FC", description = "" });
+        var response = await client.PostAsJsonAsync("/api/v1/clan", new { name = "Second Clan", tag = "SC", description = "" });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RaidContribute_AddsToMemberAndClanScore()
+    {
+        using var factory = new TestApiFactory();
+        using var client = factory.CreateClient();
+        await client.AuthorizeAsync("clan-raid-device");
+
+        await client.PostAsJsonAsync("/api/v1/clan", new { name = "Raid Guild", tag = "RG", description = "" });
+        var response = await client.PostAsJsonAsync("/api/v1/clan/raid/contribute", new { score = 350 });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(350, body.RootElement.GetProperty("data").GetProperty("my_contribution").GetInt32());
+        Assert.Equal(350, body.RootElement.GetProperty("data").GetProperty("clan_total").GetInt32());
     }
 
     [Fact]

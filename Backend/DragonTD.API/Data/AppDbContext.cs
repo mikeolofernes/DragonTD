@@ -15,6 +15,8 @@ public class AppDbContext : DbContext
     public DbSet<EventChallengeState> EventChallengeStates => Set<EventChallengeState>();
     public DbSet<PlayerEventClaim> PlayerEventClaims => Set<PlayerEventClaim>();
     public DbSet<EventDefinition> EventDefinitions => Set<EventDefinition>();
+    public DbSet<Clan> Clans => Set<Clan>();
+    public DbSet<ClanMember> ClanMembers => Set<ClanMember>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,6 +73,29 @@ public class AppDbContext : DbContext
              .WithMany()
              .HasForeignKey(pd => pd.DragonDefinitionId)
              .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Clan>(e =>
+        {
+            e.HasIndex(c => c.Name).IsUnique();
+            e.HasIndex(c => c.Tag).IsUnique();
+            e.HasOne(c => c.Owner)
+             .WithMany()
+             .HasForeignKey(c => c.OwnerId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ClanMember>(e =>
+        {
+            e.HasIndex(m => new { m.ClanId, m.PlayerId }).IsUnique();
+            e.HasOne(m => m.Clan)
+             .WithMany(c => c.Members)
+             .HasForeignKey(m => m.ClanId)
+             .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(m => m.Player)
+             .WithMany()
+             .HasForeignKey(m => m.PlayerId)
+             .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<DragonDefinition>().HasData(
