@@ -126,12 +126,12 @@ namespace DragonTD.Editor
                         if (e.type == EventType.MouseDown)
                         {
                             _painting = true;
-                            PaintTile(map, col, vrow, lines, _brush);
+                            PaintTile(serializedObject, col, vrow, lines, _brush);
                             e.Use();
                         }
                         else if (e.type == EventType.MouseDrag && _painting)
                         {
-                            PaintTile(map, col, vrow, lines, _brush);
+                            PaintTile(serializedObject, col, vrow, lines, _brush);
                             e.Use();
                         }
                     }
@@ -151,10 +151,25 @@ namespace DragonTD.Editor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("grid"), GUIContent.none);
 
             if (serializedObject.ApplyModifiedProperties() || GUI.changed)
+            {
                 EditorUtility.SetDirty(target);
+                AssetDatabase.SaveAssets(); // persist to .asset file immediately
+            }
+
+            // ── Save & Build button ─────────────────────────────────────────
+            EditorGUILayout.Space(8);
+            Color prevBg = GUI.backgroundColor;
+            GUI.backgroundColor = new Color(0.3f, 0.8f, 0.4f);
+            if (GUILayout.Button("Save & Build Battle Scene", GUILayout.Height(34)))
+            {
+                EditorUtility.SetDirty(target);
+                AssetDatabase.SaveAssets();
+                SceneBootstrapper.Build();
+            }
+            GUI.backgroundColor = prevBg;
         }
 
-        private static void PaintTile(MapDefinition map, int col, int vrow, string[] lines, char brush)
+        private static void PaintTile(SerializedObject so, int col, int vrow, string[] lines, char brush)
         {
             var rows = new string[MapDefinition.Rows];
             for (int i = 0; i < MapDefinition.Rows; i++)
@@ -163,15 +178,19 @@ namespace DragonTD.Editor
                     : new string('.', MapDefinition.Cols);
 
             char[] chars = rows[vrow].ToCharArray();
-            if (col < chars.Length && chars[col] != brush)
-            {
-                chars[col] = brush;
-                rows[vrow] = new string(chars);
-                map.grid = string.Join("\n", rows);
-                // Refresh lines in-place so continued drag uses updated data
-                for (int i = 0; i < rows.Length && i < lines.Length; i++)
-                    lines[i] = rows[i];
-            }
+            if (col >= chars.Length || chars[col] == brush) return;
+
+            chars[col] = brush;
+            rows[vrow] = new string(chars);
+            string newGrid = string.Join("\n", rows);
+
+            // Write through SerializedProperty so Unity tracks the change properly
+            so.FindProperty("grid").stringValue = newGrid;
+            so.ApplyModifiedProperties();
+
+            // Update in-place so drag continues correctly
+            for (int i = 0; i < rows.Length && i < lines.Length; i++)
+                lines[i] = rows[i];
         }
 
         private static string[] SplitGrid(string grid)
