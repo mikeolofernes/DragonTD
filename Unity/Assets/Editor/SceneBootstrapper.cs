@@ -675,7 +675,10 @@ namespace DragonTD.Editor
         {
             const string path = PrefDir+"/GridTile.prefab";
 
-            var whiteSpr       = GetOrCreateWhiteSprite();
+            var whiteSpr = GetOrCreateWhiteSprite();
+            var dirtSpr  = AssetDatabase.LoadAssetAtPath<Sprite>(ArtDir+"/dirt.png");
+            if (dirtSpr == null) dirtSpr = CreateDirtSprite();
+
             runeTiles.TryGetValue("highground", out Sprite highGroundSpr);
             runeTiles.TryGetValue("cd",         out Sprite manaSpr);
             runeTiles.TryGetValue("fire",       out Sprite scorchSpr);
@@ -692,14 +695,14 @@ namespace DragonTD.Editor
             var tile = go.AddComponent<GridTile>();
             var so   = new SerializedObject(tile);
             so.FindProperty("_spriteRenderer").objectReferenceValue    = sr;
-            so.FindProperty("_buildableSprite").objectReferenceValue   = null;  // transparent — background visible
-            so.FindProperty("_pathSprite").objectReferenceValue        = null;  // transparent — background visible
+            so.FindProperty("_buildableSprite").objectReferenceValue   = null;      // transparent — background visible
+            so.FindProperty("_pathSprite").objectReferenceValue        = dirtSpr;   // dirt path — always aligned
             so.FindProperty("_highGroundSprite").objectReferenceValue  = highGroundSpr;
             so.FindProperty("_manaCrystalSprite").objectReferenceValue = manaSpr;
             so.FindProperty("_scorchedSprite").objectReferenceValue    = scorchSpr;
             so.FindProperty("_frostSprite").objectReferenceValue       = frostSpr;
             so.FindProperty("_buildableColor").colorValue = new Color(1f, 1f, 1f, 0f);
-            so.FindProperty("_pathColor").colorValue      = new Color(1f, 1f, 1f, 0f);
+            so.FindProperty("_pathColor").colorValue      = Color.white;
             so.ApplyModifiedProperties();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
