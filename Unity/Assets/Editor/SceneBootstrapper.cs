@@ -649,11 +649,23 @@ namespace DragonTD.Editor
             string path = ArtDir + "/" + filename;
             var imp = AssetImporter.GetAtPath(path) as TextureImporter;
             if (imp == null) return null;
+
+            // First pass: import as readable so we can read texture dimensions
+            if (!imp.isReadable || imp.textureType != TextureImporterType.Sprite)
+            {
+                imp.textureType      = TextureImporterType.Sprite;
+                imp.spriteImportMode = SpriteImportMode.Single;
+                imp.isReadable       = true;
+                imp.mipmapEnabled    = false;
+                imp.SaveAndReimport();
+            }
+            Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            // PPU = texture width → sprite is exactly 1 world unit wide → fits in 0.94-scaled tile
+            float ppu = tex != null ? tex.width : 512f;
+
             bool changed = false;
-            if (imp.textureType != TextureImporterType.Sprite)      { imp.textureType = TextureImporterType.Sprite; changed = true; }
-            if (imp.spriteImportMode != SpriteImportMode.Single)    { imp.spriteImportMode = SpriteImportMode.Single; changed = true; }
-            if (imp.mipmapEnabled)                                   { imp.mipmapEnabled = false; changed = true; }
-            if (!Mathf.Approximately(imp.spritePixelsPerUnit, 100f)) { imp.spritePixelsPerUnit = 100f; changed = true; }
+            if (!Mathf.Approximately(imp.spritePixelsPerUnit, ppu)) { imp.spritePixelsPerUnit = ppu; changed = true; }
+            if (imp.isReadable)                                      { imp.isReadable = false; changed = true; }
             if (imp.alphaIsTransparency != true)                     { imp.alphaIsTransparency = true; changed = true; }
             if (changed) imp.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
