@@ -710,18 +710,33 @@ namespace DragonTD.Editor
         static Sprite ImportBattleBackground()
         {
             string path = ArtDir + "/battle_background.png";
+
+            // Force Unity to detect the file and create a .meta if missing
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            AssetDatabase.Refresh();
+
             var imp = AssetImporter.GetAtPath(path) as TextureImporter;
-            if (imp == null) return null;
+            if (imp == null)
+            {
+                Debug.LogWarning("[SceneBootstrapper] battle_background.png not found at " + path);
+                return null;
+            }
 
-            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            float ppu = tex != null ? tex.width / 12f : 100f;
+            // First pass: import as Texture2D so we can read dimensions
+            imp.textureType = TextureImporterType.Default;
+            imp.isReadable  = true;
+            imp.SaveAndReimport();
 
-            bool changed = false;
-            if (imp.textureType != TextureImporterType.Sprite)        { imp.textureType = TextureImporterType.Sprite; changed = true; }
-            if (imp.spriteImportMode != SpriteImportMode.Single)      { imp.spriteImportMode = SpriteImportMode.Single; changed = true; }
-            if (imp.mipmapEnabled)                                     { imp.mipmapEnabled = false; changed = true; }
-            if (!Mathf.Approximately(imp.spritePixelsPerUnit, ppu))   { imp.spritePixelsPerUnit = ppu; changed = true; }
-            if (changed) imp.SaveAndReimport();
+            Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            float ppu = tex != null ? tex.width / 18f : 100f; // 18 world units wide = full camera width
+
+            // Second pass: configure as Sprite with correct PPU
+            imp.textureType        = TextureImporterType.Sprite;
+            imp.spriteImportMode   = SpriteImportMode.Single;
+            imp.isReadable         = false;
+            imp.mipmapEnabled      = false;
+            imp.spritePixelsPerUnit = ppu;
+            imp.SaveAndReimport();
 
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
@@ -733,26 +748,14 @@ namespace DragonTD.Editor
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = bgSprite;
             sr.sortingOrder = -10;
-            // Center on grid; camera orthographicSize=5 → 10 units tall, 17.78 wide at 16:9
+            // ImportBattleBackground set PPU = imageWidth/18 → sprite is exactly 18 units wide at scale 1
+            // Camera shows 18 wide × 10 tall; center grid at (0.5, 0)
             go.transform.position = new Vector3(0.5f, 0f, 0.1f);
-            // Scale to fill full camera view (18×10) regardless of image aspect ratio
-            const float camW = 18f;
-            const float camH = 10f;
+            // Scale Y so height = 10 units
             if (bgSprite.texture != null)
             {
-                float ppu = bgSprite.texture.width / camW; // sprite naturally camW units wide
-                // Reconfigure PPU so sprite is camW units wide at scale 1
-                string assetPath = UnityEditor.AssetDatabase.GetAssetPath(bgSprite);
-                var imp2 = UnityEditor.AssetImporter.GetAtPath(assetPath) as UnityEditor.TextureImporter;
-                if (imp2 != null && !Mathf.Approximately(imp2.spritePixelsPerUnit, ppu))
-                {
-                    imp2.spritePixelsPerUnit = ppu;
-                    imp2.SaveAndReimport();
-                    bgSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
-                    sr.sprite = bgSprite;
-                }
-                float naturalH = bgSprite.texture != null ? bgSprite.texture.height / ppu : camW;
-                go.transform.localScale = new Vector3(1f, camH / naturalH, 1f);
+                float naturalH = bgSprite.texture.height / (bgSprite.texture.width / 18f);
+                go.transform.localScale = new Vector3(1f, 10f / naturalH, 1f);
             }
         }
 
