@@ -225,7 +225,10 @@ namespace DragonTD.Editor
             CreateSummonPool(starters);
             var cardPref  = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/UI/PlacementCard.prefab");
 
+            var bgSprite = ImportBattleBackground();
+
             SetupCamera();
+            CreateBattleBackground(bgSprite);
             CreateManagerRoot(dirCfg, starters);
             SetupGridManager(tilePref, grassSpr, dirtSpr);
             CreatePathDirectionMarkers(whiteSpr);
@@ -671,10 +674,7 @@ namespace DragonTD.Editor
         {
             const string path = PrefDir+"/GridTile.prefab";
 
-            var grassSpr = AssetDatabase.LoadAssetAtPath<Sprite>(ArtDir+"/grass.png");
-            if (grassSpr == null) grassSpr = CreateGrassSprite();
-            var dirtSpr  = AssetDatabase.LoadAssetAtPath<Sprite>(ArtDir+"/dirt.png");
-            if (dirtSpr == null) dirtSpr = CreateDirtSprite();
+            var whiteSpr = GetOrCreateWhiteSprite();
 
             runeTiles.TryGetValue("highground", out Sprite highGroundSpr);
             runeTiles.TryGetValue("cd",         out Sprite manaSpr);
@@ -685,21 +685,21 @@ namespace DragonTD.Editor
             go.transform.localScale = new Vector3(0.94f, 0.94f, 1f);
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = grassSpr;
-            sr.color  = Color.white;
+            sr.sprite = whiteSpr;
+            sr.color  = new Color(1f, 1f, 1f, 0f);
             go.AddComponent<BoxCollider2D>();
 
             var tile = go.AddComponent<GridTile>();
             var so   = new SerializedObject(tile);
             so.FindProperty("_spriteRenderer").objectReferenceValue    = sr;
-            so.FindProperty("_buildableSprite").objectReferenceValue   = grassSpr;
-            so.FindProperty("_pathSprite").objectReferenceValue        = dirtSpr;
+            so.FindProperty("_buildableSprite").objectReferenceValue   = null;
+            so.FindProperty("_pathSprite").objectReferenceValue        = null;
             so.FindProperty("_highGroundSprite").objectReferenceValue  = highGroundSpr;
             so.FindProperty("_manaCrystalSprite").objectReferenceValue = manaSpr;
             so.FindProperty("_scorchedSprite").objectReferenceValue    = scorchSpr;
             so.FindProperty("_frostSprite").objectReferenceValue       = frostSpr;
-            so.FindProperty("_buildableColor").colorValue = Color.green;
-            so.FindProperty("_pathColor").colorValue      = Color.gray;
+            so.FindProperty("_buildableColor").colorValue = new Color(1f, 1f, 1f, 0f);
+            so.FindProperty("_pathColor").colorValue      = new Color(1f, 1f, 1f, 0f);
             so.ApplyModifiedProperties();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
