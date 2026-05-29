@@ -1053,13 +1053,17 @@ Verification note:
 
 ## DB Migration + API Smoke Test — 2026-05-29
 
-Migration `AccountSyncStoreEventsClan` targeted at local PostgreSQL.
-Smoke test results:
-- Device auth: BLOCKED — pending PostgreSQL password
-- Progression GET: BLOCKED — pending PostgreSQL password
-- Events GET: BLOCKED — pending PostgreSQL password
+Migrations applied to local PostgreSQL (`postgresql-x64-17`), password `amp123!`:
+- `AccountSyncStoreEventsClan` — created all baseline tables (Players, DragonDefinitions, PlayerDragons, PlayerProgressionStates, IapPurchaseReceipts, EventChallengeStates, PlayerEventClaims) and seeded 3 dragon definitions.
+- `AddEventDefinitions` — created `EventDefinitions` table and seeded 3 prototype events (Daily Hunt, Gem Rush, Clan Raid).
+- `AddClanMembership` — created `Clans` and `ClanMembers` tables.
 
-Blocker: PostgreSQL service `postgresql-x64-17` is running but password `postgres` rejected with `28P01`. To unblock: set `$env:ConnectionStrings__DefaultConnection` with the correct password and re-run `dotnet ef database update` from `Backend/DragonTD.API`.
+API started on `https://localhost:60733` / `http://localhost:60734` (dynamic port from launchSettings.json).
+
+Smoke test results:
+- Device auth (`POST /api/v1/auth/device`): PASS — JWT returned, token starts `eyJhbGciOiJIUzI1NiIs`
+- Progression GET (`GET /api/v1/progression`): PASS — `success=True`
+- Events GET (`GET /api/v1/events`): PASS — 3 events returned (Daily Hunt, Gem Rush, Clan Raid)
 
 ## Dragons Drag-and-Drop Deck — 2026-05-29
 
