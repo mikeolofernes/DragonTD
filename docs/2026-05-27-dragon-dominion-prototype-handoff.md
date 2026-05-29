@@ -1055,13 +1055,82 @@ Verification note:
 
 Migration `AccountSyncStoreEventsClan` targeted at local PostgreSQL.
 Smoke test results:
-- Device auth: BLOCKED
-- Progression GET: BLOCKED
-- Events GET: BLOCKED (0 events returned)
+- Device auth: BLOCKED — pending PostgreSQL password
+- Progression GET: BLOCKED — pending PostgreSQL password
+- Events GET: BLOCKED — pending PostgreSQL password
 
-Blocker: PostgreSQL service `postgresql-x64-17` is running, but the default password `postgres` was rejected with `28P01: password authentication failed for user "postgres"`. The `appsettings.json` placeholder password `yourpassword` was not tried (it is clearly a placeholder). No pgpass.conf exists at `%APPDATA%\postgresql\pgpass.conf`. The correct PostgreSQL password for the local `postgres` superuser is needed to proceed with the migration and smoke test.
+Blocker: PostgreSQL service `postgresql-x64-17` is running but password `postgres` rejected with `28P01`. To unblock: set `$env:ConnectionStrings__DefaultConnection` with the correct password and re-run `dotnet ef database update` from `Backend/DragonTD.API`.
 
-To unblock: provide the correct PostgreSQL connection string via `$env:ConnectionStrings__DefaultConnection` and re-run `dotnet ef database update` from `Backend/DragonTD.API`, then re-run the smoke test steps in the task description.
+## Dragons Drag-and-Drop Deck — 2026-05-29
+
+Replaced Prev/Next navigation buttons and Equip/Unequip button in the Dragons menu with drag-and-drop:
+
+- New `Unity/Assets/Scripts/UI/DragCardHandler.cs` — IBeginDragHandler/IDragHandler/IEndDragHandler on collection card tiles; dims source to alpha 0.4 during drag; spawns semi-transparent ghost on root Canvas that follows the pointer; OnDisable cleans up ghost to prevent leaks.
+- New `Unity/Assets/Scripts/UI/DeckSlotDropHandler.cs` — IDropHandler on deck slots; empty slot → equip; occupied slot → TrySwapEquipped.
+- `PlayerInventory` — added `FindOwnedDragonById` (public wrapper) and `TrySwapEquipped` (position-swap when both dragons already equipped; remove+add otherwise).
+- `ProfileProgressionPanel` — removed Prev/Next/Equip button runtime creation and wiring; `TapDeckSlot` selects + unequips in one tap with single Refresh via event.
+
+Manual verification: open `MainMenu.unity` → Play → Dragons → confirm drag-and-drop equip, swap, and tap-unequip work.
+
+## IAP Platform Receipt Validation — 2026-05-29
+
+Backend now routes IAP receipts by platform:
+
+- `Backend/DragonTD.API/Services/IIapPlatformReceiptValidator.cs` — interface + result record.
+- `Backend/DragonTD.API/Services/GooglePlayReceiptValidator.cs` — RSA-SHA1 signature validation; reads `GooglePlay:PublicKey` config; returns 503 when unconfigured.
+- `Backend/DragonTD.API/Services/AppleReceiptValidator.cs` — calls Apple `/verifyReceipt` with sandbox fallback on status 21007; reads `Apple:SharedSecret` config; returns 503 when unconfigured.
+- `IapController` — routes by `platform` field: Editor uses mock path; GooglePlay/AppleAppStore dispatch to registered validators; unknown platform → 400.
+- Validators registered as singletons in `Program.cs`.
+
+Production credentials needed: set `GooglePlay:PublicKey` (base64 SubjectPublicKeyInfo) and `Apple:SharedSecret` env vars before deploying.
+
+Backend tests: 24 passed (includes 3 new IAP platform tests).
+
+## Unity PlayMode Regression Suite — 2026-05-29
+
+Added `Unity/Assets/Tests/PlayMode/InventoryProgressionTests.cs` (6 tests):
+
+- `TrySwapEquipped_SwapsIncomingWithExistingSlot` — verifies position swap behavior.
+- `TrySwapEquipped_NonEquippedExisting_ReturnsFalse` — verifies error path.
+- `ChestAward_VictoryFillsFirstEmptySlot` — verifies TryAwardBattleChest.
+- `ChestAward_AllSlotsFull_ReturnsFalse` — verifies capacity cap.
+- `DailyObjective_WinBattleAdvancesProgress` — smoke test for objective tracking.
+- `SaveLoad_RoundTripPreservesGoldAndEssence` — Gold + Essence survive JSON round-trip.
+
+All type signatures verified against codebase before committing.
+
+Manual regression items (require scene): menu nav, API sync status label transitions, store purchase flow, event claim popup, battle return reward popup.
+
+## Events Dated Calendars + Scored Tiers — 2026-05-29
+
+Events moved from a hardcoded static array to a DB-backed model with date filtering and scored challenge tiers:
+
+- `Backend/DragonTD.API/Models/EventDefinitionModel.cs` — `EventDefinition` (id, eventId, displayName, description, eventType, startUtc, endUtc, goldReward, essenceReward, gemReward, rewardTiersJson) and `EventRewardTier`.
+- `AppDbContext` — `EventDefinitions` DbSet + HasData seed for 3 prototype events.
+- `EventsController` — `List` filters by active date window; `Claim` dispatches to `ClaimDaily` (per-UTC-day dedup) or `ClaimScoredTier` (one-time, highest qualifying tier, DateOnly.MaxValue sentinel).
+- `TestApiFactory` — `CreateHost` override calls `EnsureCreated()` so HasData seeds apply to in-memory test DB.
+- Migration `AddEventDefinitions` generated.
+
+Backend tests: 24 passed (includes 4 new events tests: date filter, scored tier claim, no-score 400, duplicate 409).
+
+## Clan Membership + Clan Raid — 2026-05-29
+
+Full clan system implemented:
+
+- `Clan` model: id, name (unique), tag (unique), ownerId, description, memberLimit=30, raidScore.
+- `ClanMember` model: composite unique (clanId, playerId); role (Owner/Officer/Member); raidContribution.
+- FK: `Clan.OwnerId → Player` (Restrict delete — must disband before deleting owner); `ClanMember.ClanId` (Cascade — disbanding removes members).
+
+Endpoints:
+- `POST /api/v1/clan` — create; 409 if already in clan or name taken.
+- `GET /api/v1/clan/me` — clan data + members if in clan; `locked=false, status=not_in_clan` otherwise.
+- `GET /api/v1/clan/{id}` — public clan info.
+- `POST /api/v1/clan/{id}/join` — 409 if in clan; 400 if full.
+- `POST /api/v1/clan/{id}/leave` — owner leaving disbands the clan (cascade).
+- `POST /api/v1/clan/raid/contribute` — adds score to member + clan total.
+- `GET /api/v1/clan/raid/leaderboard` — top 20 by RaidScore.
+
+Migration `AddClanMembership` generated. Backend tests: 24 passed (includes 5 new clan tests).
 
 ## Main Files To Read First
 
