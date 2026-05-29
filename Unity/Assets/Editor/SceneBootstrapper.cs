@@ -1162,6 +1162,7 @@ namespace DragonTD.Editor
             }
 
             // Auto-tile path sprites from MapDefinition
+            AssignSpriteProperty(so, "_pathFallback",  mapDef?.pathSprite);
             AssignSpriteProperty(so, "_pathStraightH", mapDef?.pathStraightH);
             AssignSpriteProperty(so, "_pathStraightV", mapDef?.pathStraightV);
             AssignSpriteProperty(so, "_pathCornerTL",  mapDef?.pathCornerTL);
@@ -1195,6 +1196,7 @@ namespace DragonTD.Editor
             imp.textureType         = TextureImporterType.Sprite;
             imp.spriteImportMode    = SpriteImportMode.Single;
             imp.mipmapEnabled       = false;
+            imp.filterMode          = FilterMode.Point; // no antialiasing bleed at tile edges
             imp.SaveAndReimport();
             Debug.Log($"[SceneBootstrapper] Fixed PPU for {System.IO.Path.GetFileName(path)}: → {correct}");
         }

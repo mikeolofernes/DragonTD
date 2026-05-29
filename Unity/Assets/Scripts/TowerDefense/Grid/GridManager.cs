@@ -17,6 +17,7 @@ namespace DragonTD.TowerDefense
         [SerializeField] private Vector2Int[] _frostTiles;
 
         [Header("Path Auto-Tile Sprites")]
+        [SerializeField] private Sprite _pathFallback;   // generic path — used when specific variant is missing
         [SerializeField] private Sprite _pathStraightH;
         [SerializeField] private Sprite _pathStraightV;
         [SerializeField] private Sprite _pathCornerTL;
@@ -141,10 +142,10 @@ namespace DragonTD.TowerDefense
         private void ApplyAutoTiling()
         {
             if (_grid == null) return;
-            bool hasAnyVariant = _pathStraightH != null || _pathStraightV != null ||
-                                 _pathCornerTL  != null || _pathCornerTR  != null ||
-                                 _pathCornerBL  != null || _pathCornerBR  != null;
-            if (!hasAnyVariant) return; // no sprites assigned — keep prefab default
+            bool hasAnyVariant = _pathFallback   != null || _pathStraightH != null || _pathStraightV != null ||
+                                 _pathCornerTL   != null || _pathCornerTR  != null ||
+                                 _pathCornerBL   != null || _pathCornerBR  != null;
+            if (!hasAnyVariant) return;
 
             for (int x = 0; x < _width; x++)
             for (int y = 0; y < _height; y++)
@@ -165,24 +166,23 @@ namespace DragonTD.TowerDefense
 
         private Sprite ResolveAutoTileSprite(int mask)
         {
+            // Fall back chain: specific variant → straight → generic path fallback
+            Sprite h = _pathStraightH ?? _pathFallback;
+            Sprite v = _pathStraightV ?? _pathFallback;
             return mask switch
             {
-                3  => _pathStraightH ?? _pathStraightV,
-                12 => _pathStraightV ?? _pathStraightH,
-                10 => _pathCornerTL  ?? _pathStraightH,
-                9  => _pathCornerTR  ?? _pathStraightH,
-                6  => _pathCornerBL  ?? _pathStraightH,
-                5  => _pathCornerBR  ?? _pathStraightH,
-                // T-junctions: fall back to the dominant axis sprite
-                7  => _pathStraightH ?? _pathStraightV, // left+right+up → T up
-                11 => _pathStraightH ?? _pathStraightV, // left+right+down → T down
-                14 => _pathStraightV ?? _pathStraightH, // up+right+down → T right
-                13 => _pathStraightV ?? _pathStraightH, // up+left+down → T left
-                15 => _pathStraightH ?? _pathStraightV, // crossroad
-                // End caps: single connection
-                1  or 2  => _pathStraightH ?? _pathStraightV,
-                4  or 8  => _pathStraightV ?? _pathStraightH,
-                _  => _pathStraightH ?? _pathStraightV
+                3  => h,
+                12 => v,
+                10 => _pathCornerTL ?? h,
+                9  => _pathCornerTR ?? h,
+                6  => _pathCornerBL ?? h,
+                5  => _pathCornerBR ?? h,
+                7  or 11 => h,
+                14 or 13 => v,
+                15 => h,
+                1  or 2  => h,
+                4  or 8  => v,
+                _  => h ?? v
             };
         }
     }
