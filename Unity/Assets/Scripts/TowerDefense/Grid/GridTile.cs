@@ -42,6 +42,7 @@ namespace DragonTD.TowerDefense
         public bool IsOccupied { get; private set; }
         public Vector2Int GridPosition { get; private set; }
 
+        private Sprite _autoTileSprite; // set by GridManager; survives UpdateVisual calls
         private bool _isPreviewed;
         private bool _isPreviewValid;
         private TextMesh _bonusLabel;
@@ -98,6 +99,7 @@ namespace DragonTD.TowerDefense
 
         public void SetAutoTileSprite(Sprite sprite)
         {
+            _autoTileSprite = sprite; // persist so UpdateVisual doesn't overwrite on hover
             if (_spriteRenderer == null || sprite == null) return;
             _spriteRenderer.sprite = sprite;
             _spriteRenderer.color  = Color.white;
@@ -118,8 +120,8 @@ namespace DragonTD.TowerDefense
             if (_spriteRenderer == null) return;
 
             Sprite s = _tileType == TileType.Path
-                ? (_pathSprite != null ? _pathSprite : _spriteRenderer.sprite)
-                : (_buildableSprite != null ? _buildableSprite : _spriteRenderer.sprite);
+                ? (_autoTileSprite ?? _pathSprite ?? _spriteRenderer.sprite)
+                : (_buildableSprite ?? _spriteRenderer.sprite);
             if (s != null) _spriteRenderer.sprite = s;
 
             if (_isPreviewed)

@@ -1180,7 +1180,17 @@ namespace DragonTD.Editor
             if (prop != null) prop.objectReferenceValue = sprite;
         }
 
-        // Corrects PPU of any sprite drag-assigned by user so it renders as exactly 1 world unit wide.
+        // Read PNG height from bytes 20-23 (big-endian)
+        static int ReadPngHeight(string unityAssetPath)
+        {
+            string full = Path.GetFullPath(Path.Combine(Application.dataPath, "..", unityAssetPath));
+            if (!File.Exists(full)) return 0;
+            byte[] b = File.ReadAllBytes(full);
+            if (b.Length < 24) return 0;
+            return (b[20] << 24) | (b[21] << 16) | (b[22] << 8) | b[23];
+        }
+
+        // Corrects PPU so sprite fills exactly 1×1 world unit (stretches non-square images to fit).
         static void FixTileSpritePPU(Sprite sprite)
         {
             if (sprite == null) return;
@@ -1188,17 +1198,28 @@ namespace DragonTD.Editor
             if (string.IsNullOrEmpty(path)) return;
             var imp = AssetImporter.GetAtPath(path) as TextureImporter;
             if (imp == null) return;
-            int pxWidth = ReadPngWidth(path);
-            if (pxWidth <= 0) return;
-            float correct = pxWidth; // PPU = pixel width → sprite = 1 world unit wide
-            if (Mathf.Approximately(imp.spritePixelsPerUnit, correct)) return;
-            imp.spritePixelsPerUnit = correct;
+
+            int pxW = ReadPngWidth(path);
+            int pxH = ReadPngHeight(path);
+            if (pxW <= 0) return;
+
+            // Use width for PPU (1 world unit = pxW pixels wide)
+            float correct = pxW;
+            bool changed  = !Mathf.Approximately(imp.spritePixelsPerUnit, correct);
+
             imp.textureType         = TextureImporterType.Sprite;
             imp.spriteImportMode    = SpriteImportMode.Single;
             imp.mipmapEnabled       = false;
             imp.filterMode          = FilterMode.Point; // no antialiasing bleed at tile edges
-            imp.SaveAndReimport();
-            Debug.Log($"[SceneBootstrapper] Fixed PPU for {System.IO.Path.GetFileName(path)}: → {correct}");
+            imp.wrapMode            = TextureWrapMode.Clamp;
+            imp.spritePixelsPerUnit = correct;
+
+            // If non-square: store height ratio in userData so CreateTilePrefab can stretch GO scale
+            string ratio = pxH > 0 ? $"{(float)pxH / pxW:F4}" : "1";
+            if (imp.userData != ratio) { imp.userData = ratio; changed = true; }
+
+            if (changed || imp.filterMode != FilterMode.Point)
+                imp.SaveAndReimport();
         }
 
         static void SetVector2IntArray(SerializedProperty prop, Vector2Int[] values)
