@@ -70,7 +70,16 @@ namespace DragonTD.Editor
                 // Draw background art if available
                 Texture2D bgTex = GetEditorTexture(map.backgroundSprite);
                 if (bgTex != null)
-                    GUI.DrawTexture(gridRect, bgTex, ScaleMode.StretchToFill);
+                {
+                    // The background covers 18 world units wide x 10 tall, centered at (0.5, 0).
+                    // The grid covers cols 0-11 = world x -5.5 to 6.5, world y -3.5 to 4.5.
+                    // Show only the portion of the background that corresponds to the grid.
+                    float uvX = 3f / 18f;           // (-5.5 - (-8.5)) / 18
+                    float uvY = 1.5f / 10f;         // (-3.5 - (-5)) / 10  (bottom)
+                    float uvW = 12f / 18f;           // grid is 12 of 18 units wide
+                    float uvH = 8f / 10f;            // grid is 8 of 10 units tall
+                    GUI.DrawTextureWithTexCoords(gridRect, bgTex, new Rect(uvX, uvY, uvW, uvH));
+                }
                 else
                     EditorGUI.DrawRect(gridRect, new Color(0.1f, 0.1f, 0.1f, 0.9f));
             }
