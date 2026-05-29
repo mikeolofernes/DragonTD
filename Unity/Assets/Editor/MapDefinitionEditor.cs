@@ -164,7 +164,10 @@ namespace DragonTD.Editor
             {
                 EditorUtility.SetDirty(target);
                 AssetDatabase.SaveAssets();
+                // Pass live object directly — bypasses asset cache so edits are guaranteed to apply
+                SceneBootstrapper.OverrideMapDef = (MapDefinition)target;
                 SceneBootstrapper.Build();
+                SceneBootstrapper.OverrideMapDef = null;
             }
             GUI.backgroundColor = prevBg;
         }

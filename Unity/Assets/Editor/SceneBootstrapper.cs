@@ -24,6 +24,9 @@ namespace DragonTD.Editor
 
         private const string MapSODir = "Assets/ScriptableObjects/Maps";
 
+        // Set this before calling Build() to bypass the asset cache and use the live object.
+        public static MapDefinition OverrideMapDef;
+
         [MenuItem("Dragon Dominion/★ Build Battle Scene")]
         public static void Build()
         {
@@ -243,7 +246,11 @@ namespace DragonTD.Editor
 
         static MapDefinition EnsureMapDefinition()
         {
+            // If caller passed a live object (e.g. from editor button), use it directly
+            if (OverrideMapDef != null) return OverrideMapDef;
+
             string path = MapSODir + "/Chapter1Map.asset";
+            AssetDatabase.Refresh(); // force reload from disk before reading
             var existing = AssetDatabase.LoadAssetAtPath<MapDefinition>(path);
 
             // If existing asset has empty/broken grid, repair it
