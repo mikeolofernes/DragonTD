@@ -658,8 +658,6 @@ namespace DragonTD.UI
             SetActive(_evolveButton, dragonTab);
             SetActive(_roleFilterButtons, false);
             SetActive(_presetButtons, false);
-            SetActive(_previousDragonButton, false);
-            SetActive(_nextDragonButton, false);
             SetActive(_equipButton, false);
 
             SetActive(_damageButton, profileMode);
