@@ -85,7 +85,7 @@ namespace DragonTD.Editor
                         cell - 2, cell - 2);
 
                     // Draw tile sprite if available, else color overlay
-                    Texture2D cellTex = GetCellTexture(c, map);
+                    Texture2D cellTex = GetCellTexture(c, map, lines, col, vrow);
                     if (cellTex != null)
                         GUI.DrawTexture(cell2, cellTex, ScaleMode.StretchToFill);
                     else
@@ -210,19 +210,63 @@ namespace DragonTD.Editor
             return Colors[0];
         }
 
-        private static Texture2D GetCellTexture(char c, MapDefinition map)
+        private static Texture2D GetCellTexture(char c, MapDefinition map, string[] lines, int col, int vrow)
         {
-            UnityEngine.Sprite sprite = c switch
+            UnityEngine.Sprite sprite = null;
+            if (c == 'P')
             {
-                'B' => map.buildableSprite,
-                'P' => map.pathSprite,
-                'H' => FindRuneTileSprite("rune_tile_highground"),
-                'M' => FindRuneTileSprite("rune_tile_cd"),
-                'F' => FindRuneTileSprite("rune_tile_fire"),
-                'S' => FindRuneTileSprite("rune_tile_slow"),
-                _   => null
-            };
+                // Compute neighbor mask in visual-editor coords
+                // vrow increases downward; "up" in world = vrow-1; "down" in world = vrow+1
+                bool left  = IsPathAt(lines, col-1, vrow);
+                bool right = IsPathAt(lines, col+1, vrow);
+                bool up    = IsPathAt(lines, col, vrow-1); // up in world = higher on screen = lower vrow
+                bool down  = IsPathAt(lines, col, vrow+1);
+                int mask   = (left ? 1 : 0) | (right ? 2 : 0) | (up ? 4 : 0) | (down ? 8 : 0);
+                sprite = ResolveEditorAutoTile(mask, map);
+            }
+            else
+            {
+                sprite = c switch
+                {
+                    'B' => map.buildableSprite,
+                    'H' => FindRuneTileSprite("rune_tile_highground"),
+                    'M' => FindRuneTileSprite("rune_tile_cd"),
+                    'F' => FindRuneTileSprite("rune_tile_fire"),
+                    'S' => FindRuneTileSprite("rune_tile_slow"),
+                    _   => null
+                };
+            }
             return sprite != null ? GetEditorTexture(sprite) : null;
+        }
+
+        private static bool IsPathAt(string[] lines, int col, int vrow)
+        {
+            if (vrow < 0 || vrow >= MapDefinition.Rows || col < 0 || col >= MapDefinition.Cols) return false;
+            if (vrow >= lines.Length) return false;
+            string line = lines[vrow].TrimEnd('\r');
+            return col < line.Length && line[col] == 'P';
+        }
+
+        private static UnityEngine.Sprite ResolveEditorAutoTile(int mask, MapDefinition map)
+        {
+            // Same logic as GridManager.ResolveAutoTileSprite
+            UnityEngine.Sprite h = map.pathStraightH ?? map.pathSprite;
+            UnityEngine.Sprite v = map.pathStraightV ?? map.pathSprite;
+            return mask switch
+            {
+                3  => h,
+                12 => v,
+                10 => map.pathCornerTL ?? h,
+                9  => map.pathCornerTR ?? h,
+                6  => map.pathCornerBL ?? h,
+                5  => map.pathCornerBR ?? h,
+                7  or 11 => h,
+                14 or 13 => v,
+                15 => h,
+                1 or 2 => h,
+                4 or 8 => v,
+                _  => h
+            };
         }
 
         private static UnityEngine.Sprite FindRuneTileSprite(string name)

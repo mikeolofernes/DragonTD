@@ -96,6 +96,13 @@ namespace DragonTD.TowerDefense
             _bonusLabel.color = Color.black;
         }
 
+        public void SetAutoTileSprite(Sprite sprite)
+        {
+            if (_spriteRenderer == null || sprite == null) return;
+            _spriteRenderer.sprite = sprite;
+            _spriteRenderer.color  = Color.white;
+        }
+
         public bool CanPlace() => _tileType == TileType.Buildable && !IsOccupied;
         public void SetOccupied(bool occupied) { IsOccupied = occupied; UpdateVisual(); }
 

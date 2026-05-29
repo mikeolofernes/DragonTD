@@ -1148,8 +1148,22 @@ namespace DragonTD.Editor
                 SetVector2IntArray(so.FindProperty("_frostTiles"), new Vector2Int[0]);
             }
 
+            // Auto-tile path sprites from MapDefinition
+            AssignSpriteProperty(so, "_pathStraightH", mapDef?.pathStraightH);
+            AssignSpriteProperty(so, "_pathStraightV", mapDef?.pathStraightV);
+            AssignSpriteProperty(so, "_pathCornerTL",  mapDef?.pathCornerTL);
+            AssignSpriteProperty(so, "_pathCornerTR",  mapDef?.pathCornerTR);
+            AssignSpriteProperty(so, "_pathCornerBL",  mapDef?.pathCornerBL);
+            AssignSpriteProperty(so, "_pathCornerBR",  mapDef?.pathCornerBR);
+
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(gm);
+        }
+
+        static void AssignSpriteProperty(SerializedObject so, string propName, Sprite sprite)
+        {
+            var prop = so.FindProperty(propName);
+            if (prop != null) prop.objectReferenceValue = sprite;
         }
 
         static void SetVector2IntArray(SerializedProperty prop, Vector2Int[] values)

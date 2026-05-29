@@ -16,6 +16,14 @@ namespace DragonTD.TowerDefense
         [SerializeField] private Vector2Int[] _scorchedTiles;
         [SerializeField] private Vector2Int[] _frostTiles;
 
+        [Header("Path Auto-Tile Sprites")]
+        [SerializeField] private Sprite _pathStraightH;
+        [SerializeField] private Sprite _pathStraightV;
+        [SerializeField] private Sprite _pathCornerTL;
+        [SerializeField] private Sprite _pathCornerTR;
+        [SerializeField] private Sprite _pathCornerBL;
+        [SerializeField] private Sprite _pathCornerBR;
+
         private GridTile[,] _grid;
 
         public int Width => _width;
@@ -34,6 +42,7 @@ namespace DragonTD.TowerDefense
         private void Start()
         {
             BuildGrid();
+            ApplyAutoTiling();
         }
 
         private void BuildGrid()
@@ -127,6 +136,54 @@ namespace DragonTD.TowerDefense
             foreach (var tile in tiles)
                 if (tile.x == x && tile.y == y) return true;
             return false;
+        }
+
+        private void ApplyAutoTiling()
+        {
+            if (_grid == null) return;
+            bool hasAnyVariant = _pathStraightH != null || _pathStraightV != null ||
+                                 _pathCornerTL  != null || _pathCornerTR  != null ||
+                                 _pathCornerBL  != null || _pathCornerBR  != null;
+            if (!hasAnyVariant) return; // no sprites assigned — keep prefab default
+
+            for (int x = 0; x < _width; x++)
+            for (int y = 0; y < _height; y++)
+            {
+                GridTile tile = _grid[x, y];
+                if (tile == null || tile.TileType != TileType.Path) continue;
+
+                bool left  = x > 0          && _grid[x-1, y]?.TileType == TileType.Path;
+                bool right = x < _width-1   && _grid[x+1, y]?.TileType == TileType.Path;
+                bool up    = y < _height-1  && _grid[x, y+1]?.TileType == TileType.Path;
+                bool down  = y > 0          && _grid[x, y-1]?.TileType == TileType.Path;
+
+                int mask = (left ? 1 : 0) | (right ? 2 : 0) | (up ? 4 : 0) | (down ? 8 : 0);
+                Sprite s = ResolveAutoTileSprite(mask);
+                if (s != null) tile.SetAutoTileSprite(s);
+            }
+        }
+
+        private Sprite ResolveAutoTileSprite(int mask)
+        {
+            return mask switch
+            {
+                3  => _pathStraightH ?? _pathStraightV,
+                12 => _pathStraightV ?? _pathStraightH,
+                10 => _pathCornerTL  ?? _pathStraightH,
+                9  => _pathCornerTR  ?? _pathStraightH,
+                6  => _pathCornerBL  ?? _pathStraightH,
+                5  => _pathCornerBR  ?? _pathStraightH,
+                // T-junctions: fall back to the dominant axis sprite
+                7  => _pathStraightH ?? _pathStraightV, // left+right+up → T up
+                11 => _pathStraightH ?? _pathStraightV, // left+right+down → T down
+                14 => _pathStraightV ?? _pathStraightH, // up+right+down → T right
+                13 => _pathStraightV ?? _pathStraightH, // up+left+down → T left
+                15 => _pathStraightH ?? _pathStraightV, // crossroad
+                // End caps: single connection
+                1  or 2  => _pathStraightH ?? _pathStraightV,
+                4  or 8  => _pathStraightV ?? _pathStraightH,
+                _  => _pathStraightH ?? _pathStraightV
+            };
         }
     }
 }

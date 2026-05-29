@@ -26,6 +26,13 @@ namespace DragonTD.TowerDefense
         [Header("Tile Art — each tile type has its own sprite, together they form the map")]
         public Sprite buildableSprite;   // B tiles — grass/terrain
         public Sprite pathSprite;        // P tiles — dirt/stone path
+        [Header("Path Tile Auto-Tiling (leave empty to use pathSprite for all)")]
+        public Sprite pathStraightH;   // ─ left+right
+        public Sprite pathStraightV;   // │ up+down
+        public Sprite pathCornerTL;    // ┌ right+down
+        public Sprite pathCornerTR;    // ┐ left+down
+        public Sprite pathCornerBL;    // └ right+up
+        public Sprite pathCornerBR;    // ┘ left+up
         [Header("Background (optional — shown behind tiles if sprites are missing)")]
         public Sprite backgroundSprite;
 
