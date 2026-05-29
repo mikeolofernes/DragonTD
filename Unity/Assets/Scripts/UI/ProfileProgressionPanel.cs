@@ -45,6 +45,7 @@ namespace DragonTD.UI
         private Text _summonPanelText;
         private Button _summonConfirmButton;
         private Button _summonCancelButton;
+        private SummonResultPanel _tenPullResultPanel;
         private Text _deckTitleText;
         private Transform _deckSlotContainer;
         private Button[] _deckTabButtons;
@@ -502,12 +503,28 @@ namespace DragonTD.UI
                 new Vector2(0.65f, 0.18f), new Vector2(130f, 42f));
             tenPullButton.onClick.AddListener(() =>
             {
-                PlayerInventory.Instance?.TryTenPullWithGems(out _);
+                PlayerInventory inv = PlayerInventory.Instance;
+                if (inv != null && inv.TryTenPullWithGems(out _))
+                {
+                    EnsureTenPullResultPanel();
+                    _tenPullResultPanel.Show(inv.LastTenPullResults);
+                }
                 UpdateSummonPanelText();
                 Refresh();
             });
 
             _summonPanel.SetActive(false);
+        }
+
+        private void EnsureTenPullResultPanel()
+        {
+            if (_tenPullResultPanel != null) return;
+            Font font = _dragonDetailText != null ? _dragonDetailText.font
+                : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var go = new GameObject("TenPullResultPanelHost");
+            go.transform.SetParent(transform, false);
+            _tenPullResultPanel = go.AddComponent<SummonResultPanel>();
+            _tenPullResultPanel.Initialize(transform, font);
         }
 
         private void UpdateSummonPanelText()

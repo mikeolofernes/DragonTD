@@ -20,6 +20,7 @@ namespace DragonTD.Core
         public PlayerProgression Progression { get; private set; } = new PlayerProgression();
         public string LastBattleRewardSummary { get; private set; } = string.Empty;
         public string LastSummonSummary { get; private set; } = string.Empty;
+        public System.Collections.Generic.List<DragonDefinition> LastTenPullResults { get; private set; } = new System.Collections.Generic.List<DragonDefinition>();
         public BattleRewardResult LastBattleRewardResult { get; private set; }
         public string SyncStatus { get; private set; } = "Local";
 
@@ -162,12 +163,14 @@ namespace DragonTD.Core
             Progression.TrySpendGems(_summonPool.TenPullCostGems, out _);
             SaveProgressionAsync();
 
+            LastTenPullResults.Clear();
             int summonCount = 0;
             for (int i = 0; i < results.Length; i++)
             {
                 if (results[i] != null)
                 {
                     AddDragon(results[i]);
+                    LastTenPullResults.Add(results[i]);
                     messages[i] = $"{results[i].displayName} ({results[i].rarity})";
                     summonCount++;
                 }
