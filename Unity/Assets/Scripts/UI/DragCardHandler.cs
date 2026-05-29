@@ -47,6 +47,12 @@ namespace DragonTD.UI
             _ghost = null;
         }
 
+        private void OnDisable()
+        {
+            if (_ghost != null) { Destroy(_ghost); _ghost = null; }
+            if (_canvasGroup != null) { _canvasGroup.alpha = 1f; _canvasGroup.blocksRaycasts = true; }
+        }
+
         private Canvas FindRootCanvas()
         {
             Canvas c = GetComponentInParent<Canvas>();

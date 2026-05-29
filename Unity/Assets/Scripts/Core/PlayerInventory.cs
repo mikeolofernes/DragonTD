@@ -129,9 +129,19 @@ namespace DragonTD.Core
                 message = "Target slot not equipped";
                 return false;
             }
-            EquippedDragonIds.Remove(existingId);
-            if (!EquippedDragonIds.Contains(incomingId))
+            int incomingIndex = EquippedDragonIds.IndexOf(incomingId);
+            int existingIndex = EquippedDragonIds.IndexOf(existingId);
+            if (incomingIndex >= 0)
+            {
+                // Both already equipped — swap positions
+                EquippedDragonIds[existingIndex] = incomingId;
+                EquippedDragonIds[incomingIndex] = existingId;
+            }
+            else
+            {
+                EquippedDragonIds.Remove(existingId);
                 EquippedDragonIds.Add(incomingId);
+            }
             message = $"Swapped to {incomingId}";
             SaveProgressionAsync();
             OnLoadoutChanged?.Invoke();

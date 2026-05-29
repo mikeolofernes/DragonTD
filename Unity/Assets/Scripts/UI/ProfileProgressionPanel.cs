@@ -29,8 +29,6 @@ namespace DragonTD.UI
         [SerializeField] private Text _dragonDetailText;
         [SerializeField] private Image _dragonPortrait;
         [SerializeField] private Text _dragonArtCaption;
-        [SerializeField] private Button _previousDragonButton;
-        [SerializeField] private Button _nextDragonButton;
         [SerializeField] private Button _equipButton;
         [SerializeField] private Button _summonButton;
         [SerializeField] private Button _levelUpButton;
@@ -228,22 +226,6 @@ namespace DragonTD.UI
             _deckTabButtons[1]?.onClick.AddListener(() => SetDeckTab(DeckTab.Skills));
             _deckTabButtons[2]?.onClick.AddListener(() => SetDeckTab(DeckTab.Parts));
             _deckTabButtons[3]?.onClick.AddListener(() => SetDeckTab(DeckTab.Items));
-        }
-
-        private void SelectPreviousDragon()
-        {
-            int count = PlayerInventory.Instance?.OwnedDragons.Count ?? 0;
-            if (count <= 0) return;
-            _selectedIndex = (_selectedIndex - 1 + count) % count;
-            Refresh();
-        }
-
-        private void SelectNextDragon()
-        {
-            int count = PlayerInventory.Instance?.OwnedDragons.Count ?? 0;
-            if (count <= 0) return;
-            _selectedIndex = (_selectedIndex + 1) % count;
-            Refresh();
         }
 
         private void Upgrade(AccountBuffType buffType)
@@ -882,7 +864,6 @@ namespace DragonTD.UI
             Button button = go.AddComponent<Button>();
             var dropHandler = go.AddComponent<DeckSlotDropHandler>();
             dropHandler.EquippedDragonId = dragon?.Definition?.dragonId ?? string.Empty;
-            go.AddComponent<CanvasGroup>();
 
             string label = dragon?.Definition == null
                 ? $"Slot {slot + 1}\nEmpty\nEquip Dragon"
@@ -910,7 +891,6 @@ namespace DragonTD.UI
             Button button = go.AddComponent<Button>();
             var dragHandler = go.AddComponent<DragCardHandler>();
             dragHandler.DragonId = dragon?.Definition?.dragonId ?? string.Empty;
-            go.AddComponent<CanvasGroup>();
 
             string equipped = inventory.IsEquipped(dragon) ? "EQUIPPED" : "OWNED";
             string label =
@@ -980,8 +960,21 @@ namespace DragonTD.UI
 
         private void TapDeckSlot(DragonInstance dragon)
         {
-            SelectOwnedDragon(dragon);
-            PlayerInventory.Instance?.TryToggleEquipDragon(dragon, out _);
+            PlayerInventory inventory = PlayerInventory.Instance;
+            if (inventory == null || dragon?.Definition == null) return;
+            // Set selection index directly without triggering a Refresh —
+            // TryToggleEquipDragon fires OnLoadoutChanged which calls Refresh via the event subscription.
+            for (int i = 0; i < inventory.OwnedDragons.Count; i++)
+            {
+                if (inventory.OwnedDragons[i] == dragon || inventory.OwnedDragons[i]?.Definition?.dragonId == dragon.Definition.dragonId)
+                {
+                    _selectedIndex = i;
+                    _activeDeckTab = DeckTab.Dragons;
+                    break;
+                }
+            }
+            inventory.TryToggleEquipDragon(dragon, out _);
+            // Refresh() will be called via OnLoadoutChanged event
         }
 
         private void SelectOwnedDragon(DragonInstance selected)
