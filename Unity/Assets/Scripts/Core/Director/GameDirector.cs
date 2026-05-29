@@ -39,7 +39,8 @@ namespace DragonTD.Core
             _intensity = new IntensityMeter(_config);
             GameManager.Instance.OnStateChanged += HandleStateChanged;
             GameManager.Instance.OnLivesChanged += HandleLivesChanged;
-            WaveManager.Instance.OnWaveComplete += HandleWaveComplete;
+            if (WaveManager.Instance != null)
+                WaveManager.Instance.OnWaveComplete += HandleWaveComplete;
             _previousLives = GameManager.Instance.Lives;
         }
 
