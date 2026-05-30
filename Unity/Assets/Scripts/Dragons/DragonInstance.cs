@@ -15,7 +15,7 @@ namespace DragonTD.Dragons
 
         // Computed stats: base * level growth curve * bond multiplier * evolution multiplier
         public float Hp      => Definition.baseStats.hp     * LevelMultiplier * BondStatMultiplier * EvolutionMultiplier;
-        public float Attack  => Definition.baseStats.attack  * LevelMultiplier * BondStatMultiplier * EvolutionMultiplier * AccountDamageMultiplier;
+        public float Attack  => Definition.baseStats.attack  * LevelMultiplier * BondStatMultiplier * EvolutionMultiplier * DragonTD.TowerDefense.PrototypeBalance.GlobalDamageBalance * AccountDamageMultiplier;
         public float Defense => Definition.baseStats.armor   * LevelMultiplier * BondStatMultiplier * EvolutionMultiplier;
         public float Range   => Definition.baseStats.range;
         public float AttackSpeed => Definition.baseStats.attackSpeed * AccountAttackSpeedMultiplier;

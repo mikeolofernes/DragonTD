@@ -538,11 +538,18 @@ namespace DragonTD.Editor
         static PrototypeBalanceConfig CreatePrototypeBalanceConfig()
         {
             const string path = "Assets/Resources/PrototypeBalanceConfig.asset";
-            var existing = AssetDatabase.LoadAssetAtPath<PrototypeBalanceConfig>(path);
-            if (existing != null) return existing;
-
-            var cfg = ScriptableObject.CreateInstance<PrototypeBalanceConfig>();
-            AssetDatabase.CreateAsset(cfg, path);
+            var cfg = AssetDatabase.LoadAssetAtPath<PrototypeBalanceConfig>(path);
+            if (cfg == null)
+            {
+                cfg = ScriptableObject.CreateInstance<PrototypeBalanceConfig>();
+                AssetDatabase.CreateAsset(cfg, path);
+            }
+            cfg.startingMana        = 320;
+            cfg.startingGold        = 150;
+            cfg.upgradeBaseCost     = 30;
+            cfg.globalDamageBalance = 1.15f;
+            EditorUtility.SetDirty(cfg);
+            AssetDatabase.SaveAssets();
             return cfg;
         }
 
