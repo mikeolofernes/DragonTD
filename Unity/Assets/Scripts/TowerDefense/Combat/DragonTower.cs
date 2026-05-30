@@ -28,6 +28,14 @@ namespace DragonTD.TowerDefense
         private bool _hasInheritedPassive;
         private float _nextInheritedPassiveTime;
 
+        // Fake 2.5D: ground shadow + idle bob + breathing + attack lunge
+        private Vector3 _basePos;
+        private Vector3 _levelScale = Vector3.one;
+        private Transform _shadow;
+        private float _bobPhase;
+        private float _attackLungeUntil = float.NegativeInfinity;
+        private Vector3 _attackLungeDir;
+
         [SerializeField] private GameObject _projectilePrefab;
         [SerializeField] private Transform _firePoint;
         [SerializeField] private Color _projectileColor = Color.white;
@@ -90,11 +98,17 @@ namespace DragonTD.TowerDefense
                 _rangeIndicator = gameObject.AddComponent<TowerRangeIndicator>();
             _rangeIndicator.Configure(AttackRange, _projectileColor);
             ApplyLevelVisuals();
+
+            _basePos = transform.position;
+            _bobPhase = Random.value * Mathf.PI * 2f;
+            EnsureShadow();
         }
 
         private void Update()
         {
             if (_dragonInstance == null) return;
+
+            UpdateFake25D();
 
             EnemyBase target = FindNearestEnemy();
             if (target == null) return;
@@ -133,6 +147,14 @@ namespace DragonTD.TowerDefense
 
         private void FireAt(EnemyBase target)
         {
+            if (target != null)
+            {
+                Vector3 dir = target.transform.position - _basePos;
+                dir.z = 0f;
+                _attackLungeDir = dir.sqrMagnitude > 0.001f ? dir.normalized : Vector3.zero;
+                _attackLungeUntil = Time.time + 0.16f;
+            }
+
             if (_projectilePrefab == null || _firePoint == null) return;
 
             float dmgMult = _dragonInstance.Definition.NormalAttack != null
@@ -377,6 +399,7 @@ namespace DragonTD.TowerDefense
                 _baseScale = transform.localScale;
 
             transform.localScale = _baseScale * (IsFused ? 1.48f : 1f + ((_upgradeLevel - 1) * 0.12f));
+            _levelScale = transform.localScale;
             EnsureLevelBadge();
             UpdateLevelBadge();
             UpdateLevelAura();
@@ -593,6 +616,74 @@ namespace DragonTD.TowerDefense
             texture.Apply();
             _runtimeWhiteSprite = Sprite.Create(texture, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0.5f), 2f);
             return _runtimeWhiteSprite;
+        }
+
+        // ── Fake 2.5D motion ────────────────────────────────────────────────
+        private void UpdateFake25D()
+        {
+            // Idle bob (vertical float) + brief attack lunge toward the last target.
+            float bob = Mathf.Sin(Time.time * 2.6f + _bobPhase) * 0.06f;
+
+            Vector3 lunge = Vector3.zero;
+            if (Time.time < _attackLungeUntil)
+            {
+                float t = (_attackLungeUntil - Time.time) / 0.16f; // 1→0 over the lunge
+                lunge = _attackLungeDir * (Mathf.Sin(t * Mathf.PI) * 0.13f);
+            }
+
+            transform.position = _basePos + new Vector3(lunge.x, bob + lunge.y * 0.5f, 0f);
+
+            // Breathing scale on top of the current level scale.
+            float breath = 1f + Mathf.Sin(Time.time * 2.6f + _bobPhase) * 0.03f;
+            if (_levelScale != Vector3.zero)
+                transform.localScale = _levelScale * breath;
+
+            // Keep the shadow planted on the ground (counter the parent's bob/lunge),
+            // and shrink it slightly as the dragon rises for a lift-off feel.
+            if (_shadow != null)
+            {
+                float rise = bob + Mathf.Abs(lunge.y) * 0.5f;
+                _shadow.position = new Vector3(_basePos.x + lunge.x * 0.4f, _basePos.y - 0.42f, _basePos.z + 0.05f);
+                float shadowScale = Mathf.Clamp(1f - rise * 1.5f, 0.7f, 1.1f);
+                _shadow.localScale = new Vector3(0.92f * shadowScale, 0.34f * shadowScale, 1f);
+            }
+        }
+
+        private void EnsureShadow()
+        {
+            if (_shadow != null) return;
+
+            var shadowGO = new GameObject("TowerShadow");
+            shadowGO.transform.SetParent(transform, false);
+            var sr = shadowGO.AddComponent<SpriteRenderer>();
+            sr.sprite = SoftShadowSprite();
+            sr.color = new Color(0f, 0f, 0f, 0.42f);
+            sr.sortingOrder = 0; // below the tower sprite (sortingOrder 2)
+            _shadow = shadowGO.transform;
+            _shadow.localScale = new Vector3(0.92f, 0.34f, 1f);
+        }
+
+        private static Sprite _softShadowSprite;
+        private static Sprite SoftShadowSprite()
+        {
+            if (_softShadowSprite != null) return _softShadowSprite;
+
+            const int size = 64;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(size / 2f, size / 2f);
+            float maxDist = size / 2f;
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x, y), center) / maxDist;
+                float a = Mathf.Clamp01(1f - d);
+                a = a * a; // soft falloff
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+            tex.Apply();
+            tex.wrapMode = TextureWrapMode.Clamp;
+            _softShadowSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+            return _softShadowSprite;
         }
 
         private void OnDrawGizmosSelected()
