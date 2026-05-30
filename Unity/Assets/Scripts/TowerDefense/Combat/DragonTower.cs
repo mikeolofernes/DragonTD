@@ -183,6 +183,7 @@ namespace DragonTD.TowerDefense
                 ? DamageSource.LightningProjectile
                 : DamageSource.Projectile;
             go.GetComponent<ProjectileBase>()?.Initialize(target.transform, damage, 10f, CurrentProjectileColor, source, _upgradeLevel);
+            AudioManager.Instance?.PlaySfx(SfxKey.Attack);
         }
 
         private void ShowElementFeedback(EnemyBase target, float multiplier)
@@ -233,6 +234,7 @@ namespace DragonTD.TowerDefense
             _dragonInstance.SkillLevel = Mathf.Max(_dragonInstance.SkillLevel, _upgradeLevel);
             ApplyLevelVisuals();
             DamageIndicator.SpawnText(transform.position + Vector3.up * 1.25f, $"Lv {_upgradeLevel}", _projectileColor);
+            AudioManager.Instance?.PlaySfx(SfxKey.Upgrade);
             GameManager.Instance?.ShowBattleMessage($"{_dragonInstance.Definition.displayName} upgraded to Lv {_upgradeLevel}");
             return true;
         }
@@ -363,7 +365,7 @@ namespace DragonTD.TowerDefense
             AbilityExecutor.ExecuteActiveSkill(ultimate, _dragonInstance, target, transform.position, _damageMultiplier * LevelDamageMultiplier, _statusMagnitudeMultiplier);
             BattleStatsTracker.Instance?.RecordSkillCast();
             _lastUltimateCastTime = Time.time;
-
+            AudioManager.Instance?.PlaySfx(SfxKey.Ultimate);
             DamageIndicator.SpawnText(transform.position + Vector3.up * 1.55f, "ULTIMATE!", PrototypeBalance.WeakFeedbackColor);
             return true;
         }
@@ -379,6 +381,7 @@ namespace DragonTD.TowerDefense
             if (_placedTile != null)
                 _placedTile.SetOccupied(false);
             ResourceManager.Instance?.AddMana(_manaRefund);
+            AudioManager.Instance?.PlaySfx(SfxKey.TowerSell);
             BattleStatsTracker.Instance?.RecordManaRefunded(_manaRefund);
             GameManager.Instance?.ShowBattleMessage($"{DisplayName} sold: +{_manaRefund} MP");
             Destroy(gameObject);
