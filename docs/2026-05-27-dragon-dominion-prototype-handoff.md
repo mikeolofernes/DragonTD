@@ -1175,6 +1175,28 @@ Summon panel updated: shows pity counter, soft-pity indicator, gem costs, and "3
 
 Pending: Run `Dragon Dominion > Build Battle Scene` to create `SummonPool_Phase1.asset`.
 
+## Tile-Based Map System — 2026-05-30
+
+- Replaced the single background image with a tile-based map: each tile type has its own sprite.
+- `MapDefinition` ScriptableObject drives the grid via a text grid string (B=buildable, P=path, H/M/F/S=bonus tiles, X=blocked). Visual click-to-paint editor in the Inspector (`MapDefinitionEditor`), with a **Save & Build Battle Scene** button.
+- Path auto-tiling: path sprites picked by neighbor bitmask (straight H/V + 4 corners), fields on `MapDefinition`; `GridManager.ApplyAutoTiling` resolves per tile.
+- Tile sprite PPU auto-corrected from PNG header so each tile fills exactly 1 world unit; tile scale 1.01 to kill subpixel gaps; Point filter + Clamp wrap.
+- Sorting: tiles −2, enemies 1, towers 2. Tile collider disabled when occupied so clicks reach the placed dragon.
+- Waypoints auto-computed from the painted path; removed the hardcoded path/waypoint arrays from SceneBootstrapper.
+
+## Battle Polish, Chapter 2, Nakama — 2026-05-30
+
+- Tower portraits now set on runtime `DragonTower.Setup` (was build-time only); color fallback when no portrait.
+- 10-pull shows a result screen (`SummonResultPanel`) listing all 10 dragons by rarity; `PlayerInventory.LastTenPullResults` exposes the structured results.
+- Range rings and level badges confirmed pre-existing (`TowerSelectionManager.DrawRangePreview` / `DragonTower.EnsureLevelBadge`).
+- Gacha pity persists to backend via the existing JSON-blob progression sync (verified by `ProgressionPityTests`; no migration needed — progression is a raw `SaveJson` blob).
+- Nakama device auth (`NakamaAuthService`) + battle-score leaderboard submission (`NakamaLeaderboardService`); config via `Resources/NakamaConfig.asset`. Requires a running Nakama server (dev defaults: 127.0.0.1:7350, key `defaultkey`). SDK added to `manifest.json` (`com.heroiclabs.nakama-unity` v3.14.0). Score submitted on victory in `GrantBattleCompletionRewards`.
+- Chapter 2 (Ice Tundra): 3 new enemies — `IceShard` (fast/low HP), `FrostBrute` (slow/high armor), `GlacialShield` (shielded with `ShieldRegenDelay=4s` shield restore). New `EnemyData.ShieldRegenDelay` field; `EnemyBase.Tick` restores shields; `TrollEnemy.Tick` now calls `base.Tick`.
+- Runtime chapter loading: `ChapterContent` SO bundles a `MapDefinition` + `WaveData[]`; static `ChapterContent.Active` overrides `GridManager`/`WaveManager` defaults. `GameManager._chapters` + `ApplyActiveChapter()` select the active chapter from the chosen stage (set in `SelectStageForNextBattle` and `StartBattle`). Chapter 1 keeps working (Active null → serialized arrays).
+- `StageCatalog` gained a `chapter` field and 4 Chapter 2 stages (2-1 Frozen Pass … 2-4 Winter Throne).
+- SceneBootstrapper generates `Chapter2Map.asset`, `Chapter2_Wave01`–`15`, `Chapter1Content.asset`/`Chapter2Content.asset`, the 3 ice enemy data/prefabs, and wires `GameManager._chapters`.
+- Pending: run `Dragon Dominion > ★ Build Battle Scene` to generate the Chapter 2 assets; ice/snow tile sprites for `Chapter2Map` and 3 dragon portraits (emberveil_008, tideclaw_009, zephyrwing_010) are user-supplied art.
+
 ## Main Files To Read First
 
 - `AGENTS.md`
