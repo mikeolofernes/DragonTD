@@ -784,6 +784,23 @@ namespace DragonTD.Core
             await _nakamaLeaderboard.SubmitScoreAsync(_nakamaConfig.battleLeaderboardId, score);
         }
 
+        public async System.Threading.Tasks.Task<System.Collections.Generic.List<(string name, long score)>> GetNakamaLeaderboardAsync(int limit)
+        {
+            var result = new System.Collections.Generic.List<(string, long)>();
+            if (_nakamaLeaderboard == null || _nakamaConfig == null) return result;
+            var list = await _nakamaLeaderboard.ListTopAsync(_nakamaConfig.battleLeaderboardId, limit);
+            if (list == null || list.Records == null) return result;
+            foreach (var rec in list.Records)
+            {
+                long.TryParse(rec.Score, out long s);
+                string name = string.IsNullOrEmpty(rec.Username) ? "Player" : rec.Username;
+                result.Add((name, s));
+            }
+            return result;
+        }
+
+        public bool IsNakamaConnected => _nakamaLeaderboard != null;
+
         public void UseLocalPersistence()
         {
             _persistenceService = new LocalProgressionPersistenceService(SavePath);
