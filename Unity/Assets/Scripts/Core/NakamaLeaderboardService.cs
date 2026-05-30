@@ -24,7 +24,7 @@ namespace DragonTD.Core
                 await _client.WriteLeaderboardRecordAsync(_session, leaderboardId, score);
                 return true;
             }
-            catch (ApiResponseException ex)
+            catch (System.Exception ex) // ApiResponseException + network/HTTP failures on mobile
             {
                 Debug.LogWarning($"[Nakama] Score submit failed: {ex.Message}");
                 return false;
@@ -38,7 +38,7 @@ namespace DragonTD.Core
             {
                 return await _client.ListLeaderboardRecordsAsync(_session, leaderboardId, ownerIds: null, expiry: null, limit, cursor: null);
             }
-            catch (ApiResponseException ex)
+            catch (System.Exception ex) // ApiResponseException + network/HTTP failures on mobile
             {
                 Debug.LogWarning($"[Nakama] List scores failed: {ex.Message}");
                 return null;
