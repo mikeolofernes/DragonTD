@@ -179,6 +179,7 @@ namespace DragonTD.TowerDefense
             }
 
             OnWaveComplete?.Invoke();
+            AudioManager.Instance?.PlaySfx(SfxKey.WaveEnd);
 
             if (_activeWave != null)
             {

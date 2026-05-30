@@ -31,6 +31,10 @@ namespace DragonTD.Core
         private readonly Dictionary<string, float> _battleFusedDamageByDragon = new();
 
         public string LatestSummary => _latestSummary;
+        public int BattleTowersPlaced => _battleTowersPlaced;
+        public int BattleEnemiesLeaked => _battleEnemiesLeaked;
+        public int BattleSkillsCast => _battleSkillsCast;
+        public int BattleEnemiesKilled => _battleEnemiesKilled;
         public event System.Action<string> OnWaveSummary;
 
         public static BattleStatsTracker Ensure()
@@ -98,6 +102,7 @@ namespace DragonTD.Core
         {
             _waveSkillsCast++;
             _battleSkillsCast++;
+            AudioManager.Instance?.PlaySfx(SfxKey.SkillCast);
         }
 
         public void RecordEnemyKilled()
