@@ -25,6 +25,12 @@ namespace DragonTD.TowerDefense
 
         public void BeginPlacement(DragonInstance dragon)
         {
+            if (GameManager.Instance != null && !GameManager.Instance.IsPlanningPhase)
+            {
+                GameManager.Instance.ShowBattleMessage("Build between waves");
+                return;
+            }
+
             if (_isPlacing)
                 CancelPlacement();
 
@@ -44,13 +50,19 @@ namespace DragonTD.TowerDefense
         private void Update()
         {
             if (!_isPlacing) return;
+            if (GameManager.Instance != null && !GameManager.Instance.IsPlanningPhase)
+            {
+                CancelPlacement();
+                return;
+            }
+
             Vector3 pointerPosition = GetPointerWorldPosition();
             UpdateRangePreview(pointerPosition);
             UpdateTilePreview(pointerPosition);
 
             // Support both touch (mobile) and mouse (editor)
 #if UNITY_EDITOR || UNITY_STANDALONE
-            if (Input.GetMouseButtonDown(1))
+            if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
             {
                 CancelPlacement();
                 return;
@@ -119,6 +131,7 @@ namespace DragonTD.TowerDefense
 
             tile.SetOccupied(true);
             BattleStatsTracker.Instance?.RecordTowerPlaced(_selectedDragon.Definition.manaCost);
+            AudioManager.Instance?.PlaySfx(SfxKey.TowerPlace);
             GameManager.Instance?.ShowBattleMessage($"{_selectedDragon.Definition.displayName} deployed");
             CancelPlacement();
         }
