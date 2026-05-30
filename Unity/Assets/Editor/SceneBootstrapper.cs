@@ -83,6 +83,12 @@ namespace DragonTD.Editor
             CreateEnemyPrefab("IceShard", iceShardData, new Color(0.7f, 0.9f, 1f), 0.6f);
             CreateEnemyPrefab("FrostBrute", frostBruteData, new Color(0.55f, 0.75f, 1f), 1.0f);
             CreateEnemyPrefab("GlacialShield", glacialShieldData, new Color(0.35f, 0.85f, 1f), 0.82f);
+            var lavaHoundData = CreateLavaHoundData();
+            var magmaGolemData = CreateMagmaGolemData();
+            var emberWraithData = CreateEmberWraithData();
+            CreateEnemyPrefab("LavaHound", lavaHoundData, new Color(1f, 0.5f, 0.2f), 0.66f);
+            CreateEnemyPrefab("MagmaGolem", magmaGolemData, new Color(0.9f, 0.35f, 0.12f), 1.05f);
+            CreateEnemyPrefab("EmberWraith", emberWraithData, new Color(1f, 0.6f, 0.35f), 0.7f);
             CreateProjectilePrefab();
             ConfigurePortraitImports();
             foreach (var dragon in Phase1DragonData.All)
@@ -248,6 +254,63 @@ namespace DragonTD.Editor
                 new EnemySpawnEntry{ EnemyPrefab = iceShardPrefab, Count = 30, SpawnInterval = 0.20f },
                 new EnemySpawnEntry{ EnemyPrefab = glacialShieldPrefab, Count = 12, SpawnInterval = 0.32f },
                 new EnemySpawnEntry{ EnemyPrefab = frostBrutePrefab, Count = 8, SpawnInterval = 0.46f });
+            var lavaHoundPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/LavaHound.prefab");
+            var magmaGolemPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/MagmaGolem.prefab");
+            var emberWraithPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/EmberWraith.prefab");
+            CreateWave("Chapter3_Wave01", 200, 130,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 8, SpawnInterval = 0.72f });
+            CreateWave("Chapter3_Wave02", 260, 160,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 12, SpawnInterval = 0.62f });
+            CreateWave("Chapter3_Wave03", 340, 200,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 14, SpawnInterval = 0.55f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 3, SpawnInterval = 0.88f });
+            CreateWave("Chapter3_Wave04", 440, 250,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 16, SpawnInterval = 0.50f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 5, SpawnInterval = 0.80f });
+            CreateWave("Chapter3_Wave05", 580, 320,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 18, SpawnInterval = 0.46f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 6, SpawnInterval = 0.74f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 2, SpawnInterval = 1.2f });
+            CreateWave("Chapter3_Wave06", 740, 390,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 20, SpawnInterval = 0.42f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 7, SpawnInterval = 0.68f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 3, SpawnInterval = 1.1f });
+            CreateWave("Chapter3_Wave07", 920, 470,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 22, SpawnInterval = 0.38f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 8, SpawnInterval = 0.62f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 4, SpawnInterval = 1.0f });
+            CreateWave("Chapter3_Wave08", 1120, 560,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 24, SpawnInterval = 0.35f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 9, SpawnInterval = 0.56f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 5, SpawnInterval = 0.92f });
+            CreateWave("Chapter3_Wave09", 1360, 660,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 26, SpawnInterval = 0.32f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 10, SpawnInterval = 0.50f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 6, SpawnInterval = 0.84f });
+            CreateWave("Chapter3_Wave10", 1640, 780,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 26, SpawnInterval = 0.30f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 11, SpawnInterval = 0.46f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 7, SpawnInterval = 0.76f });
+            CreateWave("Chapter3_Wave11", 1960, 900,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 28, SpawnInterval = 0.28f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 12, SpawnInterval = 0.42f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 8, SpawnInterval = 0.70f });
+            CreateWave("Chapter3_Wave12", 2320, 1040,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 28, SpawnInterval = 0.26f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 13, SpawnInterval = 0.38f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 9, SpawnInterval = 0.62f });
+            CreateWave("Chapter3_Wave13", 2740, 1180,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 30, SpawnInterval = 0.24f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 14, SpawnInterval = 0.34f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 10, SpawnInterval = 0.56f });
+            CreateWave("Chapter3_Wave14", 3200, 1380,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 30, SpawnInterval = 0.22f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 14, SpawnInterval = 0.30f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 11, SpawnInterval = 0.50f });
+            CreateWave("Chapter3_Wave15", 4000, 1600,
+                new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 32, SpawnInterval = 0.20f },
+                new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 16, SpawnInterval = 0.26f },
+                new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 12, SpawnInterval = 0.44f });
             CreateCardPrefab();
             CreateUIPrefabs();
 
@@ -277,7 +340,8 @@ namespace DragonTD.Editor
             var bgSprite = mapDef?.backgroundSprite ?? ImportBattleBackground();
 
             var ch2Map = EnsureChapter2Map();
-            EnsureChapterContents(mapDef, ch2Map);
+            var ch3Map = EnsureChapter3Map();
+            EnsureChapterContents(mapDef, ch2Map, ch3Map);
 
             SetupCamera();
             if (bgSprite != null) CreateBattleBackground(bgSprite);
@@ -354,6 +418,27 @@ namespace DragonTD.Editor
                 "BBBBBBPBBBBB\n" +
                 "BBBBBBPPPPPB\n" +
                 "BBBBBBBBBBPB\n" +
+                "BBBBBBBBBBPB\n" +
+                "BBBBBBBBBBPP\n" +
+                "BBBBBBBBBBBB";
+            AssetDatabase.CreateAsset(def, path);
+            AssetDatabase.SaveAssets();
+            return def;
+        }
+
+        static MapDefinition EnsureChapter3Map()
+        {
+            string path = MapSODir + "/Chapter3Map.asset";
+            var existing = AssetDatabase.LoadAssetAtPath<MapDefinition>(path);
+            if (existing != null) return existing;
+            var def = ScriptableObject.CreateInstance<MapDefinition>();
+            def.mapName = "Chapter 3";
+            def.grid =
+                "BBBBBBBBBBBB\n" +
+                "BBBBBBBBBBBB\n" +
+                "PPPPPBBBBBBB\n" +
+                "BBBBPBBBBBBB\n" +
+                "BBBBPPPPPPPB\n" +
                 "BBBBBBBBBBPB\n" +
                 "BBBBBBBBBBPP\n" +
                 "BBBBBBBBBBBB";
@@ -505,6 +590,24 @@ namespace DragonTD.Editor
             return d;
         }
 
+        static EnemyData CreateLavaHoundData()
+        {
+            return CreateEnemyData("LavaHound", "Lava Hound", 320f, 3.1f, 10f, 16, 1, EnemyFaction.CorruptedDragon,
+                EnemyTrait.Runner, 0f, 1f, 1f, DragonElement.Fire, true);
+        }
+
+        static EnemyData CreateMagmaGolemData()
+        {
+            return CreateEnemyData("MagmaGolem", "Magma Golem", 2000f, 0.95f, 140f, 38, 2, EnemyFaction.Troll,
+                EnemyTrait.Brute, 0f, 1f, 1f, DragonElement.Fire, true);
+        }
+
+        static EnemyData CreateEmberWraithData()
+        {
+            return CreateEnemyData("EmberWraith", "Ember Wraith", 700f, 2.6f, 30f, 28, 1, EnemyFaction.CorruptedDragon,
+                EnemyTrait.Flying, 0f, 1f, 1f, DragonElement.Fire, true);
+        }
+
         static EnemyData CreateEnemyData(string assetName, string enemyName, float hp, float speed,
                                          float armor, int gold, int baseDamage, EnemyFaction faction,
                                          EnemyTrait trait, float regenPerSecond = 0f,
@@ -600,10 +703,11 @@ namespace DragonTD.Editor
             return w;
         }
 
-        static void EnsureChapterContents(MapDefinition ch1Map, MapDefinition ch2Map)
+        static void EnsureChapterContents(MapDefinition ch1Map, MapDefinition ch2Map, MapDefinition ch3Map)
         {
             CreateChapterContent("Chapter1Content", 1, ch1Map, "Wave", 15);
             CreateChapterContent("Chapter2Content", 2, ch2Map, "Chapter2_Wave", 15);
+            CreateChapterContent("Chapter3Content", 3, ch3Map, "Chapter3_Wave", 15);
         }
 
         static ChapterContent CreateChapterContent(string assetName, int number, MapDefinition map, string wavePrefix, int waveCount)
@@ -1260,14 +1364,16 @@ namespace DragonTD.Editor
             var gmSO = new SerializedObject(gm);
             var ch1Content = AssetDatabase.LoadAssetAtPath<ChapterContent>("Assets/ScriptableObjects/Chapters/Chapter1Content.asset");
             var ch2Content = AssetDatabase.LoadAssetAtPath<ChapterContent>("Assets/ScriptableObjects/Chapters/Chapter2Content.asset");
+            var ch3Content = AssetDatabase.LoadAssetAtPath<ChapterContent>("Assets/ScriptableObjects/Chapters/Chapter3Content.asset");
             var chaptersProp = gmSO.FindProperty("_chapters");
             if (chaptersProp != null)
             {
-                int n = (ch1Content != null ? 1 : 0) + (ch2Content != null ? 1 : 0);
+                int n = (ch1Content != null ? 1 : 0) + (ch2Content != null ? 1 : 0) + (ch3Content != null ? 1 : 0);
                 chaptersProp.arraySize = n;
                 int idx = 0;
                 if (ch1Content != null) chaptersProp.GetArrayElementAtIndex(idx++).objectReferenceValue = ch1Content;
                 if (ch2Content != null) chaptersProp.GetArrayElementAtIndex(idx++).objectReferenceValue = ch2Content;
+                if (ch3Content != null) chaptersProp.GetArrayElementAtIndex(idx++).objectReferenceValue = ch3Content;
                 gmSO.ApplyModifiedProperties();
                 EditorUtility.SetDirty(gm);
             }

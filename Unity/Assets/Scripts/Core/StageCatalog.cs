@@ -15,7 +15,11 @@ namespace DragonTD.Core
             new StageDefinition("chapter_2_stage_1", "2-1", "Frozen Pass", "Ice Shard rush", 1.7f, 1.6f, "Rare/Epic", 5, 1, 1.1f, 12, 1, 5, 2, DragonRoleTag.Slow, DragonRoleTag.Damage),
             new StageDefinition("chapter_2_stage_2", "2-2", "Glacier Hold", "Frost Brutes", 1.95f, 1.75f, "Rare/Epic/Legendary", 6, 2, 1.16f, 12, 1, 5, 2, DragonRoleTag.AntiShield, DragonRoleTag.Aoe),
             new StageDefinition("chapter_2_stage_3", "2-3", "Shardspire", "Shielded glacials", 2.2f, 1.9f, "Epic/Legendary", 7, 2, 1.22f, 14, 0, 6, 2, DragonRoleTag.AntiShield, DragonRoleTag.Damage),
-            new StageDefinition("chapter_2_stage_4", "2-4", "Winter Throne", "Full ice assault", 2.5f, 2.1f, "Epic/Legendary/Mythic", 8, 3, 1.3f, 16, 0, 6, 2, DragonRoleTag.AntiFlying, DragonRoleTag.Slow, DragonRoleTag.Aoe)
+            new StageDefinition("chapter_2_stage_4", "2-4", "Winter Throne", "Full ice assault", 2.5f, 2.1f, "Epic/Legendary/Mythic", 8, 3, 1.3f, 16, 0, 6, 2, DragonRoleTag.AntiFlying, DragonRoleTag.Slow, DragonRoleTag.Aoe),
+            new StageDefinition("chapter_3_stage_1", "3-1", "Cinder Approach", "Lava Hound packs", 2.7f, 2.2f, "Epic/Legendary", 9, 2, 1.15f, 14, 1, 6, 3, DragonRoleTag.Damage, DragonRoleTag.Aoe),
+            new StageDefinition("chapter_3_stage_2", "3-2", "Magma Bastion", "Magma Golems", 3.0f, 2.4f, "Epic/Legendary", 10, 3, 1.22f, 14, 0, 6, 3, DragonRoleTag.Damage, DragonRoleTag.AntiShield),
+            new StageDefinition("chapter_3_stage_3", "3-3", "Ashfall Span", "Ember Wraith swarms", 3.3f, 2.6f, "Legendary/Mythic", 11, 3, 1.3f, 16, 0, 6, 3, DragonRoleTag.AntiFlying, DragonRoleTag.Aoe),
+            new StageDefinition("chapter_3_stage_4", "3-4", "Throne of Embers", "Full volcano assault", 3.7f, 2.9f, "Legendary/Mythic", 12, 4, 1.4f, 18, 0, 7, 3, DragonRoleTag.AntiFlying, DragonRoleTag.Damage, DragonRoleTag.Aoe)
         };
 
         public static StageDefinition Get(string stageId)
