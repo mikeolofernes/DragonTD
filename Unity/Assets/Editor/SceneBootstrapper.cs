@@ -97,6 +97,7 @@ namespace DragonTD.Editor
                 CreateNormalAttack(dragon);
                 CreateActiveSkill(dragon);
                 CreateUltimateSkill(dragon);
+                CreatePassiveSkill(dragon);
                 CreateDragonDef(dragon);
             }
             var orcPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcEnemy.prefab");
@@ -832,6 +833,58 @@ namespace DragonTD.Editor
             return sk;
         }
 
+        static SkillDefinition CreatePassiveSkill(Phase1DragonData.Def dragon)
+        {
+            string id   = dragon.Id + "_passive";
+            string path = SODir + "/Skills/" + id + ".asset";
+            var sk = AssetDatabase.LoadAssetAtPath<SkillDefinition>(path);
+            if (sk == null) { sk = ScriptableObject.CreateInstance<SkillDefinition>(); AssetDatabase.CreateAsset(sk, path); }
+            sk.skillId = id;
+            switch (dragon.Id)
+            {
+                case "voltaris_001":
+                    sk.displayName="Voltage Arc"; sk.description="Chains lightning to 2 nearby enemies.";
+                    sk.passiveType=PassiveSkillType.ChainLightning; sk.passiveChainCount=2; sk.passiveSplashPercent=0.50f; sk.aoeRadius=dragon.Range; break;
+                case "frostfang_002":
+                    sk.displayName="Frost Touch"; sk.description="Slows struck enemies 20% for 1.5s.";
+                    sk.passiveType=PassiveSkillType.SlowOnHit;
+                    sk.statusEffects=new[]{new StatusEffect{effectId="slow_001",displayName="Frost Slow",duration=1.5f,magnitude=0.20f}}; break;
+                case "magmaclaw_003":
+                    sk.displayName="Scorching Claws"; sk.description="Burns struck enemies 5 dmg/s for 2s.";
+                    sk.passiveType=PassiveSkillType.BurnOnHit;
+                    sk.statusEffects=new[]{new StatusEffect{effectId="burn_001",displayName="Claw Burn",duration=2f,magnitude=5f}}; break;
+                case "tempest_glacion_004":
+                    sk.displayName="Storm Surge"; sk.description="Hits splash 30% damage to nearby enemies.";
+                    sk.passiveType=PassiveSkillType.AoeSplash; sk.passiveSplashPercent=0.30f; sk.aoeRadius=2f; break;
+                case "stonehide_005":
+                    sk.displayName="Tremor Strike"; sk.description="15% chance to stun struck enemy 0.8s.";
+                    sk.passiveType=PassiveSkillType.StunOnHit; sk.passiveChance=0.15f;
+                    sk.statusEffects=new[]{new StatusEffect{effectId="stun_001",displayName="Stun",duration=0.8f,magnitude=0f}}; break;
+                case "celestara_006":
+                    sk.displayName="Celestial Burst"; sk.description="Hits splash 25% damage in radius 2.5.";
+                    sk.passiveType=PassiveSkillType.AoeSplash; sk.passiveSplashPercent=0.25f; sk.aoeRadius=2.5f; break;
+                case "shadowfang_007":
+                    sk.displayName="Void Venom"; sk.description="Poisons struck enemies 4 dmg/s for 4s.";
+                    sk.passiveType=PassiveSkillType.PoisonOnHit;
+                    sk.statusEffects=new[]{new StatusEffect{effectId="burn_001",displayName="Venom",duration=4f,magnitude=4f}}; break;
+                case "emberveil_008":
+                    sk.displayName="Ember Trail"; sk.description="Burns struck enemies 7 dmg/s for 2s.";
+                    sk.passiveType=PassiveSkillType.BurnOnHit;
+                    sk.statusEffects=new[]{new StatusEffect{effectId="burn_001",displayName="Ember Burn",duration=2f,magnitude=7f}}; break;
+                case "tideclaw_009":
+                    sk.displayName="Undertow"; sk.description="Slows struck enemies 25% for 2s.";
+                    sk.passiveType=PassiveSkillType.SlowOnHit;
+                    sk.statusEffects=new[]{new StatusEffect{effectId="slow_001",displayName="Undertow",duration=2f,magnitude=0.25f}}; break;
+                case "zephyrwing_010":
+                    sk.displayName="Gale Arc"; sk.description="Arcs to 1 nearby enemy each attack.";
+                    sk.passiveType=PassiveSkillType.ChainLightning; sk.passiveChainCount=1; sk.passiveSplashPercent=0.60f; sk.aoeRadius=dragon.Range; break;
+                default:
+                    sk.passiveType=PassiveSkillType.None; break;
+            }
+            EditorUtility.SetDirty(sk);
+            return sk;
+        }
+
         static void CreateDragonDef(Phase1DragonData.Def dragon)
         {
             string path = SODir+"/Dragons/"+dragon.Id+".asset";
@@ -865,6 +918,8 @@ namespace DragonTD.Editor
             skillSet.FindPropertyRelative("activeSkill").objectReferenceValue = activeSkill;
             var ultimateSkill = AssetDatabase.LoadAssetAtPath<SkillDefinition>(SODir+"/Skills/"+dragon.Id+"_ultimate.asset");
             skillSet.FindPropertyRelative("ultimateSkill").objectReferenceValue = ultimateSkill;
+            var passiveSkill = AssetDatabase.LoadAssetAtPath<SkillDefinition>(SODir+"/Skills/"+dragon.Id+"_passive.asset");
+            skillSet.FindPropertyRelative("passiveSkill").objectReferenceValue = passiveSkill;
 
             var tower = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Dragons/"+dragon.Name+"Tower.prefab");
             var portrait = AssetDatabase.LoadAssetAtPath<Sprite>(DragonArtDir+"/"+dragon.Id+"/portrait.png");
