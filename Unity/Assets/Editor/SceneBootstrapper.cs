@@ -104,14 +104,14 @@ namespace DragonTD.Editor
             var shieldedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcShielded.prefab");
             var regenPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcRegenerator.prefab");
             var flyingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcFlying.prefab");
-            CreateWave("Wave01", 120, 90,
+            CreateWave("Wave01", 140, 105,
                 new EnemySpawnEntry{ EnemyPrefab = orcPrefab, Count = 4, SpawnInterval = 1.25f },
                 new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 5, SpawnInterval = 0.82f });
-            CreateWave("Wave02", 165, 115,
+            CreateWave("Wave02", 190, 135,
                 new EnemySpawnEntry{ EnemyPrefab = orcPrefab, Count = 5, SpawnInterval = 1.0f },
                 new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 2, SpawnInterval = 1.3f },
                 new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 3, SpawnInterval = 1.1f });
-            CreateWave("Wave03", 300, 190,
+            CreateWave("Wave03", 320, 210,
                 new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 5, SpawnInterval = 0.64f },
                 new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 5, SpawnInterval = 0.9f },
                 new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 5, SpawnInterval = 0.82f },
@@ -119,7 +119,7 @@ namespace DragonTD.Editor
                 new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 3, SpawnInterval = 1.08f },
                 new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 2, SpawnInterval = 0.7f },
                 new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 2, SpawnInterval = 0.7f });
-            CreateWave("Wave04", 420, 240,
+            CreateWave("Wave04", 440, 260,
                 new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 6, SpawnInterval = 0.72f },
                 new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 5, SpawnInterval = 0.82f },
                 new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 8, SpawnInterval = 0.52f },
@@ -127,7 +127,7 @@ namespace DragonTD.Editor
                 new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 4, SpawnInterval = 0.92f },
                 new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 3, SpawnInterval = 0.62f },
                 new EnemySpawnEntry{ EnemyPrefab = flyingPrefab, Count = 4, SpawnInterval = 0.58f });
-            CreateWave("Wave05", 600, 320,
+            CreateWave("Wave05", 620, 340,
                 new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 10, SpawnInterval = 0.42f },
                 new EnemySpawnEntry{ EnemyPrefab = shieldedPrefab, Count = 6, SpawnInterval = 0.68f },
                 new EnemySpawnEntry{ EnemyPrefab = regenPrefab, Count = 7, SpawnInterval = 0.66f },
