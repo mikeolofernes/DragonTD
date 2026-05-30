@@ -1,7 +1,10 @@
 {
     "name": "DragonTD",
     "rootNamespace": "DragonTD",
-    "references": [],
+    "references": [
+        "Unity.Purchasing",
+        "NakamaRuntime"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
