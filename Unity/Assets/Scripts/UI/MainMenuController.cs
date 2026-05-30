@@ -51,19 +51,19 @@ namespace DragonTD.UI
             EnsureHubControls();
             RuntimeFontScaler.Apply(gameObject);
             if (_battleButton != null)
-                _battleButton.onClick.AddListener(OpenStageSelect);
+                _battleButton.onClick.AddListener(() => { AudioManager.Instance?.PlaySfx(SfxKey.ButtonClick); OpenStageSelect(); });
             if (_battleNavButton != null)
-                _battleNavButton.onClick.AddListener(OpenStageSelect);
+                _battleNavButton.onClick.AddListener(() => { AudioManager.Instance?.PlaySfx(SfxKey.ButtonClick); OpenStageSelect(); });
             if (_dragonsButton != null)
-                _dragonsButton.onClick.AddListener(ShowDragons);
+                _dragonsButton.onClick.AddListener(() => { AudioManager.Instance?.PlaySfx(SfxKey.ButtonClick); ShowDragons(); });
             if (_profileButton != null)
-                _profileButton.onClick.AddListener(ToggleProfile);
+                _profileButton.onClick.AddListener(() => { AudioManager.Instance?.PlaySfx(SfxKey.ButtonClick); ToggleProfile(); });
             if (_clanButton != null)
-                _clanButton.onClick.AddListener(ToggleClan);
+                _clanButton.onClick.AddListener(() => { AudioManager.Instance?.PlaySfx(SfxKey.ButtonClick); ToggleClan(); });
             if (_leaderboardButton != null)
-                _leaderboardButton.onClick.AddListener(ToggleLeaderboard);
+                _leaderboardButton.onClick.AddListener(() => { AudioManager.Instance?.PlaySfx(SfxKey.ButtonClick); ToggleLeaderboard(); });
             if (_storeButton != null)
-                _storeButton.onClick.AddListener(ToggleStore);
+                _storeButton.onClick.AddListener(() => { AudioManager.Instance?.PlaySfx(SfxKey.ButtonClick); ToggleStore(); });
             if (_eventText != null)
             {
                 Button eventButton = _eventText.GetComponent<Button>() ?? _eventText.gameObject.AddComponent<Button>();
@@ -125,6 +125,8 @@ namespace DragonTD.UI
 
             if (GameManager.Instance != null)
                 GameManager.Instance.SetState(GameState.MainMenu);
+
+            AudioManager.Instance?.PlayMusic(MusicKey.Menu);
         }
 
         private void Update()
