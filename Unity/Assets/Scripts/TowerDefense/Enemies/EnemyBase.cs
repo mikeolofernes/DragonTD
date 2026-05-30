@@ -247,6 +247,7 @@ namespace DragonTD.TowerDefense
         {
             if (IsDead) return;
             IsDead = true;
+            if (!_reachedBase) AudioManager.Instance?.PlaySfx(SfxKey.EnemyDeath);
             DeathPopEffect.Spawn(transform.position, _spriteRenderer != null ? _spriteRenderer.color : Color.white);
             OnDied?.Invoke(this);
             if (!_reachedBase)
@@ -468,6 +469,7 @@ namespace DragonTD.TowerDefense
         protected void ReachBase()
         {
             _reachedBase = true;
+            AudioManager.Instance?.PlaySfx(SfxKey.EnemyReachBase);
             BattleStatsTracker.Instance?.RecordEnemyLeaked();
             GameManager.Instance?.LoseLife(_data.DamageToBase);
             Die();
