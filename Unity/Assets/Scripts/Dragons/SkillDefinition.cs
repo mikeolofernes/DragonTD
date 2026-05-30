@@ -33,6 +33,12 @@ namespace DragonTD.Dragons
         public bool isAoe;
         public float aoeRadius;
 
+        [Header("Passive On-Hit")]
+        public PassiveSkillType passiveType = PassiveSkillType.None;
+        public float passiveChance = 1.0f;
+        public int passiveChainCount = 2;
+        public float passiveSplashPercent = 0.3f;
+
         public float GetDamageMultiplier(int skillLevel)
         {
             int idx = Mathf.Clamp(skillLevel - 1, 0, levelMultipliers.Length - 1);
