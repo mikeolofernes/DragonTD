@@ -96,6 +96,7 @@ namespace DragonTD.Editor
                 CreateDragonTowerPrefab(dragon);
                 CreateNormalAttack(dragon);
                 CreateActiveSkill(dragon);
+                CreateUltimateSkill(dragon);
                 CreateDragonDef(dragon);
             }
             var orcPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcEnemy.prefab");
@@ -795,6 +796,42 @@ namespace DragonTD.Editor
             EditorUtility.SetDirty(s);
         }
 
+        static SkillDefinition CreateUltimateSkill(Phase1DragonData.Def dragon)
+        {
+            string id   = dragon.Id + "_ultimate";
+            string path = SODir + "/Skills/" + id + ".asset";
+            var sk = AssetDatabase.LoadAssetAtPath<SkillDefinition>(path);
+            if (sk == null) { sk = ScriptableObject.CreateInstance<SkillDefinition>(); AssetDatabase.CreateAsset(sk, path); }
+
+            (string name, float cd, float mult, bool aoe, float radius, string desc) = dragon.Id switch
+            {
+                "voltaris_001"        => ("Thunderstorm",      30f, 5.0f, false, 0f,  "Chain lightning hits ALL enemies in range"),
+                "frostfang_002"       => ("Absolute Zero",     35f, 2.0f, true,  6f,  "Freeze all in-range enemies for 3 seconds"),
+                "magmaclaw_003"       => ("Eruption",          28f, 4.0f, true,  4f,  "Massive AoE blast and 6s burn DoT"),
+                "tempest_glacion_004" => ("Glacial Tempest",   40f, 6.0f, true,  5f,  "Freeze and chain lightning combo"),
+                "stonehide_005"       => ("Earthquake",        45f, 1.5f, true,  12f, "Slows ALL on-screen enemies 60% for 5s"),
+                "celestara_006"       => ("Solar Flare",       50f, 1.0f, true,  5f,  "Buffs nearby allied towers for 8s"),
+                "shadowfang_007"      => ("Void Collapse",     32f, 3.0f, true,  4f,  "Pulls nearby enemies in and deals 3x damage"),
+                "emberveil_008"       => ("Celestial Inferno", 30f, 5.5f, false, 0f,  "Rains celestial fire on 4 random enemies"),
+                "tideclaw_009"        => ("Maelstrom",         28f, 3.5f, true,  4f,  "AoE water explosion and 40% slow 4s"),
+                "zephyrwing_010"      => ("Cyclone",           25f, 4.0f, true,  5f,  "4x damage to flying, 50% slow to ground"),
+                _                    => ("Ultimate",           30f, 3.0f, false, 0f,  "Powerful ultimate ability")
+            };
+
+            sk.skillId          = id;
+            sk.displayName      = name;
+            sk.description      = desc;
+            sk.skillType        = SkillType.Damage;
+            sk.targetType       = aoe ? TargetType.AoE : TargetType.Chain;
+            sk.cooldown         = cd;
+            sk.isAoe            = aoe;
+            sk.aoeRadius        = radius;
+            sk.range            = dragon.Range > 0 ? dragon.Range : 5f;
+            sk.levelMultipliers = Multipliers(mult);
+            EditorUtility.SetDirty(sk);
+            return sk;
+        }
+
         static void CreateDragonDef(Phase1DragonData.Def dragon)
         {
             string path = SODir+"/Dragons/"+dragon.Id+".asset";
@@ -826,6 +863,8 @@ namespace DragonTD.Editor
             var skillSet = so.FindProperty("skillSet");
             skillSet.FindPropertyRelative("normalAttack").objectReferenceValue = skill;
             skillSet.FindPropertyRelative("activeSkill").objectReferenceValue = activeSkill;
+            var ultimateSkill = AssetDatabase.LoadAssetAtPath<SkillDefinition>(SODir+"/Skills/"+dragon.Id+"_ultimate.asset");
+            skillSet.FindPropertyRelative("ultimateSkill").objectReferenceValue = ultimateSkill;
 
             var tower = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Dragons/"+dragon.Name+"Tower.prefab");
             var portrait = AssetDatabase.LoadAssetAtPath<Sprite>(DragonArtDir+"/"+dragon.Id+"/portrait.png");
