@@ -1390,6 +1390,7 @@ namespace DragonTD.Editor
             var piGO  = Root<PlayerInventory>("PlayerInventory");
             var dalGO = Root<DragonAssetLoader>("DragonAssetLoader");
             var dirGO = Root<GameDirector>("GameDirector");
+            Root<AudioManager>("AudioManager");
 
             var rm = rmGO.GetComponent<ResourceManager>();
             var rmSO = new SerializedObject(rm);
