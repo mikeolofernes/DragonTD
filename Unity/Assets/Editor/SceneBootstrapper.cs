@@ -429,20 +429,30 @@ namespace DragonTD.Editor
         static MapDefinition EnsureChapter3Map()
         {
             string path = MapSODir + "/Chapter3Map.asset";
-            var existing = AssetDatabase.LoadAssetAtPath<MapDefinition>(path);
-            if (existing != null) return existing;
-            var def = ScriptableObject.CreateInstance<MapDefinition>();
-            def.mapName = "Chapter 3";
-            def.grid =
-                "BBBBBBBBBBBB\n" +
-                "BBBBBBBBBBBB\n" +
-                "PPPPPBBBBBBB\n" +
-                "BBBBPBBBBBBB\n" +
-                "BBBBPPPPPPPB\n" +
-                "BBBBBBBBBBPB\n" +
-                "BBBBBBBBBBPP\n" +
-                "BBBBBBBBBBBB";
-            AssetDatabase.CreateAsset(def, path);
+            var def = AssetDatabase.LoadAssetAtPath<MapDefinition>(path);
+            if (def == null)
+            {
+                def = ScriptableObject.CreateInstance<MapDefinition>();
+                def.mapName = "Chapter 3";
+                def.grid =
+                    "BBBBBBBBBBBB\n" +
+                    "BBBBBBBBBBBB\n" +
+                    "PPPPPBBBBBBB\n" +
+                    "BBBBPBBBBBBB\n" +
+                    "BBBBPPPPPPPB\n" +
+                    "BBBBBBBBBBPB\n" +
+                    "BBBBBBBBBBPP\n" +
+                    "BBBBBBBBBBBB";
+                AssetDatabase.CreateAsset(def, path);
+            }
+
+            // Assign the volcano tile sprites (licensed + stylized from Adobe Stock)
+            Sprite ground = ImportTileSprite("volcano_ground.png");
+            Sprite lavaPath = ImportTileSprite("volcano_path.png");
+            if (ground != null)  def.buildableSprite = ground;
+            if (lavaPath != null) def.pathSprite = lavaPath;
+
+            EditorUtility.SetDirty(def);
             AssetDatabase.SaveAssets();
             return def;
         }
