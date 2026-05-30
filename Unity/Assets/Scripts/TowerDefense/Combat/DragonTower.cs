@@ -184,6 +184,61 @@ namespace DragonTD.TowerDefense
                 : DamageSource.Projectile;
             go.GetComponent<ProjectileBase>()?.Initialize(target.transform, damage, 10f, CurrentProjectileColor, source, _upgradeLevel);
             AudioManager.Instance?.PlaySfx(SfxKey.Attack);
+            ApplyPassiveEffect(target);
+        }
+
+        private void ApplyPassiveEffect(EnemyBase target)
+        {
+            SkillDefinition passive = _dragonInstance?.Definition?.skillSet?.passiveSkill;
+            if (passive == null || passive.passiveType == PassiveSkillType.None) return;
+            if (target == null || target.IsDead) return;
+
+            switch (passive.passiveType)
+            {
+                case PassiveSkillType.SlowOnHit:
+                case PassiveSkillType.BurnOnHit:
+                case PassiveSkillType.PoisonOnHit:
+                    if (passive.statusEffects != null && passive.statusEffects.Length > 0)
+                        target.ApplyStatusEffects(passive.statusEffects, _projectileColor);
+                    break;
+
+                case PassiveSkillType.StunOnHit:
+                    if (Random.value <= passive.passiveChance)
+                    {
+                        float dur = passive.statusEffects != null && passive.statusEffects.Length > 0
+                            ? passive.statusEffects[0].duration : 0.8f;
+                        target.ApplyStun(dur);
+                    }
+                    break;
+
+                case PassiveSkillType.AoeSplash:
+                {
+                    float splash = _dragonInstance.Attack * passive.passiveSplashPercent * _damageMultiplier * LevelDamageMultiplier;
+                    foreach (Collider2D hit in Physics2D.OverlapCircleAll(target.transform.position, passive.aoeRadius))
+                    {
+                        EnemyBase nb = hit.GetComponent<EnemyBase>();
+                        if (nb == null || nb == target || nb.IsDead) continue;
+                        nb.TakeDamage(splash, _projectileColor, DamageSource.Skill);
+                    }
+                    break;
+                }
+
+                case PassiveSkillType.ChainLightning:
+                {
+                    float chain = _dragonInstance.Attack * passive.passiveSplashPercent * _damageMultiplier * LevelDamageMultiplier;
+                    int arcs = 0;
+                    foreach (Collider2D hit in Physics2D.OverlapCircleAll(transform.position, AttackRange))
+                    {
+                        if (arcs >= passive.passiveChainCount) break;
+                        EnemyBase nb = hit.GetComponent<EnemyBase>();
+                        if (nb == null || nb == target || nb.IsDead) continue;
+                        nb.TakeDamage(chain, PrototypeBalance.LightningDamageColor, DamageSource.LightningProjectile);
+                        DamageIndicator.SpawnText(nb.transform.position + Vector3.up * 0.65f, "CHAIN", PrototypeBalance.LightningDamageColor);
+                        arcs++;
+                    }
+                    break;
+                }
+            }
         }
 
         private void ShowElementFeedback(EnemyBase target, float multiplier)

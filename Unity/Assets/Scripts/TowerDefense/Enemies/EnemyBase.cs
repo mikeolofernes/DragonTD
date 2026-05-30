@@ -20,6 +20,7 @@ namespace DragonTD.TowerDefense
         private Coroutine _slowRoutine;
         private Coroutine _burnRoutine;
         private Coroutine _vulnerabilityRoutine;
+        private Coroutine _stunRoutine;
         private float _moveSpeedMultiplier = 1f;
         private float _damageTakenMultiplier = 1f;
         private bool _shieldCracked;
@@ -195,6 +196,23 @@ namespace DragonTD.TowerDefense
                 if (_vulnerabilityRoutine != null) StopCoroutine(_vulnerabilityRoutine);
                 _vulnerabilityRoutine = StartCoroutine(VulnerabilityRoutine(appliedEffect));
             }
+        }
+
+        public void ApplyStun(float duration)
+        {
+            if (IsDead) return;
+            if (_stunRoutine != null) StopCoroutine(_stunRoutine);
+            _stunRoutine = StartCoroutine(StunRoutine(duration));
+        }
+
+        private IEnumerator StunRoutine(float duration)
+        {
+            float prev = _moveSpeedMultiplier;
+            _moveSpeedMultiplier = 0f;
+            DamageIndicator.SpawnText(transform.position + Vector3.up * 0.85f, "STUN", new Color(1f, 0.9f, 0.2f, 1f));
+            yield return new WaitForSeconds(Mathf.Max(0.1f, duration));
+            _moveSpeedMultiplier = prev;
+            _stunRoutine = null;
         }
 
         public void FlashHit(Color color)
