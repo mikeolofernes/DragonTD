@@ -13,6 +13,10 @@ namespace DragonTD.Dragons
         public DragonEvolutionStage EvolutionStage = DragonEvolutionStage.Hatchling;
         public int SkillLevel = 1;  // 1-10, applies to all active skills
 
+        // Returns the ultimate skill only when Bond 6+ is reached.
+        public SkillDefinition UltimateSkill =>
+            BondLevel >= 6 ? Definition?.skillSet?.ultimateSkill : null;
+
         // Computed stats: base * level growth curve * bond multiplier * evolution multiplier
         public float Hp      => Definition.baseStats.hp     * LevelMultiplier * BondStatMultiplier * EvolutionMultiplier;
         public float Attack  => Definition.baseStats.attack  * LevelMultiplier * BondStatMultiplier * EvolutionMultiplier * DragonTD.TowerDefense.PrototypeBalance.GlobalDamageBalance * AccountDamageMultiplier;
