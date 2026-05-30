@@ -41,6 +41,21 @@ namespace DragonTD.Core
         {
             State = newState;
             OnStateChanged?.Invoke(State);
+            if (newState == GameState.Wave)
+            {
+                AudioManager.Instance?.PlaySfx(SfxKey.WaveStart);
+                AudioManager.Instance?.PlayMusic(MusicKey.Battle);
+            }
+            else if (newState == GameState.Victory)
+            {
+                AudioManager.Instance?.PlaySfx(SfxKey.Victory);
+                AudioManager.Instance?.PlayMusic(MusicKey.Victory);
+            }
+            else if (newState == GameState.Defeat)
+            {
+                AudioManager.Instance?.PlaySfx(SfxKey.Defeat);
+                AudioManager.Instance?.StopMusic();
+            }
         }
 
         public void StartBattle()
