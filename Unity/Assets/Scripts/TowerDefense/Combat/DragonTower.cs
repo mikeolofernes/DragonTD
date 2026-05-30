@@ -27,6 +27,8 @@ namespace DragonTD.TowerDefense
         private DragonElement _fusedPartnerElement;
         private bool _hasInheritedPassive;
         private float _nextInheritedPassiveTime;
+        private float _ultimateCooldown;
+        private float _lastUltimateCastTime = float.NegativeInfinity;
 
         // Fake 2.5D: ground shadow + idle bob + breathing + attack lunge
         private Vector3 _basePos;
@@ -92,6 +94,7 @@ namespace DragonTD.TowerDefense
             _attackCooldown = baseAttackCooldown / Mathf.Max(0.1f, instance.AttackSpeed);
             _activeSkillCooldown = instance.Definition.ActiveSkill != null
                 ? instance.Definition.ActiveSkill.cooldown : 10f;
+            _ultimateCooldown = instance.UltimateSkill != null ? instance.UltimateSkill.cooldown : 999f;
             ApplyTileBonus();
             _rangeIndicator = GetComponent<TowerRangeIndicator>();
             if (_rangeIndicator == null)
@@ -124,6 +127,15 @@ namespace DragonTD.TowerDefense
                 Time.time - _lastActiveSkillTime >= _activeSkillCooldown)
             {
                 TryCastActiveSkill(target);
+            }
+
+            if (_dragonInstance.UltimateSkill != null &&
+                GameManager.Instance?.State == GameState.Wave &&
+                Time.time - _lastUltimateCastTime >= _ultimateCooldown)
+            {
+                EnemyBase ultimateTarget = FindNearestEnemy();
+                if (ultimateTarget != null)
+                    TryCastUltimate(ultimateTarget);
             }
         }
 
@@ -338,6 +350,21 @@ namespace DragonTD.TowerDefense
             AbilityExecutor.ExecuteActiveSkill(skill, _dragonInstance, target, transform.position, _damageMultiplier * LevelDamageMultiplier, _statusMagnitudeMultiplier);
             BattleStatsTracker.Instance?.RecordSkillCast();
             _lastActiveSkillTime = Time.time;
+            return true;
+        }
+
+        public bool TryCastUltimate(EnemyBase target)
+        {
+            SkillDefinition ultimate = _dragonInstance?.UltimateSkill;
+            if (ultimate == null) return false;
+            if (target == null || target.IsDead) return false;
+            if (GameManager.Instance?.State != GameState.Wave) return false;
+
+            AbilityExecutor.ExecuteActiveSkill(ultimate, _dragonInstance, target, transform.position, _damageMultiplier * LevelDamageMultiplier, _statusMagnitudeMultiplier);
+            BattleStatsTracker.Instance?.RecordSkillCast();
+            _lastUltimateCastTime = Time.time;
+
+            DamageIndicator.SpawnText(transform.position + Vector3.up * 1.55f, "ULTIMATE!", PrototypeBalance.WeakFeedbackColor);
             return true;
         }
 
