@@ -68,7 +68,24 @@ namespace DragonTD.Core
             OnLivesChanged?.Invoke(Lives);
             ResourceManager.Instance?.ResetForBattle();
             BattleStatsTracker.Ensure().ResetBattle();
+
+            if (ChapterContent.Active?.map?.mapType == DragonTD.Core.MapType.LaneDefense)
+                SetupLaneDefense(ChapterContent.Active.map);
+
             SetState(GameState.Planning);
+        }
+
+        private void SetupLaneDefense(DragonTD.TowerDefense.MapDefinition mapDef)
+        {
+            // Grid origin x = -5.5, column index maps to world x via: worldX = -5.5 + col
+            float wallWorldX = -5.5f + mapDef.wallColumn;
+            int   rows       = DragonTD.TowerDefense.MapDefinition.Rows; // 8
+
+            DragonTD.TowerDefense.WallBase wall = DragonTD.TowerDefense.WallBase.Create(wallWorldX, rows, mapDef.wallHp);
+            wall.OnWallDestroyed += () => SetState(GameState.Defeat);
+
+            if (WaveManager.Instance != null)
+                WaveManager.Instance.ConfigureLane(wallWorldX, -5.5f, 1f, rows);
         }
 
         public void SelectStageForNextBattle(string stageId)
@@ -180,6 +197,10 @@ namespace DragonTD.Core
             TowerSelectionManager.Instance?.ClearSelection();
             WaveManager.Instance?.ResetForBattle();
             GridManager.Instance?.ClearOccupancy();
+
+            // Destroy any WallBase from a previous LaneDefense battle
+            if (DragonTD.TowerDefense.WallBase.Instance != null)
+                Destroy(DragonTD.TowerDefense.WallBase.Instance.gameObject);
 
             foreach (EnemyBase enemy in FindObjectsByType<EnemyBase>(FindObjectsSortMode.None))
                 Destroy(enemy.gameObject);
