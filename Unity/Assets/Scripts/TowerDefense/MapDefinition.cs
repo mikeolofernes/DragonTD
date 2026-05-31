@@ -36,6 +36,11 @@ namespace DragonTD.TowerDefense
         [Header("Background (optional — shown behind tiles if sprites are missing)")]
         public Sprite backgroundSprite;
 
+        [Header("Lane Defense Settings (LaneDefense mode only)")]
+        public DragonTD.Core.MapType mapType = DragonTD.Core.MapType.PathFollowing;
+        public int wallColumn = 8;
+        public float wallHp   = 1000f;
+
         [Header("Grid — 12 wide × 8 tall, top row = top of screen")]
         [TextArea(8, 8)]
         public string grid =
