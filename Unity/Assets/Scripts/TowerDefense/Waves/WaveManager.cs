@@ -13,6 +13,16 @@ namespace DragonTD.TowerDefense
         [SerializeField] private Transform[] _waypoints;
         [SerializeField] private GameObject _eliteEnemyPrefab;
 
+        [Header("Lane Defense")]
+        [SerializeField] private float _laneLeftEdgeX  = -5.5f;
+        [SerializeField] private float _laneRowHeight  = 1f;
+        [SerializeField] private int   _laneRowCount   = 8;
+        private float _wallWorldX;
+
+        private bool IsLaneMode => ChapterContent.Active != null &&
+                                   ChapterContent.Active.map != null &&
+                                   ChapterContent.Active.map.mapType == DragonTD.Core.MapType.LaneDefense;
+
         public int TotalWaves => _waves.Length;
         public int ActiveEnemyCount { get; private set; }
         public Transform[] Waypoints => _waypoints;
@@ -105,7 +115,7 @@ namespace DragonTD.TowerDefense
             }
             ActiveEnemyCount = totalToSpawn;
 
-            if (ActiveEnemyCount == 0 || _spawnPoints == null || _spawnPoints.Length == 0)
+            if (ActiveEnemyCount == 0 || (!IsLaneMode && (_spawnPoints == null || _spawnPoints.Length == 0)))
             {
                 _spawnRoutine = null;
                 yield return null;
@@ -123,6 +133,26 @@ namespace DragonTD.TowerDefense
                     if (group.EnemyPrefab == null)
                     {
                         continue;
+                    }
+                    else if (IsLaneMode)
+                    {
+                        int   row      = UnityEngine.Random.Range(0, _laneRowCount);
+                        float spawnX   = _laneLeftEdgeX;
+                        // Grid origin: (-5.5, -3.5) per MapDefinition.GridToWorld — row 0 = y -3.5
+                        float spawnY   = -3.5f + row * _laneRowHeight;
+                        Vector3 spawnPos = new Vector3(spawnX, spawnY, 0f);
+                        GameObject enemyGO = Instantiate(group.EnemyPrefab, spawnPos, Quaternion.identity);
+                        EnemyBase enemy = enemyGO.GetComponent<EnemyBase>();
+                        if (enemy != null)
+                        {
+                            enemy.InitializeLane(_wallWorldX);
+                            enemy.ApplyDifficultyMultiplier(GameManager.Instance?.StageDifficultyMultiplier ?? 1f);
+                            GameDirector.Instance?.OnEnemySpawned(enemy);
+                        }
+                        else
+                        {
+                            ActiveEnemyCount--;
+                        }
                     }
                     else
                     {
@@ -168,6 +198,14 @@ namespace DragonTD.TowerDefense
             ActiveEnemyCount = 0;
         }
 
+        public void ConfigureLane(float wallWorldX, float leftEdgeX, float rowHeight, int rowCount)
+        {
+            _wallWorldX    = wallWorldX;
+            _laneLeftEdgeX = leftEdgeX;
+            _laneRowHeight = rowHeight;
+            _laneRowCount  = rowCount;
+        }
+
         private void CompleteWave()
         {
             if (!_isWaveActive) return;
@@ -196,13 +234,30 @@ namespace DragonTD.TowerDefense
 
         public void SpawnEliteEnemy(float statMultiplier)
         {
-            if (_eliteEnemyPrefab == null || _spawnPoints.Length == 0) return;
+            if (_eliteEnemyPrefab == null) return;
 
-            GameObject enemyGO = Instantiate(_eliteEnemyPrefab, _spawnPoints[0].position, Quaternion.identity);
+            Vector3 spawnPos;
+            if (IsLaneMode)
+            {
+                int   row    = UnityEngine.Random.Range(0, _laneRowCount);
+                float spawnY = -3.5f + row * _laneRowHeight;
+                spawnPos = new Vector3(_laneLeftEdgeX, spawnY, 0f);
+            }
+            else
+            {
+                if (_spawnPoints == null || _spawnPoints.Length == 0) return;
+                spawnPos = _spawnPoints[0].position;
+            }
+
+            GameObject enemyGO = Instantiate(_eliteEnemyPrefab, spawnPos, Quaternion.identity);
             EnemyBase enemy = enemyGO.GetComponent<EnemyBase>();
             if (enemy == null) return;
 
-            enemy.Initialize(_waypoints);
+            if (IsLaneMode)
+                enemy.InitializeLane(_wallWorldX);
+            else
+                enemy.Initialize(_waypoints);
+
             enemy.ApplyDifficultyMultiplier(statMultiplier);
             ActiveEnemyCount++;
         }
