@@ -32,6 +32,8 @@ namespace DragonTD.TowerDefense
         private Vector3 _baseScale = Vector3.one;
         private float _nextRegenPulseTime;
         private bool _reachedBase;
+        private bool  _isLaneMode;
+        private float _wallWorldX;
 
         public bool IsDead { get; private set; }
         public EnemyData Data => _data;
@@ -65,6 +67,25 @@ namespace DragonTD.TowerDefense
             if (_healthBar != null)
                 _healthBar.Initialize(this);
             _waypoints = waypoints;
+            _maxHp = _data.MaxHp;
+            _moveSpeed = _data.MoveSpeed;
+            _currentHp = _maxHp;
+            _waypointIndex = 0;
+            _shieldCracked = Trait != EnemyTrait.Shielded;
+            _baseScale = transform.localScale;
+            ApplyTraitVisuals();
+            EnsureTraitLabel();
+            OnHpChanged?.Invoke(HpPercent);
+        }
+
+        public void InitializeLane(float wallWorldX)
+        {
+            _isLaneMode = true;
+            _wallWorldX = wallWorldX;
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            _healthBar = GetComponentInChildren<EnemyHealthBar>(true);
+            if (_healthBar != null) _healthBar.Initialize(this);
+            _waypoints = new Transform[0];
             _maxHp = _data.MaxHp;
             _moveSpeed = _data.MoveSpeed;
             _currentHp = _maxHp;
@@ -116,6 +137,14 @@ namespace DragonTD.TowerDefense
 
         protected virtual void MoveTowardsWaypoint()
         {
+            if (_isLaneMode)
+            {
+                transform.position += Vector3.right * CurrentMoveSpeed * Time.deltaTime;
+                if (transform.position.x >= _wallWorldX)
+                    HitWall();
+                return;
+            }
+
             if (_waypoints == null || _waypointIndex >= _waypoints.Length) return;
 
             Transform target = _waypoints[_waypointIndex];
@@ -490,6 +519,16 @@ namespace DragonTD.TowerDefense
             AudioManager.Instance?.PlaySfx(SfxKey.EnemyReachBase);
             BattleStatsTracker.Instance?.RecordEnemyLeaked();
             GameManager.Instance?.LoseLife(_data.DamageToBase);
+            Die();
+        }
+
+        private void HitWall()
+        {
+            if (_reachedBase) return;
+            _reachedBase = true;
+            if (WallBase.Instance != null)
+                WallBase.Instance.TakeDamage(_data.DamageToBase * 50f);
+            BattleStatsTracker.Instance?.RecordEnemyLeaked();
             Die();
         }
     }
