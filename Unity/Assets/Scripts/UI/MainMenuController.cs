@@ -691,8 +691,12 @@ namespace DragonTD.UI
                 _stageButtons = new Button[StageCatalog.Stages.Length];
                 for (int i = 0; i < _stageButtons.Length; i++)
                 {
+                    int col = i % 4;
+                    int row = i / 4;
+                    float x = 0.14f + col * 0.22f;   // 4 cols: 0.14, 0.36, 0.58, 0.80
+                    float y = 0.62f - row * 0.20f;    // rows drop: 0.62, 0.42, 0.22
                     _stageButtons[i] = CreateButton($"StageButton{i + 1}", StageCatalog.Stages[i].stageNumber, font, sprite,
-                        new Vector2(0.20f + i * 0.20f, 0.42f), new Vector2(150f, 82f));
+                        new Vector2(x, y), new Vector2(138f, 68f));
                     _stageButtons[i].transform.SetParent(_stageSelectPanel.transform, false);
                 }
                 _stageStartButton = CreateButton("StageStartButton", "Start Stage", font, sprite, new Vector2(0.37f, 0.18f), new Vector2(180f, 52f));
