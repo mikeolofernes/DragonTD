@@ -19,7 +19,11 @@ namespace DragonTD.Core
             new StageDefinition("chapter_3_stage_1", "3-1", "Cinder Approach", "Lava Hound packs", 2.7f, 2.2f, "Epic/Legendary", 9, 2, 1.15f, 14, 1, 6, 3, DragonRoleTag.Damage, DragonRoleTag.Aoe),
             new StageDefinition("chapter_3_stage_2", "3-2", "Magma Bastion", "Magma Golems", 3.0f, 2.4f, "Epic/Legendary", 10, 3, 1.22f, 14, 0, 6, 3, DragonRoleTag.Damage, DragonRoleTag.AntiShield),
             new StageDefinition("chapter_3_stage_3", "3-3", "Ashfall Span", "Ember Wraith swarms", 3.3f, 2.6f, "Legendary/Mythic", 11, 3, 1.3f, 16, 0, 6, 3, DragonRoleTag.AntiFlying, DragonRoleTag.Aoe),
-            new StageDefinition("chapter_3_stage_4", "3-4", "Throne of Embers", "Full volcano assault", 3.7f, 2.9f, "Legendary/Mythic", 12, 4, 1.4f, 18, 0, 7, 3, DragonRoleTag.AntiFlying, DragonRoleTag.Damage, DragonRoleTag.Aoe)
+            new StageDefinition("chapter_3_stage_4", "3-4", "Throne of Embers", "Full volcano assault", 3.7f, 2.9f, "Legendary/Mythic", 12, 4, 1.4f, 18, 0, 7, 3, DragonRoleTag.AntiFlying, DragonRoleTag.Damage, DragonRoleTag.Aoe),
+            new StageDefinition("chapter_4_stage_1", "4-1", "Ashwall", "Lane rush — light", 2.0f, 1.8f, "Epic/Legendary", 9, 2, 1.0f, 20, 2, 8, 4, DragonRoleTag.Damage),
+            new StageDefinition("chapter_4_stage_2", "4-2", "Ironhold", "Lane rush — heavy", 2.4f, 2.0f, "Epic/Legendary", 10, 3, 1.1f, 20, 1, 8, 4, DragonRoleTag.AntiShield, DragonRoleTag.Damage),
+            new StageDefinition("chapter_4_stage_3", "4-3", "Wallbreak", "Mixed lane assault", 2.8f, 2.2f, "Legendary", 11, 3, 1.2f, 20, 0, 8, 4, DragonRoleTag.Aoe, DragonRoleTag.Damage),
+            new StageDefinition("chapter_4_stage_4", "4-4", "Last Stand", "Full lane siege", 3.2f, 2.5f, "Legendary/Mythic", 12, 4, 1.3f, 20, 0, 8, 4, DragonRoleTag.Damage, DragonRoleTag.Slow, DragonRoleTag.Aoe)
         };
 
         public static StageDefinition Get(string stageId)

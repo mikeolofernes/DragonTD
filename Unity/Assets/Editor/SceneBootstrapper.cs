@@ -313,6 +313,64 @@ namespace DragonTD.Editor
                 new EnemySpawnEntry{ EnemyPrefab = lavaHoundPrefab, Count = 32, SpawnInterval = 0.20f },
                 new EnemySpawnEntry{ EnemyPrefab = emberWraithPrefab, Count = 16, SpawnInterval = 0.26f },
                 new EnemySpawnEntry{ EnemyPrefab = magmaGolemPrefab, Count = 12, SpawnInterval = 0.44f });
+            // Chapter 4 — LaneDefense. Reuses Ch1 Orc enemy set (walk right into wall).
+            var ch4OrcPrefab      = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcEnemy.prefab");
+            var ch4RunnerPrefab   = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcRunner.prefab");
+            var ch4BrutePrefab    = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcBrute.prefab");
+            var ch4ShieldedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcShielded.prefab");
+            var ch4RegenPrefab    = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcRegenerator.prefab");
+            var ch4FlyingPrefab   = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcFlying.prefab");
+            CreateWave("Chapter4_Wave01", 180, 120,
+                new EnemySpawnEntry{ EnemyPrefab = ch4OrcPrefab, Count = 6, SpawnInterval = 1.2f });
+            CreateWave("Chapter4_Wave02", 220, 145,
+                new EnemySpawnEntry{ EnemyPrefab = ch4RunnerPrefab, Count = 8, SpawnInterval = 0.8f });
+            CreateWave("Chapter4_Wave03", 270, 170,
+                new EnemySpawnEntry{ EnemyPrefab = ch4OrcPrefab, Count = 6, SpawnInterval = 1.0f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4ShieldedPrefab, Count = 3, SpawnInterval = 0.9f });
+            CreateWave("Chapter4_Wave04", 330, 200,
+                new EnemySpawnEntry{ EnemyPrefab = ch4RunnerPrefab, Count = 10, SpawnInterval = 0.6f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4BrutePrefab, Count = 2, SpawnInterval = 1.0f });
+            CreateWave("Chapter4_Wave05", 400, 230,
+                new EnemySpawnEntry{ EnemyPrefab = ch4OrcPrefab, Count = 8, SpawnInterval = 0.9f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4ShieldedPrefab, Count = 4, SpawnInterval = 0.8f });
+            CreateWave("Chapter4_Wave06", 480, 265,
+                new EnemySpawnEntry{ EnemyPrefab = ch4RunnerPrefab, Count = 12, SpawnInterval = 0.5f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4RegenPrefab, Count = 4, SpawnInterval = 0.8f });
+            CreateWave("Chapter4_Wave07", 570, 300,
+                new EnemySpawnEntry{ EnemyPrefab = ch4BrutePrefab, Count = 5, SpawnInterval = 0.7f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4ShieldedPrefab, Count = 5, SpawnInterval = 0.7f });
+            CreateWave("Chapter4_Wave08", 670, 340,
+                new EnemySpawnEntry{ EnemyPrefab = ch4OrcPrefab, Count = 10, SpawnInterval = 0.7f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4FlyingPrefab, Count = 5, SpawnInterval = 0.6f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4RunnerPrefab, Count = 8, SpawnInterval = 0.5f });
+            CreateWave("Chapter4_Wave09", 780, 385,
+                new EnemySpawnEntry{ EnemyPrefab = ch4BrutePrefab, Count = 6, SpawnInterval = 0.6f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4RegenPrefab, Count = 6, SpawnInterval = 0.7f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4FlyingPrefab, Count = 6, SpawnInterval = 0.5f });
+            CreateWave("Chapter4_Wave10", 900, 440,
+                new EnemySpawnEntry{ EnemyPrefab = ch4RunnerPrefab, Count = 16, SpawnInterval = 0.38f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4ShieldedPrefab, Count = 8, SpawnInterval = 0.55f });
+            CreateWave("Chapter4_Wave11", 1040, 500,
+                new EnemySpawnEntry{ EnemyPrefab = ch4BrutePrefab, Count = 8, SpawnInterval = 0.5f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4FlyingPrefab, Count = 8, SpawnInterval = 0.45f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4RegenPrefab, Count = 8, SpawnInterval = 0.5f });
+            CreateWave("Chapter4_Wave12", 1200, 570,
+                new EnemySpawnEntry{ EnemyPrefab = ch4ShieldedPrefab, Count = 10, SpawnInterval = 0.45f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4BrutePrefab, Count = 8, SpawnInterval = 0.42f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4RunnerPrefab, Count = 14, SpawnInterval = 0.32f });
+            CreateWave("Chapter4_Wave13", 1400, 650,
+                new EnemySpawnEntry{ EnemyPrefab = ch4RegenPrefab, Count = 12, SpawnInterval = 0.38f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4FlyingPrefab, Count = 10, SpawnInterval = 0.35f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4BrutePrefab, Count = 10, SpawnInterval = 0.38f });
+            CreateWave("Chapter4_Wave14", 1650, 750,
+                new EnemySpawnEntry{ EnemyPrefab = ch4RunnerPrefab, Count = 20, SpawnInterval = 0.28f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4ShieldedPrefab, Count = 12, SpawnInterval = 0.35f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4RegenPrefab, Count = 12, SpawnInterval = 0.32f });
+            CreateWave("Chapter4_Wave15", 2000, 880,
+                new EnemySpawnEntry{ EnemyPrefab = ch4BrutePrefab, Count = 14, SpawnInterval = 0.28f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4ShieldedPrefab, Count = 14, SpawnInterval = 0.30f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4FlyingPrefab, Count = 16, SpawnInterval = 0.25f },
+                new EnemySpawnEntry{ EnemyPrefab = ch4RunnerPrefab, Count = 22, SpawnInterval = 0.20f });
             CreateCardPrefab();
             CreateUIPrefabs();
 
@@ -343,7 +401,8 @@ namespace DragonTD.Editor
 
             var ch2Map = EnsureChapter2Map();
             var ch3Map = EnsureChapter3Map();
-            EnsureChapterContents(mapDef, ch2Map, ch3Map);
+            var ch4Map = EnsureChapter4LaneMap();
+            EnsureChapterContents(mapDef, ch2Map, ch3Map, ch4Map);
 
             SetupCamera();
             if (bgSprite != null) CreateBattleBackground(bgSprite);
@@ -456,6 +515,33 @@ namespace DragonTD.Editor
 
             EditorUtility.SetDirty(def);
             AssetDatabase.SaveAssets();
+            return def;
+        }
+
+        static MapDefinition EnsureChapter4LaneMap()
+        {
+            string path = MapSODir + "/Chapter4LaneMap.asset";
+            var def = AssetDatabase.LoadAssetAtPath<MapDefinition>(path);
+            if (def == null)
+            {
+                def = ScriptableObject.CreateInstance<MapDefinition>();
+                def.mapName = "Chapter 4 — Lane Defense";
+                def.grid =
+                    "BBBBBBBBBBBB\n" +
+                    "BBBBBBBBBBBB\n" +
+                    "BBBBBBBBBBBB\n" +
+                    "BBBBBBBBBBBB\n" +
+                    "BBBBBBBBBBBB\n" +
+                    "BBBBBBBBBBBB\n" +
+                    "BBBBBBBBBBBB\n" +
+                    "BBBBBBBBBBBB";
+                def.mapType    = DragonTD.Core.MapType.LaneDefense;
+                def.wallColumn = 8;
+                def.wallHp     = 1000f;
+                AssetDatabase.CreateAsset(def, path);
+                EditorUtility.SetDirty(def);
+                AssetDatabase.SaveAssets();
+            }
             return def;
         }
 
@@ -722,11 +808,12 @@ namespace DragonTD.Editor
             return w;
         }
 
-        static void EnsureChapterContents(MapDefinition ch1Map, MapDefinition ch2Map, MapDefinition ch3Map)
+        static void EnsureChapterContents(MapDefinition ch1Map, MapDefinition ch2Map, MapDefinition ch3Map, MapDefinition ch4Map)
         {
             CreateChapterContent("Chapter1Content", 1, ch1Map, "Wave", 15);
             CreateChapterContent("Chapter2Content", 2, ch2Map, "Chapter2_Wave", 15);
             CreateChapterContent("Chapter3Content", 3, ch3Map, "Chapter3_Wave", 15);
+            CreateChapterContent("Chapter4Content", 4, ch4Map, "Chapter4_Wave", 15);
         }
 
         static ChapterContent CreateChapterContent(string assetName, int number, MapDefinition map, string wavePrefix, int waveCount)
@@ -1477,15 +1564,18 @@ namespace DragonTD.Editor
             var ch1Content = AssetDatabase.LoadAssetAtPath<ChapterContent>("Assets/ScriptableObjects/Chapters/Chapter1Content.asset");
             var ch2Content = AssetDatabase.LoadAssetAtPath<ChapterContent>("Assets/ScriptableObjects/Chapters/Chapter2Content.asset");
             var ch3Content = AssetDatabase.LoadAssetAtPath<ChapterContent>("Assets/ScriptableObjects/Chapters/Chapter3Content.asset");
+            var ch4Content = AssetDatabase.LoadAssetAtPath<ChapterContent>("Assets/ScriptableObjects/Chapters/Chapter4Content.asset");
             var chaptersProp = gmSO.FindProperty("_chapters");
             if (chaptersProp != null)
             {
-                int n = (ch1Content != null ? 1 : 0) + (ch2Content != null ? 1 : 0) + (ch3Content != null ? 1 : 0);
+                int n = (ch1Content != null ? 1 : 0) + (ch2Content != null ? 1 : 0)
+                      + (ch3Content != null ? 1 : 0) + (ch4Content != null ? 1 : 0);
                 chaptersProp.arraySize = n;
                 int idx = 0;
                 if (ch1Content != null) chaptersProp.GetArrayElementAtIndex(idx++).objectReferenceValue = ch1Content;
                 if (ch2Content != null) chaptersProp.GetArrayElementAtIndex(idx++).objectReferenceValue = ch2Content;
                 if (ch3Content != null) chaptersProp.GetArrayElementAtIndex(idx++).objectReferenceValue = ch3Content;
+                if (ch4Content != null) chaptersProp.GetArrayElementAtIndex(idx++).objectReferenceValue = ch4Content;
                 gmSO.ApplyModifiedProperties();
                 EditorUtility.SetDirty(gm);
             }

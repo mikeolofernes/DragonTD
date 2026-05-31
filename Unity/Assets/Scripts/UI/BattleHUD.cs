@@ -29,13 +29,16 @@ namespace DragonTD.UI
         private bool _subscribedToResources;
         private bool _subscribedToSelection;
         private bool _subscribedToStats;
+        private bool _subscribedToWall;
         private DragonTower _selectedTower;
+        private Text _wallHpText;
 
         private void Awake()
         {
             EnsureActionControls();
             EnsureWavePreviewPanel();
             EnsureWaveSummaryPanel();
+            RuntimeFontScaler.Apply(gameObject);
         }
 
         private void Start()
@@ -43,6 +46,7 @@ namespace DragonTD.UI
             EnsureActionControls();
             EnsureWavePreviewPanel();
             EnsureWaveSummaryPanel();
+            RuntimeFontScaler.Apply(gameObject);
             TrySubscribe();
             if (_pauseButton != null)
                 _pauseButton.onClick.AddListener(() => GameManager.Instance.TogglePause());
@@ -86,10 +90,15 @@ namespace DragonTD.UI
             {
                 BattleStatsTracker.Instance.OnWaveSummary -= HandleWaveSummary;
             }
+            if (WallBase.Instance != null && _subscribedToWall)
+            {
+                WallBase.Instance.OnHpChanged -= UpdateWallHp;
+            }
             _subscribedToGameState = false;
             _subscribedToResources = false;
             _subscribedToSelection = false;
             _subscribedToStats = false;
+            _subscribedToWall = false;
         }
 
         private void Update()
@@ -139,6 +148,13 @@ namespace DragonTD.UI
                 _subscribedToStats = true;
                 HandleWaveSummary(BattleStatsTracker.Instance.LatestSummary);
             }
+
+            if (!_subscribedToWall && WallBase.Instance != null)
+            {
+                WallBase.Instance.OnHpChanged += UpdateWallHp;
+                _subscribedToWall = true;
+                UpdateWallHp(WallBase.Instance.HpPercent);
+            }
         }
 
         private void UpdateMana(int mana)
@@ -153,10 +169,44 @@ namespace DragonTD.UI
 
         private void UpdateLives()
         {
-            if (_livesText != null) _livesText.text = $"Lives: {GameManager.Instance?.Lives ?? 0}";
+            bool laneMode = WallBase.Instance != null;
+            if (_livesText != null) _livesText.gameObject.SetActive(!laneMode);
+            if (_wallHpText != null) _wallHpText.gameObject.SetActive(laneMode);
+            if (!laneMode && _livesText != null)
+                _livesText.text = $"Lives: {GameManager.Instance?.Lives ?? 0}";
         }
 
         private void UpdateLivesFromEvent(int _) => UpdateLives();
+
+        private void UpdateWallHp(float hpPercent)
+        {
+            EnsureWallHpText();
+            if (_wallHpText == null || WallBase.Instance == null) return;
+            int cur = Mathf.CeilToInt(WallBase.Instance.CurrentHp);
+            int max = Mathf.CeilToInt(WallBase.Instance.MaxHp);
+            _wallHpText.text = $"Wall: {cur}/{max}";
+            _wallHpText.gameObject.SetActive(true);
+            if (_livesText != null) _livesText.gameObject.SetActive(false);
+        }
+
+        private void EnsureWallHpText()
+        {
+            if (_wallHpText != null) return;
+            if (_livesText == null) return;
+            var go = new GameObject("WallHpText");
+            go.transform.SetParent(_livesText.transform.parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            var src = _livesText.GetComponent<RectTransform>();
+            rt.anchorMin        = src.anchorMin;
+            rt.anchorMax        = src.anchorMax;
+            rt.anchoredPosition = src.anchoredPosition;
+            rt.sizeDelta        = src.sizeDelta;
+            _wallHpText             = go.AddComponent<Text>();
+            _wallHpText.font        = _livesText.font;
+            _wallHpText.fontSize    = _livesText.fontSize;
+            _wallHpText.color       = new Color(1f, 0.55f, 0.1f, 1f);
+            _wallHpText.alignment   = _livesText.alignment;
+        }
 
         private void RefreshAll()
         {
@@ -179,9 +229,16 @@ namespace DragonTD.UI
 
         private void UpdateNextWaveButton(GameState state)
         {
-            bool showNextWave = state == GameState.BetweenWaves || state == GameState.Setup;
+            bool showNextWave = GameManager.Instance != null && GameManager.Instance.IsPlanningPhase;
             if (_nextWaveButton != null)
+            {
                 _nextWaveButton.gameObject.SetActive(showNextWave);
+                Text label = _nextWaveButton.GetComponentInChildren<Text>();
+                if (label != null)
+                    label.text = GameManager.Instance != null && GameManager.Instance.CurrentWave == 0
+                        ? "Start Wave"
+                        : "Start Next";
+            }
             if (_wavePreviewText != null)
                 _wavePreviewText.transform.parent.gameObject.SetActive(showNextWave);
             UpdateWaveSummaryVisibility();
@@ -193,10 +250,13 @@ namespace DragonTD.UI
 
             _statusText.text = state switch
             {
-                GameState.Setup => "Place dragons, then start the wave",
+                GameState.Planning => GameManager.Instance != null && GameManager.Instance.CurrentWave == 0
+                    ? "Planning - build defenses, then start wave 1"
+                    : "Planning - upgrade, fuse, build, then start next wave",
+                GameState.Setup => "Planning - build defenses, then start the wave",
                 GameState.Wave => "Wave in progress",
                 GameState.BetweenWaves => "Wave cleared - place more dragons",
-                GameState.Victory => "Prototype complete - all 3 waves cleared",
+                GameState.Victory => "Prototype complete - all configured waves cleared",
                 GameState.Defeat => "Defeat",
                 GameState.Paused => "Paused",
                 _ => ""
@@ -241,7 +301,9 @@ namespace DragonTD.UI
 
             bool show = !string.IsNullOrWhiteSpace(BattleStatsTracker.Instance?.LatestSummary) &&
                         GameManager.Instance.State != GameState.Wave &&
-                        GameManager.Instance.State != GameState.Setup;
+                        (GameManager.Instance.State == GameState.Victory ||
+                         GameManager.Instance.State == GameState.Defeat ||
+                         (GameManager.Instance.IsPlanningPhase && GameManager.Instance.CurrentWave > 0));
             _waveSummaryText.transform.parent.gameObject.SetActive(show);
         }
 
@@ -249,8 +311,7 @@ namespace DragonTD.UI
         {
             if (_wavePreviewText == null || GameManager.Instance == null || WaveManager.Instance == null) return;
 
-            bool showPreview = GameManager.Instance.State == GameState.Setup ||
-                               GameManager.Instance.State == GameState.BetweenWaves;
+            bool showPreview = GameManager.Instance.IsPlanningPhase;
             _wavePreviewText.transform.parent.gameObject.SetActive(showPreview);
             if (!showPreview) return;
 
@@ -399,14 +460,16 @@ namespace DragonTD.UI
 
             if (_skillButton != null)
             {
-                _skillButton.interactable = hasTower && _selectedTower.ActiveSkill != null;
+                bool skillAllowed = GameManager.Instance != null && GameManager.Instance.State == GameState.Wave;
+                _skillButton.interactable = hasTower && _selectedTower.ActiveSkill != null && skillAllowed;
                 if (!TowerSelectionManager.Ensure().IsTargetingSkill)
                     _skillButton.GetComponentInChildren<Text>().text = SkillButtonLabel();
             }
 
             if (_upgradeButton != null)
             {
-                _upgradeButton.interactable = hasTower && !_selectedTower.IsMaxUpgrade;
+                bool planning = GameManager.Instance != null && GameManager.Instance.IsPlanningPhase;
+                _upgradeButton.interactable = hasTower && !_selectedTower.IsMaxUpgrade && planning;
                 Text label = _upgradeButton.GetComponentInChildren<Text>();
                 if (label != null)
                     label.text = hasTower && !_selectedTower.IsMaxUpgrade
@@ -416,9 +479,10 @@ namespace DragonTD.UI
 
             if (_mergeButton != null)
             {
+                bool planning = GameManager.Instance != null && GameManager.Instance.IsPlanningPhase;
                 bool canTryMerge = hasTower && !_selectedTower.IsFused;
                 bool hasMergeCandidate = canTryMerge && TowerSelectionManager.Ensure().HasMergeCandidate(_selectedTower);
-                _mergeButton.interactable = canTryMerge;
+                _mergeButton.interactable = canTryMerge && planning;
                 Text label = _mergeButton.GetComponentInChildren<Text>();
                 if (label != null)
                 {
@@ -432,7 +496,7 @@ namespace DragonTD.UI
             }
 
             if (_sellButton != null)
-                _sellButton.interactable = hasTower;
+                _sellButton.interactable = hasTower && GameManager.Instance != null && GameManager.Instance.IsPlanningPhase;
         }
 
         private void EnsureActionControls()
@@ -577,7 +641,7 @@ namespace DragonTD.UI
             rt.anchoredPosition = position;
             rt.sizeDelta = dimensions;
             text.alignment = TextAnchor.MiddleCenter;
-            text.fontSize = fontSize;
+            text.fontSize = Mathf.CeilToInt(fontSize * RuntimeFontScaler.DefaultScale) + 1;
         }
 
         private static void PositionButton(Button button, Vector2 position, Vector2 dimensions)
@@ -605,7 +669,7 @@ namespace DragonTD.UI
 
             var label = go.AddComponent<Text>();
             label.font = font;
-            label.fontSize = size;
+            label.fontSize = Mathf.CeilToInt(size * RuntimeFontScaler.DefaultScale) + 1;
             label.text = text;
             label.color = Color.white;
             label.alignment = TextAnchor.MiddleCenter;
@@ -637,7 +701,7 @@ namespace DragonTD.UI
 
             var label = labelGo.AddComponent<Text>();
             label.font = font;
-            label.fontSize = 15;
+            label.fontSize = 19;
             label.text = text;
             label.color = Color.white;
             label.alignment = TextAnchor.MiddleCenter;
@@ -648,6 +712,8 @@ namespace DragonTD.UI
         {
             if (_selectedTower == null || _selectedTower.ActiveSkill == null)
                 return "Skill";
+            if (GameManager.Instance != null && GameManager.Instance.State != GameState.Wave)
+                return "Wave Only";
 
             string label = _selectedTower.ActiveSkill.displayName;
             return label.Length > 12 ? label.Substring(0, 12) : label;
