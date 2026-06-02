@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e3f07add20ddb24f81d5d5aa4c8795e, type: 3}
+  m_Name: emberveil_008_ultimate
+  m_EditorClassIdentifier: DragonTD::DragonTD.Dragons.SkillDefinition
+  skillId: emberveil_008_ultimate
+  displayName: Celestial Inferno
+  description: Rains celestial fire on 4 random enemies
+  skillType: 0
+  targetType: 2
+  baseDamage: 0
+  manaCost: 0
+  cooldown: 30
+  levelMultipliers:
+  - 5.5
+  - 6.05
+  - 6.6000004
+  - 7.1499996
+  - 7.7
+  - 8.25
+  - 9.075
+  - 9.9
+  - 11
+  - 12.375
+  statusEffects: []
+  vfxKey: 
+  sfxKey: 
+  range: 4
+  isAoe: 0
+  aoeRadius: 0
+  passiveType: 0
+  passiveChance: 1
+  passiveChainCount: 2
+  passiveSplashPercent: 0.3

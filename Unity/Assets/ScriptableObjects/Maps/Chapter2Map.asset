@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9420ed1432314e84da87ce8352e4da29, type: 3}
+  m_Name: Chapter2Map
+  m_EditorClassIdentifier: DragonTD::DragonTD.TowerDefense.MapDefinition
+  mapName: Chapter 2
+  buildableSprite: {fileID: 0}
+  pathSprite: {fileID: 0}
+  pathStraightH: {fileID: 0}
+  pathStraightV: {fileID: 0}
+  pathCornerTL: {fileID: 0}
+  pathCornerTR: {fileID: 0}
+  pathCornerBL: {fileID: 0}
+  pathCornerBR: {fileID: 0}
+  backgroundSprite: {fileID: 0}
+  grid: 'BBBBBBBBBBBB
+
+    PPPPPPPBBBBB
+
+    BBBBBBPBBBBB
+
+    BBBBBBPPPPPB
+
+    BBBBBBBBBBPB
+
+    BBBBBBBBBBPB
+
+    BBBBBBBBBBPP
+
+    BBBBBBBBBBBB'

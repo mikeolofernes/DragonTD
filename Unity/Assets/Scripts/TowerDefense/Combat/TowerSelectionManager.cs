@@ -45,6 +45,21 @@ namespace DragonTD.TowerDefense
 
         private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (_isTargetingSkill || _isTargetingMerge)
+                    CancelActiveTargeting();
+                else if (_selectedTower != null)
+                    ClearSelection();
+                return;
+            }
+
+            if (Input.touchCount >= 2 && (_isTargetingSkill || _isTargetingMerge))
+            {
+                CancelActiveTargeting();
+                return;
+            }
+
             if (!_isTargetingSkill && !_isTargetingMerge) return;
 
             if (_selectedTower == null)
@@ -101,6 +116,12 @@ namespace DragonTD.TowerDefense
 
         public void UpgradeSelectedTower()
         {
+            if (GameManager.Instance != null && !GameManager.Instance.IsPlanningPhase)
+            {
+                GameManager.Instance.ShowBattleMessage("Upgrade between waves");
+                return;
+            }
+
             if (_selectedTower == null)
             {
                 GameManager.Instance?.ShowBattleMessage("Select a dragon tower first");
@@ -113,6 +134,12 @@ namespace DragonTD.TowerDefense
 
         public void SellSelectedTower()
         {
+            if (GameManager.Instance != null && !GameManager.Instance.IsPlanningPhase)
+            {
+                GameManager.Instance.ShowBattleMessage("Sell between waves");
+                return;
+            }
+
             if (_selectedTower == null)
             {
                 GameManager.Instance?.ShowBattleMessage("Select a dragon tower first");
@@ -163,6 +190,12 @@ namespace DragonTD.TowerDefense
 
         public void BeginMergeTargeting()
         {
+            if (GameManager.Instance != null && !GameManager.Instance.IsPlanningPhase)
+            {
+                GameManager.Instance.ShowBattleMessage("Fuse between waves");
+                return;
+            }
+
             if (_selectedTower == null)
             {
                 GameManager.Instance?.ShowBattleMessage("Select a dragon tower first");

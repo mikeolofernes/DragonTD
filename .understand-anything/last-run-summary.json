@@ -1,0 +1,54 @@
+{
+  "files": 248,
+  "filtered": 333,
+  "byCategory": {
+    "code": 228,
+    "docs": 12,
+    "config": 7,
+    "script": 1
+  },
+  "byLanguage": {
+    "unknown": 1,
+    "markdown": 7,
+    "json": 5,
+    "csharp": 116,
+    "csproj": 1,
+    "sln": 1,
+    "powershell": 1,
+    "asset": 62,
+    "asmdef": 2,
+    "prefab": 20,
+    "unity": 2,
+    "txt": 5,
+    "mat": 2,
+    "hlsl": 1,
+    "shader": 14,
+    "shadergraph": 4,
+    "cginc": 4
+  },
+  "nodes": {
+    "module": 4,
+    "document": 12,
+    "config": 7,
+    "file": 229,
+    "class": 83,
+    "function": 361
+  },
+  "edges": {
+    "contains": 692
+  },
+  "layers": [
+    "Project Guidance",
+    "Backend API",
+    "Unity Core Gameplay",
+    "Unity Dragon Systems",
+    "Unity Tower Defense",
+    "Unity Summoning and UI",
+    "Unity Assets and Scenes",
+    "Unity Project Settings",
+    "Tools",
+    "Repository Configuration"
+  ],
+  "tour": 8,
+  "warnings": []
+}

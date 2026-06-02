@@ -23,5 +23,6 @@ MonoBehaviour:
   HasElement: 0
   Trait: 2
   RegenPerSecond: 0
+  ShieldRegenDelay: 0
   ProjectileDamageMultiplier: 1
   SkillDamageMultiplier: 1

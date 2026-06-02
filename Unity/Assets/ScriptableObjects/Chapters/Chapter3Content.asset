@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 808bdd18ba553084999fa546f098946c, type: 3}
+  m_Name: Chapter3Content
+  m_EditorClassIdentifier: DragonTD::DragonTD.TowerDefense.ChapterContent
+  chapterNumber: 3
+  map: {fileID: 11400000, guid: 3eeaaad96c779cf49b58cd3c3ce3837c, type: 2}
+  waves:
+  - {fileID: 11400000, guid: eae3ba97d749073468449489aeac7878, type: 2}
+  - {fileID: 11400000, guid: 68b5b55f80d57534a8a97b54dcacec53, type: 2}
+  - {fileID: 11400000, guid: e1dc68538fe23b4418fb55718626ee25, type: 2}
+  - {fileID: 11400000, guid: 3af9380116d0bc443ac3473323f638fb, type: 2}
+  - {fileID: 11400000, guid: a905be6ba828c1e4681c1884febb32ba, type: 2}
+  - {fileID: 11400000, guid: ecfc2a63ac333b54d8f7822ab78a880d, type: 2}
+  - {fileID: 11400000, guid: f963f2771c21da2458047f4ff7a6cbfb, type: 2}
+  - {fileID: 11400000, guid: fb2b74b79fef0bc4f99f991fa9bc25da, type: 2}
+  - {fileID: 11400000, guid: f73433a735a6d4144a9d12bc7714cfaf, type: 2}
+  - {fileID: 11400000, guid: 4a37d57fc9289f640918b089518684cb, type: 2}
+  - {fileID: 11400000, guid: 7b43b18eb461a40478c4e2b745f3c944, type: 2}
+  - {fileID: 11400000, guid: e268d9032224b7643a34f594eee2523e, type: 2}
+  - {fileID: 11400000, guid: f64963331c69787458ddebb1872f23a4, type: 2}
+  - {fileID: 11400000, guid: f48ce03d0a85d824dbf97fcb2457137c, type: 2}
+  - {fileID: 11400000, guid: ee85810d30b8172489d3335edd6cd6d4, type: 2}

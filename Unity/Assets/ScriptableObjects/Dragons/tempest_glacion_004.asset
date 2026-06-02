@@ -52,8 +52,8 @@ MonoBehaviour:
   skillSet:
     normalAttack: {fileID: 11400000, guid: 60e81d7ce2c0c64488c702a4ad5497e7, type: 2}
     activeSkill: {fileID: 11400000, guid: d7fcc776de5c1e641a24c59f4c3bff7b, type: 2}
-    passiveSkill: {fileID: 0}
-    ultimateSkill: {fileID: 0}
+    passiveSkill: {fileID: 11400000, guid: 70747ab4db6cee24792d09980e787388, type: 2}
+    ultimateSkill: {fileID: 11400000, guid: 1cd338cbf58641644a94943eec16a065, type: 2}
   evolutionPath:
     stages:
     - stageId: 

@@ -22,6 +22,85 @@ namespace DragonTD.API.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("DragonTD.API.Models.Clan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("MemberLimit")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RaidScore")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Tag")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("Tag")
+                        .IsUnique();
+
+                    b.ToTable("Clans");
+                });
+
+            modelBuilder.Entity("DragonTD.API.Models.ClanMember", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClanId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RaidContribution")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("ClanId", "PlayerId")
+                        .IsUnique();
+
+                    b.ToTable("ClanMembers");
+                });
+
             modelBuilder.Entity("DragonTD.API.Models.DragonDefinition", b =>
                 {
                     b.Property<int>("Id")
@@ -440,6 +519,36 @@ namespace DragonTD.API.Migrations
                     b.ToTable("PlayerProgressionStates");
                 });
 
+            modelBuilder.Entity("DragonTD.API.Models.Clan", b =>
+                {
+                    b.HasOne("DragonTD.API.Models.Player", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("DragonTD.API.Models.ClanMember", b =>
+                {
+                    b.HasOne("DragonTD.API.Models.Clan", "Clan")
+                        .WithMany("Members")
+                        .HasForeignKey("ClanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DragonTD.API.Models.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Clan");
+
+                    b.Navigation("Player");
+                });
+
             modelBuilder.Entity("DragonTD.API.Models.EventChallengeState", b =>
                 {
                     b.HasOne("DragonTD.API.Models.Player", "Player")
@@ -501,6 +610,11 @@ namespace DragonTD.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("DragonTD.API.Models.Clan", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("DragonTD.API.Models.Player", b =>

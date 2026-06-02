@@ -1,0 +1,95 @@
+# .understandignore - patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+# Lines below are suggestions - uncomment to activate.
+# Use ! prefix to force-include something excluded by defaults.
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+
+.agents/
+.superpowers/
+.vs/
+.understand-anything/intermediate/
+.understand-anything/tmp/
+*.meta
+# --- From .gitignore (uncomment to exclude) ---
+
+# .vs/
+# *.user
+# *.suo
+# *.userosscache
+# *.sln.docstates
+# *.vsidx
+# *.vspscc
+# *.vsscc
+# [Ll]ibrary/
+# [Tt]emp/
+# [Oo]bj/
+# [Bb]uild/
+# [Bb]uilds/
+# [Ll]ogs/
+# [Uu]ser[Ss]ettings/
+# [Mm]emoryCaptures/
+# [Rr]ecordings/
+# Assets/_Recovery/
+# Unity/Assets/_Recovery/
+# Unity/Assets/_Recovery.meta
+# *.pidb.meta
+# *.pdb.meta
+# *.mdb.meta
+# *.pidb
+# *.unityproj
+# *.booproj
+# sysinfo.txt
+# Crash/
+# crashlytics-build.properties
+# /[Bb]uild/[Aa]ddressables/
+# /[Ff]ast[Pp]lay/
+# Assets/StreamingAssets/aa.meta
+# Assets/StreamingAssets/aa/
+# [Bb]in/
+# [Oo]bj/
+# *.dll
+# *.exe
+# !**/Assets/**/*.dll
+# project.lock.json
+# project.fragment.lock.json
+# artifacts/
+# **/Properties/launchSettings.json
+# *.nupkg
+# *.snupkg
+# **/[Pp]ackages/
+# !**/[Pp]ackages/build/
+# *.nuspec
+# project.lock.json
+# .nuget/
+# wwwroot/
+# appsettings.Development.json
+# appsettings.Production.json
+# appsettings.Staging.json
+# *.env
+# .env
+# .env.*
+# secrets.json
+# **/secrets/**
+# .DS_Store
+# .DS_Store?
+# ._*
+# .Spotlight-V100
+# .Trashes
+# ehthumbs.db
+# Thumbs.db
+# Desktop.ini
+# *.sln.iml
+# .superpowers/
+
+# --- Detected directories (uncomment to exclude) ---
+
+# docs/
+
+# --- Test file patterns (uncomment to exclude) ---
+
+# *.test.*
+# *.spec.*
+# *.snap

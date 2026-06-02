@@ -37,3 +37,7 @@ MonoBehaviour:
   range: 5
   isAoe: 0
   aoeRadius: 0
+  passiveType: 0
+  passiveChance: 1
+  passiveChainCount: 2
+  passiveSplashPercent: 0.3

@@ -218,6 +218,7 @@ MonoBehaviour:
   _manaCostText: {fileID: 7483779539765823313}
   _detailsText: {fileID: 5687701800870359809}
   _selectButton: {fileID: 8779981692479498647}
+  _canvasGroup: {fileID: 0}
 --- !u!1 &5507621044316256115
 GameObject:
   m_ObjectHideFlags: 0

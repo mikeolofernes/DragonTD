@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed055f6cd970bb4408b0d241146076a9, type: 3}
+  m_Name: Chapter2_Wave13
+  m_EditorClassIdentifier: DragonTD::DragonTD.TowerDefense.WaveData
+  EnemyGroups:
+  - EnemyPrefab: {fileID: 3337060299616178468, guid: af70c2d504a32b24cad092a9d89cb21b, type: 3}
+    Count: 28
+    SpawnInterval: 0.24
+  - EnemyPrefab: {fileID: 7695787162730535148, guid: 0c256c51133a7814898ea7117aabeaf6, type: 3}
+    Count: 12
+    SpawnInterval: 0.38
+  - EnemyPrefab: {fileID: 16156758170166837, guid: 351f8aa5978662641a289802f7492d81, type: 3}
+    Count: 10
+    SpawnInterval: 0.58
+  TimeBetweenGroups: 2.5
+  GoldReward: 2080
+  ManaReward: 990

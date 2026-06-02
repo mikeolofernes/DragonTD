@@ -1,0 +1,19 @@
+{
+    "name": "DragonTD.PlayModeTests",
+    "rootNamespace": "DragonTD.Tests.PlayMode",
+    "references": [
+        "DragonTD"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

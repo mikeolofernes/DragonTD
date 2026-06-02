@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56475ed954114050a15233eda6b27b34, type: 3}
+  m_Name: PrototypeBalanceConfig
+  m_EditorClassIdentifier: DragonTD::DragonTD.TowerDefense.PrototypeBalanceConfig
+  startingMana: 320
+  startingGold: 150
+  upgradeBaseCost: 30
+  maxUpgradeLevel: 3
+  fusedTowerLevel: 4
+  fusedTowerDamageMultiplier: 2.35
+  hybridFusionDamageMultiplier: 3.1
+  hybridPassiveCooldown: 1.25
+  sellManaRefundPercent: 0.7
+  globalDamageBalance: 1.15
+  highGroundRangeBonus: 1
+  manaCrystalCooldownMultiplier: 0.75
+  scorchedFireDamageMultiplier: 1.2
+  frostStatusMagnitudeMultiplier: 1.25
+  shieldProjectileMultiplier: 0.38
+  shieldSkillMultiplier: 1.15
+  regenPerSecond: 16
+  flyingSlowMultiplier: 0.45
+  projectileDamageColor: {r: 1, g: 0.95, b: 0.58, a: 1}
+  lightningDamageColor: {r: 1, g: 0.86, b: 0.16, a: 1}
+  skillDamageColor: {r: 0.45, g: 0.9, b: 1, a: 1}
+  burnDamageColor: {r: 1, g: 0.38, b: 0.12, a: 1}
+  healColor: {r: 0.38, g: 1, b: 0.48, a: 1}
+  weakFeedbackColor: {r: 1, g: 0.92, b: 0.28, a: 1}
+  resistFeedbackColor: {r: 0.62, g: 0.78, b: 1, a: 1}
+  shieldBreakColor: {r: 0.55, g: 0.95, b: 1, a: 1}

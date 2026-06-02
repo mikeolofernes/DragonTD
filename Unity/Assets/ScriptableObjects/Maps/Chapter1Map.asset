@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9420ed1432314e84da87ce8352e4da29, type: 3}
+  m_Name: Chapter1Map
+  m_EditorClassIdentifier: DragonTD::DragonTD.TowerDefense.MapDefinition
+  mapName: Chapter 1
+  buildableSprite: {fileID: 21300000, guid: a7ecdddb42b63cb4386feb8a07a887b8, type: 3}
+  pathSprite: {fileID: 21300000, guid: 25a625cee73a26c4894fc761f48be688, type: 3}
+  pathStraightH: {fileID: 21300000, guid: 25a625cee73a26c4894fc761f48be688, type: 3}
+  pathStraightV: {fileID: 21300000, guid: 9fef8ef5d3e9b7c4cb120f4248cb8f35, type: 3}
+  pathCornerTL: {fileID: 21300000, guid: 96896ed8cbddc2e4095aa47c66cdf2a0, type: 3}
+  pathCornerTR: {fileID: 21300000, guid: 439c13fb80a75f34abcbf04b74b5590b, type: 3}
+  pathCornerBL: {fileID: 21300000, guid: 4f058f21eccd79a4da1ca26c17de984a, type: 3}
+  pathCornerBR: {fileID: 21300000, guid: fd6ba924e53389742bfaa9254091b277, type: 3}
+  backgroundSprite: {fileID: 21300000, guid: a7ecdddb42b63cb4386feb8a07a887b8, type: 3}
+  grid: 'BBBBBBBBBBBB
+
+    BPPPPPPPPPPB
+
+    BPBBBBBBBBPB
+
+    PPBBBBBBBBPB
+
+    BBBBBBBBBBPB
+
+    BBBBBBBBBBPB
+
+    BBBBBBBBBBPP
+
+    BBBBBBBBBBBB'

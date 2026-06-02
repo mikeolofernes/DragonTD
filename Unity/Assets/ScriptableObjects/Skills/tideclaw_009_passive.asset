@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e3f07add20ddb24f81d5d5aa4c8795e, type: 3}
+  m_Name: tideclaw_009_passive
+  m_EditorClassIdentifier: DragonTD::DragonTD.Dragons.SkillDefinition
+  skillId: tideclaw_009_passive
+  displayName: Undertow
+  description: Slows struck enemies 25% for 2s.
+  skillType: 0
+  targetType: 0
+  baseDamage: 0
+  manaCost: 0
+  cooldown: 0
+  levelMultipliers:
+  - 1
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 1.5
+  - 1.65
+  - 1.8
+  - 2
+  - 2.25
+  statusEffects:
+  - effectId: slow_001
+    displayName: Undertow
+    duration: 2
+    magnitude: 0.25
+    stackable: 0
+    maxStacks: 0
+  vfxKey: 
+  sfxKey: 
+  range: 4
+  isAoe: 0
+  aoeRadius: 0
+  passiveType: 1
+  passiveChance: 1
+  passiveChainCount: 2
+  passiveSplashPercent: 0.3

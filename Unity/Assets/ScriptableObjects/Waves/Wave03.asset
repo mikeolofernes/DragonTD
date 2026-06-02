@@ -35,5 +35,5 @@ MonoBehaviour:
     Count: 2
     SpawnInterval: 0.7
   TimeBetweenGroups: 2.5
-  GoldReward: 300
-  ManaReward: 190
+  GoldReward: 320
+  ManaReward: 210

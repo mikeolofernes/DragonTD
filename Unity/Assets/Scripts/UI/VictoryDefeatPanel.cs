@@ -20,6 +20,7 @@ namespace DragonTD.UI
             _canvasGroup = GetComponent<CanvasGroup>();
             if (_canvasGroup == null)
                 _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            RuntimeFontScaler.Apply(gameObject);
             Hide();
         }
 
@@ -76,9 +77,19 @@ namespace DragonTD.UI
                     wavesCleared,
                     totalWaves,
                     GameManager.Instance.Lives);
+                if (!string.IsNullOrWhiteSpace(PlayerInventory.Instance?.LastBattleRewardSummary))
+                    _statsText.text = $"{_statsText.text}\n\n{PlayerInventory.Instance.LastBattleRewardSummary}";
+                BattleRewardResult reward = PlayerInventory.Instance?.LastBattleRewardResult;
+                if (reward != null && !string.IsNullOrWhiteSpace(reward.stageTitle))
+                {
+                    _statsText.text = $"{_statsText.text}\n\n{reward.stageTitle}\nStars: {reward.starsEarned}/3  Best: {reward.bestStars}/3";
+                    if (!string.IsNullOrWhiteSpace(reward.objectiveSummary))
+                        _statsText.text = $"{_statsText.text}\n{reward.objectiveSummary}";
+                }
             }
 
             SetButtonLabel(_retryButton, victory ? "Replay" : "Retry");
+            SetButtonLabel(_quitButton, "Main Menu");
         }
 
         private void OnRetry()

@@ -1,5 +1,7 @@
 # Unity Tower Defense Prototype Implementation Plan
 
+Historical note: this plan describes the first 3-wave prototype build. The active prototype handoff supersedes it with 5 configured waves and planning-phase controls.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the existing Unity `BattleScene` a playable Dragon Dominion tower defense prototype with seven dragon placement cards and imported portrait assets.

@@ -1,0 +1,276 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20f8358f5308c824290794342422e232, type: 3}
+  m_Name: zephyrwing_010
+  m_EditorClassIdentifier: DragonTD::DragonTD.Dragons.DragonDefinition
+  dragonId: zephyrwing_010
+  displayName: Zephyrwing
+  dragonClass: 2
+  element: 2
+  rarity: 1
+  baseStats:
+    hp: 700
+    attack: 165
+    attackSpeed: 1.7
+    armor: 45
+    magicResist: 0
+    flightSpeed: 0
+    range: 5.5
+    mana: 180
+    critChance: 0
+    elementalAffinity: 0
+  growth:
+    hpCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attackCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    armorCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    rarityMultiplier: 1
+    classMultiplier: 1
+  skillSet:
+    normalAttack: {fileID: 11400000, guid: 323f544a6caf2be4dbc0406ce6e9440a, type: 2}
+    activeSkill: {fileID: 11400000, guid: cda2a0ad62fb58a4e8c7671a54c9abc2, type: 2}
+    passiveSkill: {fileID: 11400000, guid: db82f6c25cd56e742ae060d6f706ce79, type: 2}
+    ultimateSkill: {fileID: 11400000, guid: 8b84f233bf4b8c6488c1e991c75fd636, type: 2}
+  evolutionPath:
+    stages:
+    - stageId: 
+      stageName: 
+      requiredLevel: 0
+      requiredBond: 0
+      requiredKills: 0
+      requiredItemIds: []
+      statBonus:
+        hp: 0
+        attack: 0
+        attackSpeed: 0
+        armor: 0
+        magicResist: 0
+        flightSpeed: 0
+        range: 0
+        mana: 0
+        critChance: 0
+        elementalAffinity: 0
+      newSkillUnlockId: 
+      evolutionVfxKey: 
+      spriteOverrideKey: 
+    - stageId: 
+      stageName: 
+      requiredLevel: 0
+      requiredBond: 0
+      requiredKills: 0
+      requiredItemIds: []
+      statBonus:
+        hp: 0
+        attack: 0
+        attackSpeed: 0
+        armor: 0
+        magicResist: 0
+        flightSpeed: 0
+        range: 0
+        mana: 0
+        critChance: 0
+        elementalAffinity: 0
+      newSkillUnlockId: 
+      evolutionVfxKey: 
+      spriteOverrideKey: 
+    - stageId: 
+      stageName: 
+      requiredLevel: 0
+      requiredBond: 0
+      requiredKills: 0
+      requiredItemIds: []
+      statBonus:
+        hp: 0
+        attack: 0
+        attackSpeed: 0
+        armor: 0
+        magicResist: 0
+        flightSpeed: 0
+        range: 0
+        mana: 0
+        critChance: 0
+        elementalAffinity: 0
+      newSkillUnlockId: 
+      evolutionVfxKey: 
+      spriteOverrideKey: 
+    - stageId: 
+      stageName: 
+      requiredLevel: 0
+      requiredBond: 0
+      requiredKills: 0
+      requiredItemIds: []
+      statBonus:
+        hp: 0
+        attack: 0
+        attackSpeed: 0
+        armor: 0
+        magicResist: 0
+        flightSpeed: 0
+        range: 0
+        mana: 0
+        critChance: 0
+        elementalAffinity: 0
+      newSkillUnlockId: 
+      evolutionVfxKey: 
+      spriteOverrideKey: 
+    - stageId: 
+      stageName: 
+      requiredLevel: 0
+      requiredBond: 0
+      requiredKills: 0
+      requiredItemIds: []
+      statBonus:
+        hp: 0
+        attack: 0
+        attackSpeed: 0
+        armor: 0
+        magicResist: 0
+        flightSpeed: 0
+        range: 0
+        mana: 0
+        critChance: 0
+        elementalAffinity: 0
+      newSkillUnlockId: 
+      evolutionVfxKey: 
+      spriteOverrideKey: 
+    - stageId: 
+      stageName: 
+      requiredLevel: 0
+      requiredBond: 0
+      requiredKills: 0
+      requiredItemIds: []
+      statBonus:
+        hp: 0
+        attack: 0
+        attackSpeed: 0
+        armor: 0
+        magicResist: 0
+        flightSpeed: 0
+        range: 0
+        mana: 0
+        critChance: 0
+        elementalAffinity: 0
+      newSkillUnlockId: 
+      evolutionVfxKey: 
+      spriteOverrideKey: 
+  fusionTable:
+    fusionEntries: []
+  bondData:
+    bondLevels:
+    - level: 0
+      xpRequired: 0
+      statBoostPercent: 0
+      unlockDescription: 
+      skillUnlockId: 
+      triggersEvolutionAccess: 0
+      transformationVfxKey: 
+    - level: 0
+      xpRequired: 0
+      statBoostPercent: 0
+      unlockDescription: 
+      skillUnlockId: 
+      triggersEvolutionAccess: 0
+      transformationVfxKey: 
+    - level: 0
+      xpRequired: 0
+      statBoostPercent: 0
+      unlockDescription: 
+      skillUnlockId: 
+      triggersEvolutionAccess: 0
+      transformationVfxKey: 
+    - level: 0
+      xpRequired: 0
+      statBoostPercent: 0
+      unlockDescription: 
+      skillUnlockId: 
+      triggersEvolutionAccess: 0
+      transformationVfxKey: 
+    - level: 0
+      xpRequired: 0
+      statBoostPercent: 0
+      unlockDescription: 
+      skillUnlockId: 
+      triggersEvolutionAccess: 0
+      transformationVfxKey: 
+    - level: 0
+      xpRequired: 0
+      statBoostPercent: 0
+      unlockDescription: 
+      skillUnlockId: 
+      triggersEvolutionAccess: 0
+      transformationVfxKey: 
+    - level: 0
+      xpRequired: 0
+      statBoostPercent: 0
+      unlockDescription: 
+      skillUnlockId: 
+      triggersEvolutionAccess: 0
+      transformationVfxKey: 
+    battleBondXP: 10
+    feedBondXP: 5
+    trainBondXP: 8
+    exploreBondXP: 6
+    voiceLineKeys:
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+  personality:
+    temperament: 
+    preferredFoodIds: []
+    preferredEnvironment: 0
+    rivalDragonIds: []
+    moraleGainMultiplier: 1
+    moraleLossMultiplier: 1
+    interactionEventIds: []
+  visualData:
+    iconKey: 
+    portraitKey: 
+    stageSpritesKeys:
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    stagePrefabKeys:
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    primaryColor: {r: 1, g: 1, b: 1, a: 1}
+    secondaryColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    idleVfxKey: 
+    deathVfxKey: 
+    portrait: {fileID: 0}
+    hatchlingPrefab: {fileID: 3965908686408263434, guid: 96f78505b050fca41be7f1dc7d64390a, type: 3}
+    dragonVideo: {fileID: 0}
+  manaCost: 60

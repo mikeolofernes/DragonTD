@@ -5,7 +5,7 @@ using DragonTD.Core;
 
 namespace DragonTD.UI
 {
-    // Scrollable panel listing owned dragons as placement cards.
+    // Scrollable panel listing equipped battle dragons as placement cards.
     public class DragonCollectionPanel : MonoBehaviour
     {
         [SerializeField] private Transform _cardContainer;
@@ -26,7 +26,7 @@ namespace DragonTD.UI
                 PlayerInventory.Instance.OnInventoryChanged -= Refresh;
         }
 
-        private void Refresh() => Populate(PlayerInventory.Instance.OwnedDragons);
+        private void Refresh() => Populate(PlayerInventory.Instance.GetBattleDragons());
 
         public void Populate(List<DragonInstance> inventory)
         {
@@ -41,6 +41,8 @@ namespace DragonTD.UI
                 GameObject cardGO = Instantiate(_cardPrefab, _cardContainer);
                 cardGO.GetComponent<DragonPlacementCard>()?.Setup(dragon);
             }
+
+            GetComponentInParent<ResponsiveBattleUILayout>()?.ApplyLayout();
         }
     }
 }

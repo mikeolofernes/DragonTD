@@ -11,6 +11,7 @@ public class Player
     public long PlayerXp { get; set; } = 0;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastLoginAt { get; set; } = DateTime.UtcNow;
+    public DateTime LastSyncedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<PlayerDragon> Dragons { get; set; } = new List<PlayerDragon>();
 
