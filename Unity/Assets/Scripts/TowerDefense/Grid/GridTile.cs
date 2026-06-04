@@ -102,7 +102,7 @@ namespace DragonTD.TowerDefense
             _autoTileSprite = sprite; // persist so UpdateVisual doesn't overwrite on hover
             if (_spriteRenderer == null || sprite == null) return;
             _spriteRenderer.sprite = sprite;
-            _spriteRenderer.color  = Color.white;
+            _spriteRenderer.color  = _pathColor;
         }
 
         public bool CanPlace() => _tileType == TileType.Buildable && !IsOccupied;
@@ -154,9 +154,9 @@ namespace DragonTD.TowerDefense
 
             _spriteRenderer.color = _tileType switch
             {
-                TileType.Path    => _pathSprite    != null ? Color.white : _pathColor,
+                TileType.Path    => _pathColor,
                 TileType.Blocked => _blockedColor,
-                _                => _buildableSprite != null ? (IsOccupied ? new Color(0.7f,0.7f,0.3f) : Color.white) : _buildableColor
+                _                => _buildableSprite != null ? (IsOccupied ? new Color(0.7f, 0.7f, 0.3f, 0.72f) : _buildableColor) : _buildableColor
             };
         }
 
@@ -164,7 +164,7 @@ namespace DragonTD.TowerDefense
         {
             if (BonusType != TileBonusType.None && !IsOccupied)
                 DragonTD.Core.GameManager.Instance?.ShowBattleMessage($"{BonusName}: {BonusDescription}");
-            if (!_isPreviewed && CanPlace()) _spriteRenderer.color = Color.yellow;
+            if (!_isPreviewed && CanPlace()) _spriteRenderer.color = new Color(1f, 0.92f, 0.38f, 0.72f);
         }
 
         private void OnMouseExit() { UpdateVisual(); }

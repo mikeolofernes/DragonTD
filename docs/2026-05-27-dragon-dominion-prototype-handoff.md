@@ -1241,6 +1241,113 @@ Pending: Run `Dragon Dominion > Build Battle Scene` to create `SummonPool_Phase1
   - Shadowfang: PoisonOnHit 4/s/4s | Emberveil: BurnOnHit 7/s/2s | Tideclaw: SlowOnHit 25%/2s
   - Zephyrwing: ChainLightning (1 arc, 60%)
 
+## Lane Defense Map Mode — 2026-05-31
+
+Added a Plants-vs-Zombies-style `LaneDefense` map mode alongside the existing `PathFollowing` mode.
+
+**New files:**
+
+- `Unity/Assets/Scripts/Core/MapType.cs` — `MapType` enum (`PathFollowing`, `LaneDefense`).
+- `Unity/Assets/Scripts/TowerDefense/WallBase.cs` — singleton MonoBehaviour. Tracks wall HP; fires `OnWallDestroyed` when HP reaches 0. `WallBase.Create(wallWorldX, gridHeight, cellSize, wallHp)` is the runtime factory called by `GameManager.SetupLaneDefense`.
+
+**Modified files:**
+
+- `MapDefinition` — new `[Header("Lane Defense Settings")]` block: `mapType`, `wallColumn`, `wallHp`.
+- `EnemyBase` — `InitializeLane(float wallWorldX)` overload; `MoveTowardsWaypoint` checks `_isLaneMode` first and walks straight right; `HitWall()` calls `WallBase.Instance.TakeDamage(...)` and triggers defeat.
+- `WaveManager` — `ConfigureLaneMode(wallWorldX, leftEdgeX, originY, gridHeight, cellSize)`; lane spawn picks a random row on the left edge.
+- `GameManager` — `SetupLaneDefense(MapDefinition map)` creates the wall and wires `OnWallDestroyed → HandleWallDestroyed`; `LoseLife` no-ops in lane mode.
+- `BattleHUD` — subscribes to `WallBase.OnHpChanged`; hides Lives label and shows `Wall: X/Y` label in lane mode.
+- `SceneBootstrapper` — `EnsureChapter4LaneMap()` creates `Chapter4LaneMap.asset` (12x8 all-B grid, `mapType = LaneDefense`, `wallColumn = 8`, `wallHp = 1000`); 15 Chapter 4 wave assets generated; 4 Chapter 4 stages added to `StageCatalog`; `Chapter4Content.asset` generated and wired into `GameManager._chapters`.
+
+**Lane spawn Y-axis fix:** `_laneLeftEdgeX` was initially reused as the Y origin; corrected by adding a dedicated `_laneOriginY = -3.5f` field and matching 5-parameter `ConfigureLaneMode` signature.
+
+Chapter 4 stages:
+
+| Stage | Name | Difficulty | Reward |
+|-------|------|-----------|--------|
+| 4-1 | Ashwall | 2.0x | 1.8x |
+| 4-2 | Ironhold | 2.4x | 2.0x |
+| 4-3 | Wallbreak | 2.8x | 2.2x |
+| 4-4 | Last Stand | 3.2x | 2.5x |
+
+To activate: run `Dragon Dominion > Build Battle Scene`. Select a Chapter 4 stage. `ChapterContent.Active.map.mapType == LaneDefense` triggers `GameManager.SetupLaneDefense` on `StartBattle`.
+
+---
+
+## Enemy Visual Overhaul — 2026-06-03
+
+Replaced placeholder colored-box enemies with premium procedural visuals.
+
+**New files:**
+
+- `Unity/Assets/Scripts/TowerDefense/Enemies/EnemySkeletalAnimator.cs` — procedural bone rig (body, head, tail, legs, arms). `TickWalk()` and `TickIdle()` called by `EnemyBase`. `IsConfigured` returns true when at least one limb transform is assigned.
+- `Unity/Assets/Scripts/TowerDefense/Enemies/WaypointPathAuthoring.cs` — authors waypoints as child GameObjects (`WP_00`...`WP_N`). `_useChildren = true` reads child transforms as the path. `HasWaypoints` returns `GetWaypointTransforms().Length >= 2`. `RebuildFromPoints(Vector3[])` destroys existing children and creates new `WP_XX` GameObjects (used for self-repair at runtime).
+
+**EnemyBase changes:**
+
+- `_visualRoot` (child GameObject `EnemyVisual`) — all rendering routes through this sub-object.
+- `ConfigureCenteredVisualRenderer()` — creates the visual sub-object and moves the SpriteRenderer onto it.
+- `EnsureShadow()` / `UpdateShadow()` — adds a drop-shadow child sprite rendered below the enemy.
+- `AnimateTraitVisuals()` — procedural walk cycle: squash/stretch on stride, forward lean, vertical bob, idle breathe.
+- `_skeletalAnimator` field — `EnemySkeletalAnimator.TickWalk` / `TickIdle` called each frame.
+- Removed trait labels and old particle trails.
+
+**WaveManager self-repair:**
+
+- `_authoredPath` (`WaypointPathAuthoring`) and `_spawnedEnemyVisualScale = 0.75f` wired by `SceneBootstrapper`.
+- `TryUseAuthoredPath()` — called in `Start()` and at each wave start. If `_authoredPath.HasWaypoints` is false (no children), calls `_authoredPath.RebuildFromPoints(DefaultPaintedPathWaypoints())` to regenerate them at runtime.
+- `DefaultPaintedPathWaypoints()` — returns the 6-point Chapter 1 S-path as a hardcoded fallback.
+- `ApplySpawnPresentation(GameObject)` — sets `localScale` from `_spawnedEnemyVisualScale` (0.75) on spawned enemies.
+
+**SceneBootstrapper regression fixes:**
+
+- `CreateWaveManager()` writes `_spawnedEnemyVisualScale = 0.75f` and `_authoredPath` into the WaveManager via `SerializedObject`.
+- Hardcoded waypoint fallback: when `ComputeWaypoints()` returns empty (can happen after `AssetDatabase.Refresh()`), a 6-point S-path is used so `BattleScene.unity` always serialises valid waypoints.
+
+---
+
+## Dragon Tower Visual Polish — 2026-06-03
+
+Removed the white-box appearance from deployed dragon towers and added idle animations.
+
+**New file:**
+
+- `Unity/Assets/Scripts/TowerDefense/Combat/DragonTowerAnimator.cs` — idle animation for placed towers. `TryBuildFrames()` scans sibling sprites in the same texture at `Awake` (`#if UNITY_EDITOR`). `Update()` cycles frames at 8 fps (when multiple frames exist) and applies a subtle breathing scale pulse (+-2.5% at 1.8 Hz, phase-randomised per tower).
+
+**SceneBootstrapper — `CreateDragonTowerPrefab()` sprite fallback chain:**
+
+1. `Unity/Assets/Art/Dragons/Animation/{id}_deployed_idle_strip.png` — multi-frame strip; `ImportDeployedStrip()` slices it, `DragonTowerAnimator` added when `frameCount > 1`.
+2. `Unity/Assets/Art/Dragons/{id}/{id}_deployed.png` — ComfyUI-generated single sprite; `ImportTransparentSprite()`.
+3. `Unity/Assets/Art/Dragons/{id}/portrait2.png`
+4. `Unity/Assets/Art/Dragons/{id}/portrait.png`
+
+Tower prefab adjustments: scale `0.95 -> 0.85`, collider size `1.1 -> 0.9`.
+
+**New SceneBootstrapper helpers:**
+
+- `ImportTransparentSprite(string assetPath)` — `alphaIsTransparency = true`, `RGBA32`, 256 PPU.
+- `ImportDeployedStrip(string assetPath, out int frameCount)` — reads PNG dimensions, slices into `SpriteMetaData[]`, pivot `(0.5, 0.15)`, returns first-frame sprite.
+
+**7 new deployed dragon sprites generated (2026-06-03):**
+
+Via ComfyUI (`flux_schnell_txt2img_json`) then processed with `tools/process_deployed_sprites.py` (scipy flood-fill background removal, crop to largest blob, 256x256 RGBA PNG):
+
+| Dragon | File |
+|--------|------|
+| `celestara_006` | `Unity/Assets/Art/Dragons/celestara_006/celestara_006_deployed.png` |
+| `shadowfang_007` | `Unity/Assets/Art/Dragons/shadowfang_007/shadowfang_007_deployed.png` |
+| `stonehide_005` | `Unity/Assets/Art/Dragons/stonehide_005/stonehide_005_deployed.png` |
+| `tempest_glacion_004` | `Unity/Assets/Art/Dragons/tempest_glacion_004/tempest_glacion_004_deployed.png` |
+| `emberveil_008` | `Unity/Assets/Art/Dragons/emberveil_008/emberveil_008_deployed.png` |
+| `tideclaw_009` | `Unity/Assets/Art/Dragons/tideclaw_009/tideclaw_009_deployed.png` |
+| `zephyrwing_010` | `Unity/Assets/Art/Dragons/zephyrwing_010/zephyrwing_010_deployed.png` |
+
+All sprites are 256x256 RGBA PNG with transparent backgrounds (~66% transparent pixels, corners alpha=0).
+
+To apply: run `Dragon Dominion > Build Battle Scene`, open `BattleScene.unity`, press Play. Deployed towers show transparent sprites with idle breathe animation instead of white boxes.
+
+---
+
 ## Main Files To Read First
 
 - `AGENTS.md`

@@ -1,0 +1,66 @@
+{
+  "comfy_url": "http://127.0.0.1:8000",
+  "backend": "local_flux",
+  "model": "flux1-schnell.safetensors",
+  "clip_l": "clip_l.safetensors",
+  "clip_t5": "t5xxl_fp8_e4m3fn.safetensors",
+  "vae": "ae.safetensors",
+  "width": 1536,
+  "height": 512,
+  "steps": 8,
+  "cfg": 1.0,
+  "sampler": "euler",
+  "scheduler": "simple",
+  "guidance": 5.0,
+  "negative_prompt": "text, letters, logo, watermark, signature, frame, border, scenery, ground, grass, UI, health bar, extra limbs, inconsistent character, cropped body",
+  "assets": [
+    {
+      "id": "orc_runner_walk_strip_premium",
+      "target": "Unity/Assets/Resources/EnemyAnimations/OrcRunner_walk_strip.png",
+      "width": 1536,
+      "height": 512,
+      "seed": 4102,
+      "prompt": "fantasy tower defense RPG enemy animation strip, same Orc Runner character in exactly six evenly spaced full-body frames left to right, large readable in each slot, feet on the same invisible baseline, fast running cycle: contact, down, passing, up, contact, recovery, green orc runner with red scarf and light armor, premium painterly 2D game sprite, three-quarter top-down perspective, transparent background only, no scenery, no ground, no grass, no shadow, no labels, no UI"
+    },
+    {
+      "id": "frost_brute_walk_strip_premium",
+      "target": "Unity/Assets/Resources/EnemyAnimations/FrostBrute_walk_strip.png",
+      "width": 1536,
+      "height": 512,
+      "seed": 5202,
+      "prompt": "fantasy tower defense RPG enemy animation sprite sheet, exactly six isolated 256x512 cells in one row, one complete Frost Brute in each cell, centered and not touching neighboring cells, no overlap between frames, feet on the same invisible baseline, large readable but fully inside each cell, heavy stomp walk cycle with strong weight shift, hulking icy monster with glacier armor and heavy fists, no weapon, premium painterly 2D game sprite, three-quarter top-down perspective, transparent background only, no scenery, no ground, no grass, no shadow, no labels, no UI"
+    },
+    {
+      "id": "lava_hound_walk_strip_premium",
+      "target": "Unity/Assets/Resources/EnemyAnimations/LavaHound_walk_strip.png",
+      "width": 2048,
+      "height": 256,
+      "seed": 7329,
+      "prompt": "fantasy tower defense RPG enemy animation sprite sheet, exactly six isolated wide cells in one row, one complete Lava Hound in each cell, centered with clear empty gutter between cells, no overlap between frames, paws on the same invisible baseline, large readable but fully inside each cell, side-facing quadruped run cycle with clear alternating legs, cracked black volcanic hide with orange magma seams, ember paws, flame tail, premium painterly 2D game sprite, transparent background only, no second row, no rider, no scenery, no ground, no grass, no shadow, no labels, no UI"
+    },
+    {
+      "id": "voltaris_deployed_idle_strip_premium",
+      "target": "Unity/Assets/Art/Dragons/Animation/voltaris_001_deployed_idle_strip.png",
+      "width": 1536,
+      "height": 512,
+      "seed": 3001,
+      "prompt": "fantasy tower defense RPG deployed dragon tower animation strip, same Voltaris storm dragon in six evenly spaced frames left to right, compact readable tower-size dragon, electric blue scales, lightning horns, premium painterly 2D sprite, three-quarter top-down perspective, idle hover and breathing cycle with subtle wing movement and crackling energy, transparent background, no scenery, no labels, no UI"
+    },
+    {
+      "id": "frostfang_deployed_idle_strip_premium",
+      "target": "Unity/Assets/Art/Dragons/Animation/frostfang_002_deployed_idle_strip.png",
+      "width": 1536,
+      "height": 512,
+      "seed": 3002,
+      "prompt": "fantasy tower defense RPG deployed dragon tower animation strip, same Frostfang ice dragon in six evenly spaced frames left to right, compact readable tower-size dragon, pale blue ice scales, crystalline horns, premium painterly 2D sprite, three-quarter top-down perspective, idle breathing cycle with frosty mist and subtle wing movement, transparent background, no scenery, no labels, no UI"
+    },
+    {
+      "id": "magmaclaw_deployed_idle_strip_premium",
+      "target": "Unity/Assets/Art/Dragons/Animation/magmaclaw_003_deployed_idle_strip.png",
+      "width": 1536,
+      "height": 512,
+      "seed": 3003,
+      "prompt": "fantasy tower defense RPG deployed dragon tower animation strip, same Magmaclaw fire dragon in six evenly spaced frames left to right, compact readable tower-size dragon, red basalt scales, molten claws, premium painterly 2D sprite, three-quarter top-down perspective, idle breathing cycle with ember glow and subtle wing movement, transparent background, no scenery, no labels, no UI"
+    }
+  ]
+}

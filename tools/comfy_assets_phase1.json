@@ -1,0 +1,127 @@
+{
+  "comfy_url": "http://127.0.0.1:8000",
+  "backend": "local_flux",
+  "model": "flux1-schnell.safetensors",
+  "clip_l": "clip_l.safetensors",
+  "clip_t5": "t5xxl_fp8_e4m3fn.safetensors",
+  "vae": "ae.safetensors",
+  "width": 1024,
+  "height": 1024,
+  "steps": 4,
+  "cfg": 1.0,
+  "sampler": "euler",
+  "scheduler": "simple",
+  "guidance": 3.5,
+  "node": "StabilityStableImageUltraNode",
+  "style_preset": "fantasy-art",
+  "negative_prompt": "text, letters, logo, watermark, artist signature, initials, copyright mark, frame, border, blurry, cropped subject, extra limbs, human rider",
+  "assets": [
+    {
+      "id": "emberveil_008_portrait",
+      "target": "Unity/Assets/Art/Dragons/emberveil_008/portrait.png",
+      "aspect_ratio": "1:1",
+      "seed": 8018,
+      "prompt": "Dragon Dominion tower defense RPG asset, Emberveil dragon portrait, elegant ember and smoke dragon with molten orange scales, charcoal-black horns, warm glowing eyes, compact readable silhouette, painterly fantasy game art, centered bust portrait, transparent-feeling plain dark neutral backdrop, no text, no watermark"
+    },
+    {
+      "id": "tideclaw_009_portrait",
+      "target": "Unity/Assets/Art/Dragons/tideclaw_009/portrait.png",
+      "aspect_ratio": "1:1",
+      "seed": 9029,
+      "prompt": "Dragon Dominion tower defense RPG asset, Tideclaw dragon portrait, aquatic blue sea dragon with pearl fins, crest like coral, bright teal eyes, water and foam accents, compact readable silhouette, painterly fantasy game art, centered bust portrait, plain dark neutral backdrop, no text, no watermark"
+    },
+    {
+      "id": "zephyrwing_010_portrait",
+      "target": "Unity/Assets/Art/Dragons/zephyrwing_010/portrait.png",
+      "aspect_ratio": "1:1",
+      "seed": 1010,
+      "prompt": "Dragon Dominion tower defense RPG asset, Zephyrwing dragon portrait, agile wind dragon with pale green feathers and ivory scales, swept-back horns, airy motion ribbons, bright alert eyes, compact readable silhouette, painterly fantasy game art, centered bust portrait, plain dark neutral backdrop, no text, no watermark"
+    },
+    {
+      "id": "orc_scout_sprite",
+      "target": "Unity/Assets/Art/Enemies/OrcScout.png",
+      "aspect_ratio": "1:1",
+      "seed": 1101,
+      "prompt": "Dragon Dominion tower defense enemy sprite, Orc Scout, small green orc runner with leather straps and crude dagger, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    },
+    {
+      "id": "orc_runner_sprite",
+      "target": "Unity/Assets/Art/Enemies/OrcRunner.png",
+      "aspect_ratio": "1:1",
+      "seed": 1102,
+      "prompt": "Dragon Dominion tower defense enemy sprite, Orc Runner, fast lean green orc with red scarf and light armor, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    },
+    {
+      "id": "orc_brute_sprite",
+      "target": "Unity/Assets/Art/Enemies/OrcBrute.png",
+      "aspect_ratio": "1:1",
+      "seed": 1103,
+      "prompt": "Dragon Dominion tower defense enemy sprite, Orc Brute, bulky green orc with heavy club and rough iron shoulder plates, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    },
+    {
+      "id": "orc_shielded_sprite",
+      "target": "Unity/Assets/Art/Enemies/OrcShielded.png",
+      "aspect_ratio": "1:1",
+      "seed": 1104,
+      "prompt": "Dragon Dominion tower defense enemy sprite, Shielded Orc, green orc carrying oversized blue steel shield, defensive stance, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    },
+    {
+      "id": "orc_regenerator_sprite",
+      "target": "Unity/Assets/Art/Enemies/OrcRegenerator.png",
+      "aspect_ratio": "1:1",
+      "seed": 1105,
+      "prompt": "Dragon Dominion tower defense enemy sprite, Orc Regenerator shaman, green orc with glowing green vial charms and stitched cloak, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    },
+    {
+      "id": "orc_flying_sprite",
+      "target": "Unity/Assets/Art/Enemies/OrcFlying.png",
+      "aspect_ratio": "1:1",
+      "seed": 1106,
+      "prompt": "Dragon Dominion tower defense enemy sprite, flying orc glider, small green orc suspended under ragged bat-wing glider, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    },
+    {
+      "id": "ice_shard_sprite",
+      "target": "Unity/Assets/Art/Enemies/IceShard.png",
+      "aspect_ratio": "1:1",
+      "seed": 1201,
+      "prompt": "Dragon Dominion tower defense enemy sprite, Ice Shard elemental, jagged animated ice creature with cold blue core, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    },
+    {
+      "id": "frost_brute_sprite",
+      "target": "Unity/Assets/Art/Enemies/FrostBrute.png",
+      "aspect_ratio": "1:1",
+      "seed": 1202,
+      "prompt": "Dragon Dominion tower defense enemy sprite, Frost Brute, hulking icy troll-like monster with glacier armor and heavy fists, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    },
+    {
+      "id": "glacial_shield_sprite",
+      "target": "Unity/Assets/Art/Enemies/GlacialShield.png",
+      "aspect_ratio": "1:1",
+      "seed": 1203,
+      "prompt": "Dragon Dominion tower defense enemy sprite, Glacial Shield guardian, crystalline ice soldier with broad frozen shield, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    },
+    {
+      "id": "lava_hound_sprite",
+      "target": "Unity/Assets/Art/Enemies/LavaHound.png",
+      "aspect_ratio": "1:1",
+      "seed": 1329,
+      "steps": 8,
+      "guidance": 5.5,
+      "prompt": "A single four-legged molten lava wolf creature standing alone, no rider, no person, no saddle, no bag, no equipment, no logo, no words. Fantasy tower defense enemy sprite, cracked black volcanic stone hide with glowing orange magma seams, ember paws, flame tail, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain dark neutral background, no text, no watermark, no signature"
+    },
+    {
+      "id": "magma_golem_sprite",
+      "target": "Unity/Assets/Art/Enemies/MagmaGolem.png",
+      "aspect_ratio": "1:1",
+      "seed": 1302,
+      "prompt": "Dragon Dominion tower defense enemy sprite, Magma Golem, heavy rock elemental with glowing lava seams and basalt fists, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    },
+    {
+      "id": "ember_wraith_sprite",
+      "target": "Unity/Assets/Art/Enemies/EmberWraith.png",
+      "aspect_ratio": "1:1",
+      "seed": 1303,
+      "prompt": "Dragon Dominion tower defense enemy sprite, Ember Wraith, floating smoky fire spirit with ember mask and trailing sparks, full body, three-quarter top-down game perspective, readable silhouette, painterly 2D sprite style, plain neutral background, no text, no watermark"
+    }
+  ]
+}

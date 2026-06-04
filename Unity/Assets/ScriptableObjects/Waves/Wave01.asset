@@ -13,12 +13,9 @@ MonoBehaviour:
   m_Name: Wave01
   m_EditorClassIdentifier: DragonTD::DragonTD.TowerDefense.WaveData
   EnemyGroups:
-  - EnemyPrefab: {fileID: 2069966194642343916, guid: b842d9d95502d5143a6d8b5c8ecd7fcd, type: 3}
-    Count: 4
-    SpawnInterval: 1.25
   - EnemyPrefab: {fileID: 8692608102355194927, guid: cac890a8e1efddb43aff4ea6eac2b6e4, type: 3}
-    Count: 5
-    SpawnInterval: 0.82
+    Count: 8
+    SpawnInterval: 0.75
   TimeBetweenGroups: 2.5
   GoldReward: 140
   ManaReward: 105

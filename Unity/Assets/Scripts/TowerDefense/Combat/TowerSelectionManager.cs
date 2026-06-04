@@ -60,7 +60,11 @@ namespace DragonTD.TowerDefense
                 return;
             }
 
-            if (!_isTargetingSkill && !_isTargetingMerge) return;
+            if (!_isTargetingSkill && !_isTargetingMerge)
+            {
+                HandleSelectionInput();
+                return;
+            }
 
             if (_selectedTower == null)
             {
@@ -112,6 +116,37 @@ namespace DragonTD.TowerDefense
             }
 
             SelectTower(tower);
+        }
+
+        private void HandleSelectionInput()
+        {
+#if UNITY_EDITOR || UNITY_STANDALONE
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (IsPointerOverUi()) return;
+                TrySelectTowerAt(GetPointerWorldPosition());
+            }
+#endif
+
+            if (Input.touchCount > 0)
+            {
+                Touch touch = Input.GetTouch(0);
+                if (touch.phase != TouchPhase.Began) return;
+                if (IsPointerOverUi(touch.fingerId)) return;
+
+                Camera cam = Camera.main;
+                if (cam == null) return;
+                Vector3 world = cam.ScreenToWorldPoint(touch.position);
+                world.z = 0f;
+                TrySelectTowerAt(world);
+            }
+        }
+
+        private void TrySelectTowerAt(Vector3 point)
+        {
+            DragonTower tower = FindTowerNear(point);
+            if (tower != null)
+                HandleTowerClicked(tower);
         }
 
         public void UpgradeSelectedTower()
@@ -235,7 +270,7 @@ namespace DragonTD.TowerDefense
         {
             if (tower == null || !tower.IsReadyToFuse || tower.IsFused) return false;
 
-            foreach (DragonTower other in FindObjectsByType<DragonTower>(FindObjectsSortMode.None))
+            foreach (DragonTower other in FindObjectsByType<DragonTower>(FindObjectsInactive.Exclude))
             {
                 if (other == null || other == tower) continue;
                 if (tower.CanMergeWith(other, out _))
@@ -375,7 +410,7 @@ namespace DragonTD.TowerDefense
             if (_selectedTower == null) return;
 
             EnsureRangePreview();
-            DrawRing(_rangePreview, _selectedTower.transform.position, _selectedTower.AttackRange, _selectedTower.ProjectileColor, 0.06f);
+            DrawRing(_rangePreview, _selectedTower.transform.position, _selectedTower.AttackRange, _selectedTower.ProjectileColor, 0.035f, 0.38f);
             _rangePreview.enabled = true;
         }
 
@@ -385,7 +420,7 @@ namespace DragonTD.TowerDefense
 
             SkillDefinition skill = _selectedTower.ActiveSkill;
             float radius = skill.isAoe ? skill.aoeRadius : 0.45f;
-            DrawRing(_skillPreview, pointer, radius, _selectedTower.ProjectileColor, 0.045f);
+            DrawRing(_skillPreview, pointer, radius, _selectedTower.ProjectileColor, 0.04f, 0.62f);
             _skillPreview.enabled = true;
         }
 
@@ -393,7 +428,7 @@ namespace DragonTD.TowerDefense
         {
             if (_selectedTower == null) return;
 
-            DrawRing(_mergePreview, pointer, 0.75f, _selectedTower.ProjectileColor, 0.055f);
+            DrawRing(_mergePreview, pointer, 0.75f, _selectedTower.ProjectileColor, 0.045f, 0.62f);
             _mergePreview.enabled = true;
         }
 
@@ -428,9 +463,9 @@ namespace DragonTD.TowerDefense
             return line;
         }
 
-        private void DrawRing(LineRenderer line, Vector3 center, float radius, Color color, float width)
+        private void DrawRing(LineRenderer line, Vector3 center, float radius, Color color, float width, float alpha)
         {
-            color.a = 0.85f;
+            color.a = alpha;
             center.z = 0f;
             line.startColor = color;
             line.endColor = color;
@@ -459,6 +494,12 @@ namespace DragonTD.TowerDefense
         {
             if (EventSystem.current == null) return false;
             return EventSystem.current.IsPointerOverGameObject();
+        }
+
+        private bool IsPointerOverUi(int fingerId)
+        {
+            if (EventSystem.current == null) return false;
+            return EventSystem.current.IsPointerOverGameObject(fingerId);
         }
     }
 }

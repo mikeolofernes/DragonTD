@@ -7,6 +7,8 @@ namespace DragonTD.TowerDefense
 {
     public class EnemyBase : MonoBehaviour
     {
+        private const float VisualScaleMultiplier = 1f;
+
         [SerializeField] protected EnemyData _data;
 
         protected float _currentHp;
@@ -30,6 +32,12 @@ namespace DragonTD.TowerDefense
         private SpriteRenderer _traitBadge;
         private LineRenderer _shieldRing;
         private Vector3 _baseScale = Vector3.one;
+        private Vector3 _lastPosition;
+        private Vector3 _movementDirection = Vector3.right;
+        private float _walkPhase;
+        private Transform _shadow;
+        private Transform _visualRoot;
+        private EnemySkeletalAnimator _skeletalAnimator;
         private float _nextRegenPulseTime;
         private bool _reachedBase;
         private bool  _isLaneMode;
@@ -62,7 +70,8 @@ namespace DragonTD.TowerDefense
 
         public void Initialize(Transform[] waypoints)
         {
-            _spriteRenderer = GetComponent<SpriteRenderer>();
+            _skeletalAnimator = GetComponentInChildren<EnemySkeletalAnimator>(true);
+            _spriteRenderer = ConfigureCenteredVisualRenderer();
             _healthBar = GetComponentInChildren<EnemyHealthBar>(true);
             if (_healthBar != null)
                 _healthBar.Initialize(this);
@@ -72,9 +81,13 @@ namespace DragonTD.TowerDefense
             _currentHp = _maxHp;
             _waypointIndex = 0;
             _shieldCracked = Trait != EnemyTrait.Shielded;
-            _baseScale = transform.localScale;
+            _baseScale = transform.localScale * VisualScaleMultiplier;
+            transform.localScale = _baseScale;
+            _lastPosition = transform.position;
+            _walkPhase = Random.value * Mathf.PI * 2f;
             ApplyTraitVisuals();
-            EnsureTraitLabel();
+            RemoveTraitLabel();
+            EnsureShadow();
             OnHpChanged?.Invoke(HpPercent);
         }
 
@@ -82,7 +95,8 @@ namespace DragonTD.TowerDefense
         {
             _isLaneMode = true;
             _wallWorldX = wallWorldX;
-            _spriteRenderer = GetComponent<SpriteRenderer>();
+            _skeletalAnimator = GetComponentInChildren<EnemySkeletalAnimator>(true);
+            _spriteRenderer = ConfigureCenteredVisualRenderer();
             _healthBar = GetComponentInChildren<EnemyHealthBar>(true);
             if (_healthBar != null) _healthBar.Initialize(this);
             _waypoints = new Transform[0];
@@ -91,9 +105,13 @@ namespace DragonTD.TowerDefense
             _currentHp = _maxHp;
             _waypointIndex = 0;
             _shieldCracked = Trait != EnemyTrait.Shielded;
-            _baseScale = transform.localScale;
+            _baseScale = transform.localScale * VisualScaleMultiplier;
+            transform.localScale = _baseScale;
+            _lastPosition = transform.position;
+            _walkPhase = Random.value * Mathf.PI * 2f;
             ApplyTraitVisuals();
-            EnsureTraitLabel();
+            RemoveTraitLabel();
+            EnsureShadow();
             OnHpChanged?.Invoke(HpPercent);
         }
 
@@ -358,49 +376,116 @@ namespace DragonTD.TowerDefense
 
         private void AnimateTraitVisuals()
         {
+            Vector3 delta = transform.position - _lastPosition;
+            bool isMoving = delta.sqrMagnitude > 0.000001f && CurrentMoveSpeed > 0.01f;
+            if (isMoving)
+                _movementDirection = delta.normalized;
+
             if (Trait == EnemyTrait.Flying)
             {
-                float bob = 1f + Mathf.Sin(Time.time * 5f) * 0.04f;
-                transform.localScale = _baseScale * bob;
+                float hover = Mathf.Sin(Time.time * 5.2f + _walkPhase);
+                float scale = 1f + hover * 0.045f;
+                transform.localScale = _baseScale * scale;
+                transform.rotation = Quaternion.Euler(0f, 0f, hover * 2.5f);
+                ApplyVisualLocalMotion(new Vector3(0f, hover * 0.08f, 0f), Vector3.one, Quaternion.identity, 18f);
+                UpdateShadow(0.72f - hover * 0.08f, 0.24f - hover * 0.03f, 0.24f);
             }
-            else if (Trait == EnemyTrait.Runner)
+            else if (isMoving)
             {
-                float pulse = 1f + Mathf.Sin(Time.time * 10f) * 0.025f;
-                transform.localScale = _baseScale * pulse;
+                transform.localScale = _baseScale;
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.identity, Time.deltaTime * 18f);
+
+                if (_skeletalAnimator != null && _skeletalAnimator.IsConfigured)
+                {
+                    _skeletalAnimator.TickWalk(_movementDirection, Mathf.Clamp01(CurrentMoveSpeed / 3f), Trait);
+                    ApplyVisualLocalMotion(Vector3.zero, Vector3.one, Quaternion.identity, 20f);
+                    UpdateShadow(0.82f, 0.25f, 0.32f);
+                }
+                else
+                {
+                    float speed = Trait == EnemyTrait.Runner ? 13.5f : Trait == EnemyTrait.Brute ? 7.5f : 10.5f;
+                    float step = Mathf.Sin(Time.time * speed + _walkPhase);
+                    float bob = Mathf.Abs(step) * 0.08f;
+                    float stride = step * 0.035f;
+                    float footfall = Mathf.Abs(step);
+                    float squash = 1f + footfall * 0.055f;
+                    float stretch = 1f - footfall * 0.04f;
+                    float lean = Mathf.Clamp(-_movementDirection.x * 5.5f + step * 2.1f, -7f, 7f);
+
+                    ApplyVisualLocalMotion(new Vector3(stride, bob, 0f), new Vector3(squash, stretch, 1f), Quaternion.Euler(0f, 0f, lean), 20f);
+                    UpdateShadow(0.82f + footfall * 0.08f, 0.25f - footfall * 0.04f, 0.32f);
+                }
+
+                if (_spriteRenderer != null && Mathf.Abs(_movementDirection.x) > 0.05f)
+                    _spriteRenderer.flipX = _movementDirection.x < 0f;
             }
+            else
+            {
+                float idle = Mathf.Sin(Time.time * 2.4f + _walkPhase) * 0.018f;
+                transform.localScale = _baseScale * (1f + idle);
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.identity, Time.deltaTime * 12f);
+                _skeletalAnimator?.TickIdle();
+                ApplyVisualLocalMotion(Vector3.zero, Vector3.one, Quaternion.identity, 12f);
+                UpdateShadow(0.78f, 0.25f, 0.3f);
+            }
+
+            _lastPosition = transform.position;
         }
 
-        private void EnsureTraitLabel()
+        private SpriteRenderer ConfigureCenteredVisualRenderer()
         {
-            if (Trait == EnemyTrait.None) return;
+            SpriteRenderer rootRenderer = GetComponent<SpriteRenderer>();
+            if (rootRenderer == null)
+                return null;
 
-            EnsureTraitBadge();
+            if (_skeletalAnimator != null && _skeletalAnimator.IsConfigured)
+            {
+                rootRenderer.enabled = false;
+                return rootRenderer;
+            }
 
-            var labelGO = new GameObject("TraitLabel");
-            labelGO.transform.SetParent(transform, false);
-            labelGO.transform.localPosition = new Vector3(0f, 1.38f, -0.1f);
-            _traitLabel = labelGO.AddComponent<TextMesh>();
-            _traitLabel.anchor = TextAnchor.MiddleCenter;
-            _traitLabel.alignment = TextAlignment.Center;
-            _traitLabel.characterSize = 0.115f;
-            _traitLabel.fontSize = 36;
-            var renderer = labelGO.GetComponent<MeshRenderer>();
-            if (renderer != null)
-                renderer.sortingOrder = 35;
-            UpdateTraitLabel();
+            if (_visualRoot == null)
+            {
+                var visualGO = new GameObject("EnemyVisual");
+                visualGO.transform.SetParent(transform, false);
+                _visualRoot = visualGO.transform;
+            }
+
+            SpriteRenderer visualRenderer = _visualRoot.GetComponent<SpriteRenderer>();
+            if (visualRenderer == null)
+                visualRenderer = _visualRoot.gameObject.AddComponent<SpriteRenderer>();
+
+            visualRenderer.sprite = rootRenderer.sprite;
+            visualRenderer.color = rootRenderer.color;
+            visualRenderer.flipX = rootRenderer.flipX;
+            visualRenderer.flipY = rootRenderer.flipY;
+            visualRenderer.sortingLayerID = rootRenderer.sortingLayerID;
+            visualRenderer.sortingOrder = rootRenderer.sortingOrder;
+            visualRenderer.sharedMaterial = rootRenderer.sharedMaterial;
+            rootRenderer.enabled = false;
+            _visualRoot.localPosition = Vector3.zero;
+            _visualRoot.localRotation = Quaternion.identity;
+            _visualRoot.localScale = Vector3.one;
+            return visualRenderer;
         }
 
-        private void EnsureTraitBadge()
+        private void ApplyVisualLocalMotion(Vector3 localPosition, Vector3 localScale, Quaternion localRotation, float damping)
         {
-            if (_traitBadge != null) return;
+            if (_visualRoot == null) return;
 
-            var badgeGO = new GameObject("TraitBadge");
-            badgeGO.transform.SetParent(transform, false);
-            badgeGO.transform.localPosition = new Vector3(0f, 1.38f, 0f);
-            badgeGO.transform.localScale = new Vector3(1.2f, 0.34f, 1f);
-            _traitBadge = badgeGO.AddComponent<SpriteRenderer>();
-            _traitBadge.sprite = RuntimeWhiteSprite();
-            _traitBadge.sortingOrder = 34;
+            _visualRoot.localPosition = Vector3.Lerp(_visualRoot.localPosition, localPosition, Time.deltaTime * damping);
+            _visualRoot.localScale = Vector3.Lerp(_visualRoot.localScale, localScale, Time.deltaTime * damping);
+            _visualRoot.localRotation = Quaternion.Slerp(_visualRoot.localRotation, localRotation, Time.deltaTime * damping);
+        }
+
+        private void RemoveTraitLabel()
+        {
+            if (_traitLabel != null)
+                Destroy(_traitLabel.gameObject);
+            if (_traitBadge != null)
+                Destroy(_traitBadge.gameObject);
+            _traitLabel = null;
+            _traitBadge = null;
         }
 
         private void UpdateTraitLabel()
@@ -456,9 +541,41 @@ namespace DragonTD.TowerDefense
             if (Trait == EnemyTrait.Shielded)
                 EnsureShieldRing();
             if (Trait == EnemyTrait.Runner)
-                EnsureTraitTrail(new Color(0.55f, 1f, 0.25f, 0.75f), 0.22f);
+                RemoveTraitTrail();
             if (Trait == EnemyTrait.Flying)
-                EnsureTraitTrail(new Color(0.85f, 0.55f, 1f, 0.62f), 0.28f);
+                RemoveTraitTrail();
+        }
+
+        private void RemoveTraitTrail()
+        {
+            TrailRenderer trail = GetComponent<TrailRenderer>();
+            if (trail != null)
+                Destroy(trail);
+        }
+
+        private void EnsureShadow()
+        {
+            if (_shadow != null) return;
+
+            var shadowGO = new GameObject("EnemyShadow");
+            shadowGO.transform.SetParent(transform, false);
+            shadowGO.transform.localPosition = new Vector3(0f, -0.42f, 0.05f);
+            var sr = shadowGO.AddComponent<SpriteRenderer>();
+            sr.sprite = SoftShadowSprite();
+            sr.color = new Color(0f, 0f, 0f, Trait == EnemyTrait.Flying ? 0.2f : 0.34f);
+            sr.sortingOrder = 0;
+            _shadow = shadowGO.transform;
+            UpdateShadow(0.78f, 0.25f, Trait == EnemyTrait.Flying ? 0.2f : 0.34f);
+        }
+
+        private void UpdateShadow(float width, float height, float alpha)
+        {
+            if (_shadow == null) return;
+            _shadow.position = new Vector3(transform.position.x, transform.position.y - 0.42f, transform.position.z + 0.05f);
+            _shadow.rotation = Quaternion.identity;
+            _shadow.localScale = new Vector3(width, height, 1f);
+            if (_shadow.TryGetComponent(out SpriteRenderer sr))
+                sr.color = new Color(0f, 0f, 0f, alpha);
         }
 
         private void EnsureTraitTrail(Color color, float time)
@@ -501,6 +618,7 @@ namespace DragonTD.TowerDefense
         }
 
         private static Sprite _runtimeWhiteSprite;
+        private static Sprite _softShadowSprite;
         private static Sprite RuntimeWhiteSprite()
         {
             if (_runtimeWhiteSprite != null)
@@ -511,6 +629,29 @@ namespace DragonTD.TowerDefense
             texture.Apply();
             _runtimeWhiteSprite = Sprite.Create(texture, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0.5f), 2f);
             return _runtimeWhiteSprite;
+        }
+
+        private static Sprite SoftShadowSprite()
+        {
+            if (_softShadowSprite != null)
+                return _softShadowSprite;
+
+            const int size = 64;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(size / 2f, size / 2f);
+            float maxDist = size / 2f;
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x, y), center) / maxDist;
+                float a = Mathf.Clamp01(1f - d);
+                a *= a;
+                texture.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+            texture.Apply();
+            texture.wrapMode = TextureWrapMode.Clamp;
+            _softShadowSprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+            return _softShadowSprite;
         }
 
         protected void ReachBase()

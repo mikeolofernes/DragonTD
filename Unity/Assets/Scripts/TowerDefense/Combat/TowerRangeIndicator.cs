@@ -17,14 +17,14 @@ namespace DragonTD.TowerDefense
                 ? dragon.Definition.NormalAttack.range
                 : dragon.Definition.baseStats.range;
             _color = dragon.Definition.visualData.primaryColor;
-            _color.a = 0.65f;
+            _color.a = 0.34f;
         }
 
         public void Configure(float range, Color color)
         {
             _range = range;
             _color = color;
-            _color.a = 0.65f;
+            _color.a = 0.34f;
         }
 
         private void OnMouseEnter()
@@ -48,8 +48,8 @@ namespace DragonTD.TowerDefense
             _lineRenderer.loop = true;
             _lineRenderer.useWorldSpace = true;
             _lineRenderer.positionCount = 64;
-            _lineRenderer.startWidth = 0.035f;
-            _lineRenderer.endWidth = 0.035f;
+            _lineRenderer.startWidth = 0.025f;
+            _lineRenderer.endWidth = 0.025f;
             _lineRenderer.sortingOrder = 18;
             _lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
             _lineRenderer.enabled = false;

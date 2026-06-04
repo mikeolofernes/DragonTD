@@ -26,9 +26,11 @@ namespace DragonTD.TowerDefense
         [SerializeField] private Sprite _pathCornerBR;
 
         private GridTile[,] _grid;
+        private MapDefinition _activeMap;
 
         public int Width => _width;
         public int Height => _height;
+        public MapDefinition ActiveMap => _activeMap;
 
         private void Awake()
         {
@@ -83,8 +85,8 @@ namespace DragonTD.TowerDefense
 
         public GridTile GetTileAtWorldPos(Vector3 worldPos)
         {
-            int x = Mathf.FloorToInt((worldPos.x - _originPosition.x) + 0.5f);
-            int y = Mathf.FloorToInt((worldPos.y - _originPosition.y) + 0.5f);
+            int x = Mathf.RoundToInt(worldPos.x - _originPosition.x);
+            int y = Mathf.RoundToInt(worldPos.y - _originPosition.y);
             return GetTile(x, y);
         }
 
@@ -95,6 +97,25 @@ namespace DragonTD.TowerDefense
                 _originPosition.y + y,
                 _originPosition.z
             );
+        }
+
+        public Vector3 GridToWorld(Vector2Int gridPosition)
+        {
+            return GridToWorld(gridPosition.x, gridPosition.y);
+        }
+
+        public bool TrySnapToTileCenter(Vector3 worldPos, out Vector3 snappedPosition, out GridTile tile)
+        {
+            tile = GetTileAtWorldPos(worldPos);
+            if (tile == null)
+            {
+                snappedPosition = worldPos;
+                snappedPosition.z = 0f;
+                return false;
+            }
+
+            snappedPosition = GridToWorld(tile.GridPosition);
+            return true;
         }
 
         public bool TryGetBuildableTile(Vector3 worldPos, out GridTile tile)
@@ -192,6 +213,11 @@ namespace DragonTD.TowerDefense
 
         private void LoadTilesFromMap(MapDefinition map)
         {
+            _activeMap = map;
+            _width = MapDefinition.Cols;
+            _height = MapDefinition.Rows;
+            _originPosition = MapDefinition.GridToWorld(0, 0);
+
             var path = new System.Collections.Generic.List<Vector2Int>();
             var high = new System.Collections.Generic.List<Vector2Int>();
             var mana = new System.Collections.Generic.List<Vector2Int>();

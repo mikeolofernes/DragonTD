@@ -270,7 +270,7 @@ MonoBehaviour:
     secondaryColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     idleVfxKey: 
     deathVfxKey: 
-    portrait: {fileID: 0}
+    portrait: {fileID: 21300000, guid: 549a92384fdf02d4190e12cad974f511, type: 3}
     hatchlingPrefab: {fileID: 7798776450023461926, guid: 7ef4397542c1da649bd1eabd47d86cff, type: 3}
     dragonVideo: {fileID: 0}
   manaCost: 70

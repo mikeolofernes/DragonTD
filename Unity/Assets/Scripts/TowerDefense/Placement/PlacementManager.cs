@@ -57,7 +57,8 @@ namespace DragonTD.TowerDefense
             }
 
             Vector3 pointerPosition = GetPointerWorldPosition();
-            UpdateRangePreview(pointerPosition);
+            Vector3 previewCenter = ResolvePlacementPreviewCenter(pointerPosition);
+            UpdateRangePreview(previewCenter);
             UpdateTilePreview(pointerPosition);
 
             // Support both touch (mobile) and mouse (editor)
@@ -92,7 +93,8 @@ namespace DragonTD.TowerDefense
         private void HandleTapAt(Vector3 worldPos)
         {
             worldPos.z = 0f;
-            UpdateRangePreview(worldPos);
+            Vector3 previewCenter = ResolvePlacementPreviewCenter(worldPos);
+            UpdateRangePreview(previewCenter);
             GridTile tile = GridManager.Instance.GetTileAtWorldPos(worldPos);
             if (tile != null && tile.CanPlace() &&
                 ResourceManager.Instance.TrySpendMana(_selectedDragon.Definition.manaCost))
@@ -176,6 +178,18 @@ namespace DragonTD.TowerDefense
             _previewTile = tile;
             if (_previewTile != null)
                 _previewTile.SetPlacementPreview(true, _previewTile.CanPlace());
+        }
+
+        private Vector3 ResolvePlacementPreviewCenter(Vector3 worldPos)
+        {
+            if (GridManager.Instance != null &&
+                GridManager.Instance.TrySnapToTileCenter(worldPos, out Vector3 snappedPosition, out _))
+            {
+                return snappedPosition;
+            }
+
+            worldPos.z = 0f;
+            return worldPos;
         }
 
         private void ClearTilePreview()
