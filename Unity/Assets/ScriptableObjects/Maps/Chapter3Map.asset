@@ -22,6 +22,10 @@ MonoBehaviour:
   pathCornerBL: {fileID: 0}
   pathCornerBR: {fileID: 0}
   backgroundSprite: {fileID: 0}
+  paintedPathWaypoints: []
+  mapType: 0
+  wallColumn: 8
+  wallHp: 1000
   grid: 'BBBBBBBBBBBB
 
     BBBBBBBBBBBB

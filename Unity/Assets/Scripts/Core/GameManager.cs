@@ -35,6 +35,8 @@ namespace DragonTD.Core
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            CurrentStageId = PlayerInventory.Instance?.Progression?.CurrentStageId ?? StageCatalog.DefaultStageId;
+            ApplyActiveChapter();
         }
 
         public void SetState(GameState newState)
@@ -77,15 +79,21 @@ namespace DragonTD.Core
 
         private void SetupLaneDefense(DragonTD.TowerDefense.MapDefinition mapDef)
         {
-            // Grid origin x = -5.5, column index maps to world x via: worldX = -5.5 + col
-            float wallWorldX = -5.5f + mapDef.wallColumn;
-            int   rows       = DragonTD.TowerDefense.MapDefinition.Rows; // 8
+            Vector3 wallTileCenter = GridManager.Instance != null
+                ? GridManager.Instance.GridToWorld(mapDef.wallColumn, 0)
+                : DragonTD.TowerDefense.MapDefinition.GridToWorld(mapDef.wallColumn, 0);
+            Vector3 leftTileCenter = GridManager.Instance != null
+                ? GridManager.Instance.GridToWorld(0, 0)
+                : DragonTD.TowerDefense.MapDefinition.GridToWorld(0, 0);
+
+            float wallWorldX = wallTileCenter.x;
+            int   rows       = DragonTD.TowerDefense.MapDefinition.Rows;
 
             DragonTD.TowerDefense.WallBase wall = DragonTD.TowerDefense.WallBase.Create(wallWorldX, rows, mapDef.wallHp);
             wall.OnWallDestroyed += () => SetState(GameState.Defeat);
 
             if (WaveManager.Instance != null)
-                WaveManager.Instance.ConfigureLane(wallWorldX, -5.5f, 1f, rows);
+                WaveManager.Instance.ConfigureLane(wallWorldX, leftTileCenter.x, 1f, rows);
         }
 
         public void SelectStageForNextBattle(string stageId)
@@ -202,17 +210,17 @@ namespace DragonTD.Core
             if (DragonTD.TowerDefense.WallBase.Instance != null)
                 Destroy(DragonTD.TowerDefense.WallBase.Instance.gameObject);
 
-            foreach (EnemyBase enemy in FindObjectsByType<EnemyBase>(FindObjectsSortMode.None))
+            foreach (EnemyBase enemy in FindObjectsByType<EnemyBase>(FindObjectsInactive.Exclude))
                 Destroy(enemy.gameObject);
-            foreach (DragonTower tower in FindObjectsByType<DragonTower>(FindObjectsSortMode.None))
+            foreach (DragonTower tower in FindObjectsByType<DragonTower>(FindObjectsInactive.Exclude))
                 Destroy(tower.gameObject);
-            foreach (ProjectileBase projectile in FindObjectsByType<ProjectileBase>(FindObjectsSortMode.None))
+            foreach (ProjectileBase projectile in FindObjectsByType<ProjectileBase>(FindObjectsInactive.Exclude))
                 Destroy(projectile.gameObject);
-            foreach (DamageIndicator indicator in FindObjectsByType<DamageIndicator>(FindObjectsSortMode.None))
+            foreach (DamageIndicator indicator in FindObjectsByType<DamageIndicator>(FindObjectsInactive.Exclude))
                 Destroy(indicator.gameObject);
-            foreach (DeathPopEffect effect in FindObjectsByType<DeathPopEffect>(FindObjectsSortMode.None))
+            foreach (DeathPopEffect effect in FindObjectsByType<DeathPopEffect>(FindObjectsInactive.Exclude))
                 Destroy(effect.gameObject);
-            foreach (SkillCastEffect effect in FindObjectsByType<SkillCastEffect>(FindObjectsSortMode.None))
+            foreach (SkillCastEffect effect in FindObjectsByType<SkillCastEffect>(FindObjectsInactive.Exclude))
                 Destroy(effect.gameObject);
         }
 

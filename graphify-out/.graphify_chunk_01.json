@@ -1,0 +1,434 @@
+{
+  "nodes": [
+    {
+      "id": "cavecrew_readme",
+      "label": "Cavecrew README",
+      "file_type": "document",
+      "source_file": ".agents/skills/cavecrew/README.md",
+      "source_location": null
+    },
+    {
+      "id": "cavecrew_skill",
+      "label": "Cavecrew Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/cavecrew/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_commit_readme",
+      "label": "Caveman Commit README",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-commit/README.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_commit_skill",
+      "label": "Caveman Commit Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-commit/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_compress_readme",
+      "label": "Caveman Compress README",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-compress/README.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_compress_security",
+      "label": "Caveman Compress Security",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-compress/SECURITY.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_compress_skill",
+      "label": "Caveman Compress Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-compress/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_help_readme",
+      "label": "Caveman Help README",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-help/README.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_help_skill",
+      "label": "Caveman Help Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-help/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_review_readme",
+      "label": "Caveman Review README",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-review/README.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_review_skill",
+      "label": "Caveman Review Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-review/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_stats_readme",
+      "label": "Caveman Stats README",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-stats/README.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_stats_skill",
+      "label": "Caveman Stats Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman-stats/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_readme",
+      "label": "Caveman README",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman/README.md",
+      "source_location": null
+    },
+    {
+      "id": "caveman_skill",
+      "label": "Caveman Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/caveman/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "graphify_skill",
+      "label": "Graphify Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "references_add_watch",
+      "label": "Graphify Add/Watch Reference",
+      "file_type": "document",
+      "source_file": ".agents/skills/graphify/references/add-watch.md",
+      "source_location": null
+    },
+    {
+      "id": "references_exports",
+      "label": "Graphify Exports Reference",
+      "file_type": "document",
+      "source_file": ".agents/skills/graphify/references/exports.md",
+      "source_location": null
+    },
+    {
+      "id": "references_extraction_spec",
+      "label": "Graphify Extraction Spec Reference",
+      "file_type": "document",
+      "source_file": ".agents/skills/graphify/references/extraction-spec.md",
+      "source_location": null
+    },
+    {
+      "id": "references_github_and_merge",
+      "label": "Graphify GitHub and Merge Reference",
+      "file_type": "document",
+      "source_file": ".agents/skills/graphify/references/github-and-merge.md",
+      "source_location": null
+    },
+    {
+      "id": "references_hooks",
+      "label": "Graphify Hooks Reference",
+      "file_type": "document",
+      "source_file": ".agents/skills/graphify/references/hooks.md",
+      "source_location": null
+    },
+    {
+      "id": "references_query",
+      "label": "Graphify Query Reference",
+      "file_type": "document",
+      "source_file": ".agents/skills/graphify/references/query.md",
+      "source_location": null
+    },
+    {
+      "id": "references_transcribe",
+      "label": "Graphify Transcribe Reference",
+      "file_type": "document",
+      "source_file": ".agents/skills/graphify/references/transcribe.md",
+      "source_location": null
+    },
+    {
+      "id": "references_update",
+      "label": "Graphify Update Reference",
+      "file_type": "document",
+      "source_file": ".agents/skills/graphify/references/update.md",
+      "source_location": null
+    },
+    {
+      "id": "agents",
+      "label": "Agents Registry",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null
+    },
+    {
+      "id": "concept_caveman",
+      "label": "Caveman Communication Style",
+      "file_type": "concept",
+      "source_file": ".agents/skills/caveman/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "concept_token_reduction",
+      "label": "Token Reduction Strategy",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/caveman/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "concept_subagent_delegation",
+      "label": "Subagent Delegation Decision Guide",
+      "file_type": "concept",
+      "source_file": ".agents/skills/cavecrew/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "concept_conventional_commits",
+      "label": "Conventional Commits Standard",
+      "file_type": "concept",
+      "source_file": ".agents/skills/caveman-commit/SKILL.md",
+      "source_location": null
+    },
+    {
+      "id": "concept_knowledge_graph",
+      "label": "Knowledge Graph Pipeline",
+      "file_type": "rationale",
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "source_location": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "cavecrew_skill",
+      "target": "caveman_skill",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/cavecrew/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "caveman_compress_skill",
+      "target": "concept_token_reduction",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/caveman-compress/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "caveman_stats_skill",
+      "target": "concept_token_reduction",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".agents/skills/caveman-stats/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "caveman_commit_skill",
+      "target": "concept_conventional_commits",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/caveman-commit/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "cavecrew_skill",
+      "target": "concept_subagent_delegation",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/cavecrew/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_skill",
+      "target": "concept_knowledge_graph",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_skill",
+      "target": "references_add_watch",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_skill",
+      "target": "references_exports",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_skill",
+      "target": "references_extraction_spec",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_skill",
+      "target": "references_github_and_merge",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_skill",
+      "target": "references_hooks",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_skill",
+      "target": "references_query",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_skill",
+      "target": "references_transcribe",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_skill",
+      "target": "references_update",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/graphify/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "agents",
+      "target": "graphify_skill",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "weight": 1.0
+    },
+    {
+      "source": "caveman_help_skill",
+      "target": "caveman_skill",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/caveman-help/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "caveman_help_skill",
+      "target": "caveman_commit_skill",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/caveman-help/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "caveman_help_skill",
+      "target": "caveman_review_skill",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/caveman-help/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "caveman_help_skill",
+      "target": "caveman_compress_skill",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/caveman-help/SKILL.md",
+      "weight": 1.0
+    },
+    {
+      "source": "caveman_help_skill",
+      "target": "caveman_stats_skill",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/caveman-help/SKILL.md",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "caveman_ecosystem",
+      "label": "Caveman Ecosystem",
+      "nodes": [
+        "caveman_skill",
+        "caveman_commit_skill",
+        "caveman_review_skill",
+        "caveman_compress_skill",
+        "caveman_stats_skill"
+      ],
+      "relation": "implement",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": ".agents/skills/caveman/SKILL.md"
+    },
+    {
+      "id": "graphify_references",
+      "label": "Graphify Reference Documentation",
+      "nodes": [
+        "graphify_skill",
+        "references_add_watch",
+        "references_exports",
+        "references_extraction_spec",
+        "references_github_and_merge",
+        "references_hooks",
+        "references_query",
+        "references_transcribe",
+        "references_update"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".agents/skills/graphify/SKILL.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

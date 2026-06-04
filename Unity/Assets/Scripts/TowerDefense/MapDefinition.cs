@@ -36,6 +36,9 @@ namespace DragonTD.TowerDefense
         [Header("Background (optional — shown behind tiles if sprites are missing)")]
         public Sprite backgroundSprite;
 
+        [Header("Painted Path Override")]
+        public Vector2[] paintedPathWaypoints;
+
         [Header("Lane Defense Settings (LaneDefense mode only)")]
         public DragonTD.Core.MapType mapType = DragonTD.Core.MapType.PathFollowing;
         public int wallColumn = 8;
@@ -45,13 +48,13 @@ namespace DragonTD.TowerDefense
         [TextArea(8, 8)]
         public string grid =
             "BBBBBBBBBBBB\n" +
-            "BBBBBBBBBBBB\n" +
-            "BBPPPPPPPPPP\n" +
-            "BBPBBBBBBBBP\n" +
-            "PPPBBBBBBBBP\n" +
-            "BBBBBBBBBBBP\n" +
-            "BBBBBBBBBBBP\n" +
-            "BBBBBBBBBBBP";
+            "BPPPPPPPPPPB\n" +
+            "BPXBBBBBBXPB\n" +
+            "PPXBBBBBBXPB\n" +
+            "BBBBBBBBBXPB\n" +
+            "BBBBBBBBBXPB\n" +
+            "BBBBBBBBBXPP\n" +
+            "BBBBBBBBBBBB";
 
         // Returns the raw char at (col, worldRow) where worldRow=0 is the bottom.
         public char GetTile(int col, int worldRow)
@@ -96,6 +99,21 @@ namespace DragonTD.TowerDefense
             return tiles;
         }
 
+        public List<int> GetPathRows()
+        {
+            var rows = new List<int>();
+            for (int worldRow = 0; worldRow < Rows; worldRow++)
+            {
+                for (int col = 0; col < Cols; col++)
+                {
+                    if (GetTile(col, worldRow) != 'P') continue;
+                    rows.Add(worldRow);
+                    break;
+                }
+            }
+            return rows;
+        }
+
         // Converts grid coordinates to world position.
         // tile(col, worldRow) → world (-5.5+col, -3.5+worldRow)
         public static Vector3 GridToWorld(int col, int worldRow, float z = 0f)
@@ -105,6 +123,14 @@ namespace DragonTD.TowerDefense
         // including off-screen entry and exit points.
         public Vector3[] ComputeWaypoints()
         {
+            if (paintedPathWaypoints != null && paintedPathWaypoints.Length > 0)
+            {
+                var painted = new Vector3[paintedPathWaypoints.Length];
+                for (int i = 0; i < paintedPathWaypoints.Length; i++)
+                    painted[i] = new Vector3(paintedPathWaypoints[i].x, paintedPathWaypoints[i].y, 0f);
+                return painted;
+            }
+
             if (string.IsNullOrWhiteSpace(grid)) return new Vector3[0];
 
             bool[,] isPath = new bool[Cols, Rows];

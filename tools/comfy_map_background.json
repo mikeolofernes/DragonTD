@@ -1,0 +1,26 @@
+{
+  "comfy_url": "http://127.0.0.1:8000",
+  "backend": "local_flux",
+  "model": "flux1-schnell.safetensors",
+  "clip_l": "clip_l.safetensors",
+  "clip_t5": "t5xxl_fp8_e4m3fn.safetensors",
+  "vae": "ae.safetensors",
+  "width": 1344,
+  "height": 768,
+  "steps": 8,
+  "cfg": 1.0,
+  "sampler": "euler",
+  "scheduler": "simple",
+  "guidance": 5.0,
+  "negative_prompt": "text, letters, logo, watermark, signature, UI, HUD, buttons, characters, monsters, dragons, towers, square grid, tile seams, flat vector art, simple circles, black outline cartoon, low detail, blurry, washed out",
+  "assets": [
+    {
+      "id": "chapter1_forest_map_painterly",
+      "target": "Unity/Assets/Art/UI/battle_background_comfy.png",
+      "width": 1344,
+      "height": 768,
+      "seed": 24060232,
+      "prompt": "top down orthographic fantasy tower defense forest map background, painterly mobile game environment concept art, like a polished hand painted RPG battle map. Lush enchanted woodland clearing with mossy grass, ferns, mushrooms, tangled tree roots, forest depth, soft teal mist in the far background, warm moss highlights, detailed natural brush texture. There is one continuous narrow tan dirt path with scattered flat stones, not a plaza. The path shape is simple and readable: it enters from the left edge slightly below center, turns upward at the left, runs horizontally across the upper middle, turns downward on the right, then turns right and exits the right edge near the lower middle. The center must remain an open grassy placement field. Rounded path corners, mossy stone borders, organic foliage around the outer edges. No UI, no text, no letters, no symbols, no signs, no characters, no monsters, no towers, no buildings, no stairs, no walls, no square grid, no tile seams, no huge stone plaza, no border."
+    }
+  ]
+}

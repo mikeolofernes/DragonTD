@@ -6,6 +6,8 @@ namespace DragonTD.TowerDefense
 {
     public class DragonTower : MonoBehaviour
     {
+        private const float DeployedVisualScaleMultiplier = 1.25f;
+
         private DragonInstance _dragonInstance;
         private float _attackCooldown;
         private float _lastAttackTime;
@@ -34,6 +36,8 @@ namespace DragonTD.TowerDefense
         private Vector3 _basePos;
         private Vector3 _levelScale = Vector3.one;
         private Transform _shadow;
+        private Transform _ambientGlow;
+        private SpriteRenderer _ambientGlowRenderer;
         private float _bobPhase;
         private float _attackLungeUntil = float.NegativeInfinity;
         private Vector3 _attackLungeDir;
@@ -71,7 +75,8 @@ namespace DragonTD.TowerDefense
         {
             _dragonInstance = instance;
             _placedTile = placedTile;
-            _baseScale = transform.localScale;
+            _baseScale = transform.localScale * DeployedVisualScaleMultiplier;
+            transform.localScale = _baseScale;
             _manaRefund = Mathf.CeilToInt(manaCost * PrototypeBalance.SellManaRefundPercent);
             _projectileColor = instance.Definition.visualData.primaryColor;
             var spriteRenderer = GetComponent<SpriteRenderer>();
@@ -105,6 +110,7 @@ namespace DragonTD.TowerDefense
             _basePos = transform.position;
             _bobPhase = Random.value * Mathf.PI * 2f;
             EnsureShadow();
+            EnsureAmbientGlow();
         }
 
         private void Update()
@@ -732,6 +738,18 @@ namespace DragonTD.TowerDefense
                 float shadowScale = Mathf.Clamp(1f - rise * 1.5f, 0.7f, 1.1f);
                 _shadow.localScale = new Vector3(0.92f * shadowScale, 0.34f * shadowScale, 1f);
             }
+
+            if (_ambientGlow != null && _ambientGlowRenderer != null)
+            {
+                float pulse = 1f + Mathf.Sin(Time.time * 3.4f + _bobPhase) * 0.08f;
+                float attackPop = Time.time < _attackLungeUntil ? 0.18f : 0f;
+                float fusedBonus = IsFused ? 0.24f : _upgradeLevel >= PrototypeBalance.MaxUpgradeLevel ? 0.12f : 0f;
+                _ambientGlow.position = new Vector3(_basePos.x, _basePos.y - 0.05f, _basePos.z + 0.02f);
+                _ambientGlow.localScale = Vector3.one * (1.25f + fusedBonus + attackPop) * pulse;
+                Color glow = CurrentProjectileColor;
+                glow.a = IsFused ? 0.28f : 0.16f;
+                _ambientGlowRenderer.color = glow;
+            }
         }
 
         private void EnsureShadow()
@@ -746,6 +764,21 @@ namespace DragonTD.TowerDefense
             sr.sortingOrder = 0; // below the tower sprite (sortingOrder 2)
             _shadow = shadowGO.transform;
             _shadow.localScale = new Vector3(0.92f, 0.34f, 1f);
+        }
+
+        private void EnsureAmbientGlow()
+        {
+            if (_ambientGlow != null) return;
+
+            var glowGO = new GameObject("TowerAmbientGlow");
+            glowGO.transform.SetParent(transform, false);
+            var sr = glowGO.AddComponent<SpriteRenderer>();
+            sr.sprite = SoftShadowSprite();
+            sr.color = CurrentProjectileColorWithAlpha(0.16f);
+            sr.sortingOrder = 1;
+            _ambientGlow = glowGO.transform;
+            _ambientGlowRenderer = sr;
+            _ambientGlow.localScale = Vector3.one * 1.25f;
         }
 
         private static Sprite _softShadowSprite;

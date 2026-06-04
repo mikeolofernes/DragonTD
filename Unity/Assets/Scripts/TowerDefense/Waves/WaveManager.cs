@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using DragonTD.Core;
 
 namespace DragonTD.TowerDefense
@@ -11,13 +12,21 @@ namespace DragonTD.TowerDefense
         [SerializeField] private WaveData[] _waves;
         [SerializeField] private Transform[] _spawnPoints;
         [SerializeField] private Transform[] _waypoints;
+        [SerializeField] private WaypointPathAuthoring _authoredPath;
         [SerializeField] private GameObject _eliteEnemyPrefab;
+
+        [Header("Path Visual Alignment")]
+        [SerializeField] private Vector2 _pathEnemyOffset = Vector2.zero;
+        [SerializeField] private Vector2 _laneEnemyOffset = Vector2.zero;
+        [SerializeField] private float _spawnedEnemyVisualScale = 0.75f;
 
         [Header("Lane Defense")]
         [SerializeField] private float _laneLeftEdgeX  = -5.5f;
         [SerializeField] private float _laneRowHeight  = 1f;
         [SerializeField] private int   _laneRowCount   = 8;
         private float _wallWorldX;
+        private int[] _laneRows;
+        private Transform _runtimeWaypointRoot;
 
         private bool IsLaneMode => ChapterContent.Active != null &&
                                    ChapterContent.Active.map != null &&
@@ -50,6 +59,7 @@ namespace DragonTD.TowerDefense
         {
             if (ChapterContent.Active != null && ChapterContent.Active.waves != null && ChapterContent.Active.waves.Length > 0)
                 _waves = ChapterContent.Active.waves;
+            ResolvePathWaypointsFromActiveMap();
             GameManager.Instance.OnStateChanged += HandleStateChanged;
         }
 
@@ -104,6 +114,7 @@ namespace DragonTD.TowerDefense
 
             _activeWave = _waves[waveIndex];
             _isWaveActive = true;
+            ResolvePathWaypointsFromActiveMap();
 
             // Pre-count so deaths during spawning don't prematurely trigger wave complete
             int totalToSpawn = 0;
@@ -136,12 +147,9 @@ namespace DragonTD.TowerDefense
                     }
                     else if (IsLaneMode)
                     {
-                        int   row      = UnityEngine.Random.Range(0, _laneRowCount);
-                        float spawnX   = _laneLeftEdgeX;
-                        // Grid origin: (-5.5, -3.5) per MapDefinition.GridToWorld — row 0 = y -3.5
-                        float spawnY   = -3.5f + row * _laneRowHeight;
-                        Vector3 spawnPos = new Vector3(spawnX, spawnY, 0f);
+                        Vector3 spawnPos = ResolveLaneSpawnPosition();
                         GameObject enemyGO = Instantiate(group.EnemyPrefab, spawnPos, Quaternion.identity);
+                        ApplySpawnPresentation(enemyGO);
                         EnemyBase enemy = enemyGO.GetComponent<EnemyBase>();
                         if (enemy != null)
                         {
@@ -156,7 +164,9 @@ namespace DragonTD.TowerDefense
                     }
                     else
                     {
-                        GameObject enemyGO = Instantiate(group.EnemyPrefab, _spawnPoints[0].position, Quaternion.identity);
+                        Vector3 spawnPosition = ResolvePathSpawnPosition();
+                        GameObject enemyGO = Instantiate(group.EnemyPrefab, spawnPosition, Quaternion.identity);
+                        ApplySpawnPresentation(enemyGO);
                         EnemyBase enemy = enemyGO.GetComponent<EnemyBase>();
                         if (enemy != null)
                         {
@@ -204,6 +214,115 @@ namespace DragonTD.TowerDefense
             _laneLeftEdgeX = leftEdgeX;
             _laneRowHeight = rowHeight;
             _laneRowCount  = rowCount;
+            ResolveLaneRows(ChapterContent.Active?.map);
+        }
+
+        private void ResolvePathWaypointsFromActiveMap()
+        {
+            if (IsLaneMode) return;
+            if (TryUseAuthoredPath()) return;
+
+            MapDefinition map = ChapterContent.Active?.map;
+            Vector3[] points = map != null ? map.ComputeWaypoints() : DefaultPaintedPathWaypoints();
+            if (points == null || points.Length == 0) return;
+
+            if (_runtimeWaypointRoot != null)
+                Destroy(_runtimeWaypointRoot.gameObject);
+
+            var parent = new GameObject("RuntimePathWaypoints").transform;
+            _runtimeWaypointRoot = parent;
+            _waypoints = new Transform[points.Length];
+            for (int i = 0; i < points.Length; i++)
+            {
+                var waypoint = new GameObject($"Waypoint_{i:00}").transform;
+                waypoint.SetParent(parent, false);
+                waypoint.position = points[i] + PathEnemyWorldOffset;
+                _waypoints[i] = waypoint;
+            }
+
+            _spawnPoints = new[] { _waypoints[0] };
+        }
+
+        private bool TryUseAuthoredPath()
+        {
+            if (_authoredPath == null)
+                _authoredPath = FindAnyObjectByType<WaypointPathAuthoring>();
+
+            if (_authoredPath != null && !_authoredPath.HasWaypoints)
+                _authoredPath.RebuildFromPoints(DefaultPaintedPathWaypoints());
+
+            if (_authoredPath == null || !_authoredPath.HasWaypoints)
+                return false;
+
+            Transform[] authoredWaypoints = _authoredPath.GetWaypointTransforms();
+            if (authoredWaypoints == null || authoredWaypoints.Length < 2 || authoredWaypoints[0] == null)
+                return false;
+
+            if (_runtimeWaypointRoot != null)
+            {
+                Destroy(_runtimeWaypointRoot.gameObject);
+                _runtimeWaypointRoot = null;
+            }
+
+            _waypoints = authoredWaypoints;
+            _spawnPoints = new[] { _waypoints[0] };
+            return true;
+        }
+
+        private Vector3 ResolvePathSpawnPosition()
+        {
+            if (_spawnPoints != null && _spawnPoints.Length > 0 && _spawnPoints[0] != null)
+                return _spawnPoints[0].position;
+            if (_waypoints != null && _waypoints.Length > 0 && _waypoints[0] != null)
+                return _waypoints[0].position;
+            return Vector3.zero;
+        }
+
+        private void ResolveLaneRows(MapDefinition map)
+        {
+            List<int> rows = map != null ? map.GetPathRows() : null;
+            if (rows == null || rows.Count == 0)
+            {
+                rows = new List<int>();
+                for (int row = 0; row < _laneRowCount; row++)
+                    rows.Add(row);
+            }
+
+            for (int i = rows.Count - 1; i >= 0; i--)
+            {
+                if (rows[i] < 0 || rows[i] >= _laneRowCount)
+                    rows.RemoveAt(i);
+            }
+
+            _laneRows = rows.Count > 0 ? rows.ToArray() : new[] { 0 };
+        }
+
+        private Vector3 ResolveLaneSpawnPosition()
+        {
+            if (_laneRows == null || _laneRows.Length == 0)
+                ResolveLaneRows(ChapterContent.Active?.map);
+
+            int row = _laneRows[UnityEngine.Random.Range(0, _laneRows.Length)];
+            float spawnY = GridManager.Instance != null
+                ? GridManager.Instance.GridToWorld(0, row).y
+                : MapDefinition.GridToWorld(0, row).y;
+
+            return new Vector3(_laneLeftEdgeX + _laneEnemyOffset.x, spawnY + _laneEnemyOffset.y, 0f);
+        }
+
+        private Vector3 PathEnemyWorldOffset => new Vector3(_pathEnemyOffset.x, _pathEnemyOffset.y, 0f);
+
+        private static Vector3[] DefaultPaintedPathWaypoints()
+        {
+            return new[]
+            {
+                new Vector3(-9.35f, -0.2f, 0f),
+                new Vector3(-4.65f, -0.2f, 0f),
+                new Vector3(-4.65f, 2.28f, 0f),
+                new Vector3(4.72f, 2.28f, 0f),
+                new Vector3(4.72f, -3.02f, 0f),
+                new Vector3(8.7f, -3.02f, 0f),
+            };
         }
 
         private void CompleteWave()
@@ -239,9 +358,7 @@ namespace DragonTD.TowerDefense
             Vector3 spawnPos;
             if (IsLaneMode)
             {
-                int   row    = UnityEngine.Random.Range(0, _laneRowCount);
-                float spawnY = -3.5f + row * _laneRowHeight;
-                spawnPos = new Vector3(_laneLeftEdgeX, spawnY, 0f);
+                spawnPos = ResolveLaneSpawnPosition();
             }
             else
             {
@@ -250,6 +367,7 @@ namespace DragonTD.TowerDefense
             }
 
             GameObject enemyGO = Instantiate(_eliteEnemyPrefab, spawnPos, Quaternion.identity);
+            ApplySpawnPresentation(enemyGO);
             EnemyBase enemy = enemyGO.GetComponent<EnemyBase>();
             if (enemy == null) return;
 
@@ -260,6 +378,14 @@ namespace DragonTD.TowerDefense
 
             enemy.ApplyDifficultyMultiplier(statMultiplier);
             ActiveEnemyCount++;
+        }
+
+        private void ApplySpawnPresentation(GameObject enemyGO)
+        {
+            if (enemyGO == null) return;
+
+            float scale = Mathf.Max(0.1f, _spawnedEnemyVisualScale);
+            enemyGO.transform.localScale = new Vector3(scale, scale, scale);
         }
     }
 }

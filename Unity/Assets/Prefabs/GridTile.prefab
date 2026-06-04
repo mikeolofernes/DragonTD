@@ -159,8 +159,8 @@ MonoBehaviour:
   _manaCrystalSprite: {fileID: 21300000, guid: 038a89a1d5b12a8488d68aab1e94c7dc, type: 3}
   _scorchedSprite: {fileID: 21300000, guid: dab25998d29cd2544b739f19784acfd8, type: 3}
   _frostSprite: {fileID: 21300000, guid: dab0bca6fa57e72489a0daa2207ad0ea, type: 3}
-  _buildableColor: {r: 1, g: 1, b: 1, a: 1}
-  _pathColor: {r: 1, g: 1, b: 1, a: 1}
-  _blockedColor: {r: 1, g: 0, b: 0, a: 1}
+  _buildableColor: {r: 1, g: 1, b: 1, a: 0}
+  _pathColor: {r: 1, g: 1, b: 1, a: 0}
+  _blockedColor: {r: 1, g: 1, b: 1, a: 0}
   _validPlacementColor: {r: 0.25, g: 1, b: 0.35, a: 1}
   _invalidPlacementColor: {r: 1, g: 0.18, b: 0.12, a: 1}

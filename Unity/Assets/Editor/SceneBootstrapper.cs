@@ -21,6 +21,7 @@ namespace DragonTD.Editor
         private const string PrefDir = "Assets/Prefabs";
         private const string ArtDir  = "Assets/Art/UI";
         private const string DragonArtDir = "Assets/Art/Dragons";
+        private const string EnemyArtDir = "Assets/Art/Enemies";
 
         private const string MapSODir = "Assets/ScriptableObjects/Maps";
 
@@ -36,6 +37,12 @@ namespace DragonTD.Editor
                 return;
             }
 
+            // ── Snapshot live WP positions FIRST — before any AssetDatabase ops ──
+            // AssetDatabase.Refresh() (called inside EnsureMapDefinition) can cause
+            // Unity to reimport the scene and discard in-memory edits. Reading the
+            // live Transform positions right here guarantees we see what the user saved.
+            Vector3[] liveWaypoints = SnapshotLiveSceneWaypoints();
+
             // ── Folders ──────────────────────────────────────────────────────────
             foreach (var d in new[]{
                 "Assets/ScriptableObjects",
@@ -44,13 +51,23 @@ namespace DragonTD.Editor
                 "Assets/Resources",
                 "Assets/Prefabs",
                 PrefDir+"/Enemies", PrefDir+"/Dragons", PrefDir+"/UI",
-                "Assets/Art", ArtDir, DragonArtDir, "Assets/Scenes"})
+                "Assets/Art", ArtDir, DragonArtDir, EnemyArtDir, "Assets/Scenes"})
                 EnsureDir(d);
             foreach (var dragon in Phase1DragonData.All)
                 EnsureDir(DragonArtDir+"/"+dragon.Id);
 
             // ── Load or create MapDefinition ──────────────────────────────────────
             var mapDef = EnsureMapDefinition();
+
+            // Push the live snapshot into mapDef so ComputeWaypoints uses the
+            // user's edits rather than whatever is on disk.
+            if (liveWaypoints.Length >= 2)
+            {
+                mapDef.paintedPathWaypoints = System.Array.ConvertAll(liveWaypoints,
+                    v => new Vector2(v.x, v.y));
+                EditorUtility.SetDirty(mapDef);
+                AssetDatabase.SaveAssets();
+            }
 
             // ── Create assets (before NewScene) ──────────────────────────────────
             CreateGrassSprite();
@@ -72,25 +89,27 @@ namespace DragonTD.Editor
             };
             CreateTilePrefab(runeTiles, mapDef);
             CreateOrcPrefab(orcData);
-            CreateEnemyPrefab("OrcRunner", runnerData, new Color(0.55f, 1f, 0.35f), 0.62f);
-            CreateEnemyPrefab("OrcBrute", bruteData, new Color(0.62f, 0.38f, 0.18f), 0.95f);
-            CreateEnemyPrefab("OrcShielded", shieldedData, new Color(0.25f, 0.7f, 1f), 0.82f);
-            CreateEnemyPrefab("OrcRegenerator", regenData, new Color(0.35f, 1f, 0.55f), 0.78f);
-            CreateEnemyPrefab("OrcFlying", flyingData, new Color(0.85f, 0.65f, 1f), 0.58f);
+            CreateEnemyPrefab("OrcRunner", runnerData, new Color(0.55f, 1f, 0.35f), 0.85f);
+            CreateEnemyPrefab("OrcBrute", bruteData, new Color(0.62f, 0.38f, 0.18f), 0.85f);
+            CreateEnemyPrefab("OrcShielded", shieldedData, new Color(0.25f, 0.7f, 1f), 0.85f);
+            CreateEnemyPrefab("OrcRegenerator", regenData, new Color(0.35f, 1f, 0.55f), 0.85f);
+            CreateEnemyPrefab("OrcFlying", flyingData, new Color(0.85f, 0.65f, 1f), 0.75f);
             var iceShardData = CreateIceShardData();
             var frostBruteData = CreateFrostBruteData();
             var glacialShieldData = CreateGlacialShieldData();
-            CreateEnemyPrefab("IceShard", iceShardData, new Color(0.7f, 0.9f, 1f), 0.6f);
-            CreateEnemyPrefab("FrostBrute", frostBruteData, new Color(0.55f, 0.75f, 1f), 1.0f);
-            CreateEnemyPrefab("GlacialShield", glacialShieldData, new Color(0.35f, 0.85f, 1f), 0.82f);
+            CreateEnemyPrefab("IceShard", iceShardData, new Color(0.7f, 0.9f, 1f), 0.75f);
+            CreateEnemyPrefab("FrostBrute", frostBruteData, new Color(0.55f, 0.75f, 1f), 0.85f);
+            CreateEnemyPrefab("GlacialShield", glacialShieldData, new Color(0.35f, 0.85f, 1f), 0.85f);
             var lavaHoundData = CreateLavaHoundData();
             var magmaGolemData = CreateMagmaGolemData();
             var emberWraithData = CreateEmberWraithData();
-            CreateEnemyPrefab("LavaHound", lavaHoundData, new Color(1f, 0.5f, 0.2f), 0.66f);
-            CreateEnemyPrefab("MagmaGolem", magmaGolemData, new Color(0.9f, 0.35f, 0.12f), 1.05f);
-            CreateEnemyPrefab("EmberWraith", emberWraithData, new Color(1f, 0.6f, 0.35f), 0.7f);
+            CreateEnemyPrefab("LavaHound", lavaHoundData, new Color(1f, 0.5f, 0.2f), 0.85f);
+            CreateEnemyPrefab("MagmaGolem", magmaGolemData, new Color(0.9f, 0.35f, 0.12f), 0.9f);
+            CreateEnemyPrefab("EmberWraith", emberWraithData, new Color(1f, 0.6f, 0.35f), 0.85f);
+            EnemySkeletalRigBuilder.ApplyOrcRunnerSkeletalRig();
             CreateProjectilePrefab();
             ConfigurePortraitImports();
+            ConfigureEnemyImports();
             foreach (var dragon in Phase1DragonData.All)
             {
                 CreateDragonTowerPrefab(dragon);
@@ -107,8 +126,7 @@ namespace DragonTD.Editor
             var regenPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcRegenerator.prefab");
             var flyingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Enemies/OrcFlying.prefab");
             CreateWave("Wave01", 140, 105,
-                new EnemySpawnEntry{ EnemyPrefab = orcPrefab, Count = 4, SpawnInterval = 1.25f },
-                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 5, SpawnInterval = 0.82f });
+                new EnemySpawnEntry{ EnemyPrefab = runnerPrefab, Count = 8, SpawnInterval = 0.75f });
             CreateWave("Wave02", 190, 135,
                 new EnemySpawnEntry{ EnemyPrefab = orcPrefab, Count = 5, SpawnInterval = 1.0f },
                 new EnemySpawnEntry{ EnemyPrefab = brutePrefab, Count = 2, SpawnInterval = 1.3f },
@@ -377,6 +395,9 @@ namespace DragonTD.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
+            // Persist any WP positions the user edited in the scene BEFORE wiping it.
+            PreserveSceneWaypointsToMapDef(mapDef);
+
             // ── Build scene (reload all references fresh after NewScene) ─────────
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -409,16 +430,28 @@ namespace DragonTD.Editor
             CreateManagerRoot(dirCfg, starters);
             SetupGridManager(tilePref, grassSpr, dirtSpr, mapDef);
 
-            var pathTileList  = mapDef != null ? mapDef.GetPathTiles() : new List<Vector2Int>();
             var waypointList  = mapDef != null ? mapDef.ComputeWaypoints() : new Vector3[0];
-            CreatePathDirectionMarkers(whiteSpr, pathTileList);
             CreateWaveManager(waves, orcPref, waypointList);
             AddSceneBootstrap();
             BuildUI(whiteSpr, cardPref);
             EnsureEventSystem();
 
+            // Log WP positions just before saving so we can verify what goes to disk.
+            var waveSetup = GameObject.Find("WaveSetup");
+            if (waveSetup != null)
+            {
+                var auth = waveSetup.GetComponentInChildren<WaypointPathAuthoring>(true);
+                if (auth != null)
+                    Debug.Log($"[SceneBootstrapper] WPs about to be saved: "
+                        + string.Join(", ", System.Linq.Enumerable.Range(0, auth.transform.childCount)
+                            .Select(i => { var p = auth.transform.GetChild(i).position; return $"WP{i:00}({p.x:F2},{p.y:F2})"; })));
+            }
+
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, "Assets/Scenes/BattleScene.unity");
+
+            // Build MainMenu AFTER BattleScene is fully saved and closed to avoid
+            // Unity prompting to re-save BattleScene mid-build.
             BuildMainMenuScene(starters, whiteSpr, dirCfg);
             Debug.Log("[Dragon Dominion] BattleScene and MainMenu ready - press Play!");
         }
@@ -427,13 +460,13 @@ namespace DragonTD.Editor
 
         private const string DefaultGrid =
             "BBBBBBBBBBBB\n" +
-            "BBBBBBBBBBBB\n" +
-            "BBPPPPPPPPPP\n" +
-            "BBPBBBBBBBBP\n" +
-            "PPPBBBBBBBBP\n" +
-            "BBBBBBBBBBBP\n" +
-            "BBBBBBBBBBBP\n" +
-            "BBBBBBBBBBBP";
+            "BPPPPPPPPPPB\n" +
+            "BPXBBBBBBXPB\n" +
+            "PPXBBBBBBXPB\n" +
+            "BBBBBBBBBXPB\n" +
+            "BBBBBBBBBXPB\n" +
+            "BBBBBBBBBXPP\n" +
+            "BBBBBBBBBBBB";
 
         static MapDefinition EnsureMapDefinition()
         {
@@ -447,23 +480,157 @@ namespace DragonTD.Editor
             // If existing asset has empty/broken grid, repair it
             if (existing != null)
             {
-                if (string.IsNullOrWhiteSpace(existing.grid) || !existing.grid.Contains("P"))
+                if (string.IsNullOrWhiteSpace(existing.grid) || !existing.grid.Contains("P") || existing.grid != DefaultGrid)
                 {
                     existing.grid = DefaultGrid;
                     EditorUtility.SetDirty(existing);
                     AssetDatabase.SaveAssets();
-                    Debug.Log("[SceneBootstrapper] Repaired empty grid in Chapter1Map.asset.");
+                    Debug.Log("[SceneBootstrapper] Aligned Chapter1Map grid to the painted road.");
                 }
+                AssignChapter1MapArt(existing);
+                AssignChapter1PaintedPath(existing); // no-op if waypoints already set
+                AssetDatabase.SaveAssets();
                 return existing;
             }
 
             var def = ScriptableObject.CreateInstance<MapDefinition>();
             def.mapName = "Chapter 1";
             def.grid    = DefaultGrid;
+            AssignChapter1PaintedPath(def);
             AssetDatabase.CreateAsset(def, path);
+            AssignChapter1MapArt(def);
             AssetDatabase.SaveAssets();
             Debug.Log($"[SceneBootstrapper] Created MapDefinition at {path}.");
             return def;
+        }
+
+        static void AssignChapter1MapArt(MapDefinition def)
+        {
+            if (def == null) return;
+
+            Sprite grass = ImportTileSprite("tile_grass.png");
+            Sprite pathH = ImportTileSprite("tile_path_h.png");
+            Sprite pathV = ImportTileSprite("tile_path_v.png");
+            Sprite cornerTL = ImportTileSprite("tile_corner_tl.png");
+            Sprite cornerTR = ImportTileSprite("tile_corner_tr.png");
+            Sprite cornerBL = ImportTileSprite("tile_corner_bl.png");
+            Sprite cornerBR = ImportTileSprite("tile_corner_br.png");
+            Sprite background = ImportBattleBackground();
+
+            if (grass != null) def.buildableSprite = grass;
+            if (pathH != null)
+            {
+                def.pathSprite = pathH;
+                def.pathStraightH = pathH;
+            }
+            if (pathV != null) def.pathStraightV = pathV;
+            if (cornerTL != null) def.pathCornerTL = cornerTL;
+            if (cornerTR != null) def.pathCornerTR = cornerTR;
+            if (cornerBL != null) def.pathCornerBL = cornerBL;
+            if (cornerBR != null) def.pathCornerBR = cornerBR;
+            if (background != null) def.backgroundSprite = background;
+
+            EditorUtility.SetDirty(def);
+            AssetDatabase.SaveAssets();
+        }
+
+        static void AssignChapter1PaintedPath(MapDefinition def)
+        {
+            if (def == null) return;
+            // Only set defaults when no waypoints have been authored yet.
+            // Once a user edits WP positions in the scene they are preserved
+            // into the SO by PreserveSceneWaypointsToMapDef() before each build.
+            if (def.paintedPathWaypoints != null && def.paintedPathWaypoints.Length >= 2) return;
+
+            def.paintedPathWaypoints = new[]
+            {
+                new Vector2(-9.35f, -0.2f),
+                new Vector2(-4.65f, -0.2f),
+                new Vector2(-4.65f, 2.28f),
+                new Vector2(4.72f, 2.28f),
+                new Vector2(4.72f, -3.02f),
+                new Vector2(8.7f, -3.02f),
+            };
+            EditorUtility.SetDirty(def);
+        }
+
+        // Reads WP_XX positions directly from in-memory GameObjects — must be called
+        // before any AssetDatabase.Refresh() so Unity hasn't had a chance to reload
+        // the scene from disk and discard the user's unsaved edits.
+        static Vector3[] SnapshotLiveSceneWaypoints()
+        {
+            var authoring = Object.FindAnyObjectByType<WaypointPathAuthoring>();
+            if (authoring == null || authoring.transform.childCount < 2)
+            {
+                Debug.Log("[SceneBootstrapper] SnapshotLiveWaypoints: no WaypointPathAuthoring with children found in memory.");
+                return new Vector3[0];
+            }
+            int count = authoring.transform.childCount;
+            var pts = new Vector3[count];
+            for (int i = 0; i < count; i++)
+                pts[i] = authoring.transform.GetChild(i).position;
+            Debug.Log($"[SceneBootstrapper] Snapshotted {count} live WPs: "
+                + string.Join(", ", System.Array.ConvertAll(pts, p => $"({p.x:F2},{p.y:F2})")));
+            return pts;
+        }
+
+        // Reads WP_XX child positions from the saved BattleScene.unity file and writes
+        // them into mapDef.paintedPathWaypoints so manual waypoint edits survive builds.
+        // Opens the scene additively if it isn't already loaded so the saved positions
+        // are always read from disk rather than from whatever is in memory.
+        static void PreserveSceneWaypointsToMapDef(MapDefinition mapDef)
+        {
+            if (mapDef == null) return;
+
+            const string battlePath = "Assets/Scenes/BattleScene.unity";
+            string fullPath = System.IO.Path.GetFullPath(
+                System.IO.Path.Combine(Application.dataPath, "..", battlePath));
+
+            if (!System.IO.File.Exists(fullPath))
+            {
+                Debug.Log("[SceneBootstrapper] BattleScene.unity not found — skipping waypoint preservation.");
+                return;
+            }
+
+            // Find the already-loaded scene or open it additively
+            UnityEngine.SceneManagement.Scene targetScene = default;
+            bool openedAdditive = false;
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+            {
+                var s = EditorSceneManager.GetSceneAt(i);
+                if (s.isLoaded && s.path == battlePath) { targetScene = s; break; }
+            }
+            if (!targetScene.IsValid())
+            {
+                targetScene  = EditorSceneManager.OpenScene(battlePath, OpenSceneMode.Additive);
+                openedAdditive = true;
+            }
+
+            WaypointPathAuthoring authoring = null;
+            foreach (var root in targetScene.GetRootGameObjects())
+            {
+                authoring = root.GetComponentInChildren<WaypointPathAuthoring>(true);
+                if (authoring != null) break;
+            }
+
+            if (authoring == null)
+                Debug.Log("[SceneBootstrapper] PreserveWaypoints: WaypointPathAuthoring not found in BattleScene.");
+            else if (authoring.transform.childCount < 2)
+                Debug.Log($"[SceneBootstrapper] PreserveWaypoints: found authoring but childCount={authoring.transform.childCount} — need >=2.");
+            else
+            {
+                int count = authoring.transform.childCount;
+                var pts   = new Vector2[count];
+                for (int i = 0; i < count; i++)
+                    pts[i] = (Vector2)authoring.transform.GetChild(i).position;
+                mapDef.paintedPathWaypoints = pts;
+                EditorUtility.SetDirty(mapDef);
+                AssetDatabase.SaveAssets();
+                Debug.Log($"[SceneBootstrapper] Preserved {count} waypoints from BattleScene into MapDefinition: "
+                    + string.Join(", ", System.Array.ConvertAll(pts, p => $"({p.x:F2},{p.y:F2})")));
+            }
+
+            if (openedAdditive) EditorSceneManager.CloseScene(targetScene, true);
         }
 
         static MapDefinition EnsureChapter2Map()
@@ -777,6 +944,12 @@ namespace DragonTD.Editor
                 }
                 if (changed) importer.SaveAndReimport();
             }
+        }
+
+        static void ConfigureEnemyImports()
+        {
+            foreach (string path in Directory.GetFiles(EnemyArtDir, "*.png"))
+                ImportEnemySprite(Path.GetFileNameWithoutExtension(path));
         }
 
         static WaveData CreateWave(string waveName, int goldReward, int manaReward, params EnemySpawnEntry[] entries)
@@ -1142,6 +1315,8 @@ namespace DragonTD.Editor
             imp.isReadable          = false;
             imp.mipmapEnabled       = false;
             imp.alphaIsTransparency = true;
+            imp.filterMode          = FilterMode.Bilinear;
+            imp.wrapMode            = TextureWrapMode.Clamp;
             imp.spritePixelsPerUnit = ppu;
             imp.SaveAndReimport();
 
@@ -1194,8 +1369,9 @@ namespace DragonTD.Editor
             so.FindProperty("_manaCrystalSprite").objectReferenceValue = manaSpr;
             so.FindProperty("_scorchedSprite").objectReferenceValue    = scorchSpr;
             so.FindProperty("_frostSprite").objectReferenceValue       = frostSpr;
-            so.FindProperty("_buildableColor").colorValue = buildSpr != null ? Color.white : new Color(1f, 1f, 1f, 0f);
-            so.FindProperty("_pathColor").colorValue      = pathSpr  != null ? Color.white : new Color(1f, 1f, 1f, 0f);
+            so.FindProperty("_buildableColor").colorValue = new Color(1f, 1f, 1f, 0f);
+            so.FindProperty("_pathColor").colorValue      = new Color(1f, 1f, 1f, 0f);
+            so.FindProperty("_blockedColor").colorValue   = new Color(1f, 1f, 1f, 0f);
             so.ApplyModifiedProperties();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
@@ -1234,6 +1410,8 @@ namespace DragonTD.Editor
             imp.spriteImportMode    = SpriteImportMode.Single;
             imp.isReadable          = false;
             imp.mipmapEnabled       = false;
+            imp.filterMode          = FilterMode.Bilinear;
+            imp.wrapMode            = TextureWrapMode.Clamp;
             imp.spritePixelsPerUnit = ppu;
             imp.SaveAndReimport();
 
@@ -1263,7 +1441,7 @@ namespace DragonTD.Editor
 
         static void CreateOrcPrefab(EnemyData data)
         {
-            CreateEnemyPrefab("OrcEnemy", data, new Color(0.35f, 0.75f, 0.2f), 0.75f);
+            CreateEnemyPrefab("OrcEnemy", data, new Color(0.35f, 0.75f, 0.2f), 0.85f);
         }
 
         static void CreateEnemyPrefab(string prefabName, EnemyData data, Color color, float scale)
@@ -1271,13 +1449,15 @@ namespace DragonTD.Editor
             string prefabPath = PrefDir+"/Enemies/"+prefabName+".prefab";
 
             var whiteSpr = GetOrCreateWhiteSprite();
+            var enemySpr = ImportEnemySprite(prefabName);
             var go = new GameObject(prefabName);
             go.transform.localScale = Vector3.one * scale;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = whiteSpr;
-            sr.color  = color;
+            sr.sprite = enemySpr != null ? enemySpr : whiteSpr;
+            sr.color  = enemySpr != null ? Color.white : color;
             sr.sortingOrder = 1; // above tiles (-2) and below towers (2)
-            go.AddComponent<BoxCollider2D>();
+            var collider = go.AddComponent<BoxCollider2D>();
+            collider.size = enemySpr != null ? new Vector2(0.8f, 0.8f) : Vector2.one;
 
             var orc = go.AddComponent<OrcEnemy>();
             var so  = new SerializedObject(orc);
@@ -1288,6 +1468,37 @@ namespace DragonTD.Editor
 
             PrefabUtility.SaveAsPrefabAsset(go, prefabPath);
             Object.DestroyImmediate(go);
+        }
+
+        static Sprite ImportEnemySprite(string prefabName)
+        {
+            string path = EnemyArtDir + "/" + prefabName + ".png";
+            string fullPath = Path.Combine(Application.dataPath.Replace("Assets",""), path).Replace('/', Path.DirectorySeparatorChar);
+            if (!File.Exists(fullPath) && prefabName == "OrcEnemy")
+            {
+                path = EnemyArtDir + "/OrcScout.png";
+                fullPath = Path.Combine(Application.dataPath.Replace("Assets",""), path).Replace('/', Path.DirectorySeparatorChar);
+            }
+            if (!File.Exists(fullPath)) return null;
+
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            var imp = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (imp == null) return null;
+
+            int pxWidth = ReadPngWidth(path);
+            float ppu = pxWidth > 0 ? pxWidth : 512f;
+
+            imp.textureType = TextureImporterType.Sprite;
+            imp.spriteImportMode = SpriteImportMode.Single;
+            imp.isReadable = false;
+            imp.mipmapEnabled = false;
+            imp.alphaIsTransparency = true;
+            imp.filterMode = FilterMode.Bilinear;
+            imp.wrapMode = TextureWrapMode.Clamp;
+            imp.spritePixelsPerUnit = ppu;
+            imp.SaveAndReimport();
+
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
 
         static void CreateEnemyHealthBar(GameObject enemy, Sprite sprite)
@@ -1367,23 +1578,127 @@ namespace DragonTD.Editor
             _ => Color.white
         };
 
+        static Sprite ImportTransparentSprite(string assetPath)
+        {
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+            var imp = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+            if (imp == null) return null;
+            imp.textureType         = TextureImporterType.Sprite;
+            imp.spriteImportMode    = SpriteImportMode.Single;
+            imp.mipmapEnabled       = false;
+            imp.alphaIsTransparency = true;
+            imp.filterMode          = FilterMode.Bilinear;
+            imp.wrapMode            = TextureWrapMode.Clamp;
+            imp.spritePixelsPerUnit = 256f;          // 256px = 1 world unit
+            var settings = imp.GetDefaultPlatformTextureSettings();
+            settings.format = TextureImporterFormat.RGBA32;
+            imp.SetPlatformTextureSettings(settings);
+            imp.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+        }
+
+        static Sprite ImportDeployedStrip(string assetPath, out int frameCount)
+        {
+            frameCount = 1;
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+            var imp = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+            if (imp == null) return null;
+
+            // Read actual pixel width to compute frame count (strip is N frames wide × 1 tall)
+            int pxWidth  = ReadPngWidth(assetPath);
+            int pxHeight = ReadPngHeight(assetPath);
+            frameCount   = (pxHeight > 0 && pxWidth > pxHeight) ? Mathf.Max(1, Mathf.RoundToInt((float)pxWidth / pxHeight)) : 1;
+
+            if (frameCount > 1)
+            {
+                imp.textureType       = TextureImporterType.Sprite;
+                imp.spriteImportMode  = SpriteImportMode.Multiple;
+                imp.mipmapEnabled     = false;
+                imp.alphaIsTransparency = true;
+                imp.filterMode        = FilterMode.Bilinear;
+                imp.spritePixelsPerUnit = pxHeight; // 1 frame = 1 world unit tall
+                imp.wrapMode          = TextureWrapMode.Clamp;
+
+                int frameW = pxWidth / frameCount;
+                var rects  = new SpriteMetaData[frameCount];
+                for (int i = 0; i < frameCount; i++)
+                {
+                    rects[i] = new SpriteMetaData
+                    {
+                        name   = Path.GetFileNameWithoutExtension(assetPath) + "_" + i,
+                        rect   = new Rect(i * frameW, 0, frameW, pxHeight),
+                        pivot  = new Vector2(0.5f, 0.15f),
+                        alignment = (int)SpriteAlignment.Custom,
+                    };
+                }
+                imp.spritesheet = rects;
+                imp.SaveAndReimport();
+
+                // Return the first frame sprite
+                var sprites = AssetDatabase.LoadAllAssetsAtPath(assetPath).OfType<Sprite>().ToArray();
+                System.Array.Sort(sprites, (a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
+                return sprites.Length > 0 ? sprites[0] : null;
+            }
+            else
+            {
+                imp.textureType     = TextureImporterType.Sprite;
+                imp.spriteImportMode = SpriteImportMode.Single;
+                imp.mipmapEnabled   = false;
+                imp.alphaIsTransparency = true;
+                imp.filterMode      = FilterMode.Bilinear;
+                imp.spritePixelsPerUnit = pxWidth;
+                imp.SaveAndReimport();
+                return AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+            }
+        }
+
         static void CreateDragonTowerPrefab(Phase1DragonData.Def dragon)
         {
             string dragonName = dragon.Name;
             string path = PrefDir+"/Dragons/"+dragonName+"Tower.prefab";
-            var whiteSpr   = GetOrCreateWhiteSprite();
             var projPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/Projectile.prefab");
-            var portrait = AssetDatabase.LoadAssetAtPath<Sprite>(DragonArtDir+"/"+dragon.Id+"/portrait.png");
             Color color = ElementColor(dragon.Element);
 
+            // Prefer deployed idle strip (transparent bg, 5-frame sheet) → portrait2 → portrait
+            string stripPath     = DragonArtDir+"/Animation/"+dragon.Id+"_deployed_idle_strip.png";
+            string deployedPath  = DragonArtDir+"/"+dragon.Id+"/"+dragon.Id+"_deployed.png";
+            string portrait2Path = DragonArtDir+"/"+dragon.Id+"/portrait2.png";
+            string portraitPath  = DragonArtDir+"/"+dragon.Id+"/portrait.png";
+
+            Sprite towerSprite = null;
+            int frameCount = 1;
+            // 1. Multi-frame idle strip (transparent bg, best)
+            if (System.IO.File.Exists(Path.Combine(Application.dataPath.Replace("Assets",""), stripPath)))
+                towerSprite = ImportDeployedStrip(stripPath, out frameCount);
+            // 2. Single deployed sprite generated from ComfyUI (transparent bg)
+            if (towerSprite == null && System.IO.File.Exists(Path.Combine(Application.dataPath.Replace("Assets",""), deployedPath)))
+                towerSprite = ImportTransparentSprite(deployedPath);
+            // 3. Portrait2 fallback (white bg, still better art)
+            if (towerSprite == null)
+                towerSprite = AssetDatabase.LoadAssetAtPath<Sprite>(portrait2Path);
+            // 4. Original portrait last resort
+            if (towerSprite == null)
+                towerSprite = AssetDatabase.LoadAssetAtPath<Sprite>(portraitPath);
+
             var go = new GameObject(dragonName+"Tower");
-            go.transform.localScale = Vector3.one * 0.95f;
+            go.transform.localScale = Vector3.one * 0.85f;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = portrait != null ? portrait : whiteSpr;
-            sr.color  = portrait != null ? Color.white : color;
+            sr.sprite = towerSprite;
+            sr.color  = Color.white;
             sr.sortingOrder = 2;
+
+            // Add animator only when we have a multi-frame strip
+            if (frameCount > 1)
+            {
+                var anim = go.AddComponent<DragonTowerAnimator>();
+                var animSo = new SerializedObject(anim);
+                animSo.FindProperty("_frameCount").intValue   = frameCount;
+                animSo.FindProperty("_fps").floatValue        = 8f;
+                animSo.ApplyModifiedProperties();
+            }
+
             var collider = go.AddComponent<BoxCollider2D>();
-            collider.size = new Vector2(1.1f, 1.1f);
+            collider.size = new Vector2(0.9f, 0.9f);
 
             var fp = new GameObject("FirePoint");
             fp.transform.SetParent(go.transform);
@@ -1668,12 +1983,14 @@ namespace DragonTD.Editor
 
             // Use width for PPU (1 world unit = pxW pixels wide)
             float correct = pxW;
-            bool changed  = !Mathf.Approximately(imp.spritePixelsPerUnit, correct);
+            bool changed  = !Mathf.Approximately(imp.spritePixelsPerUnit, correct) ||
+                            imp.filterMode != FilterMode.Bilinear ||
+                            imp.wrapMode != TextureWrapMode.Clamp;
 
             imp.textureType         = TextureImporterType.Sprite;
             imp.spriteImportMode    = SpriteImportMode.Single;
             imp.mipmapEnabled       = false;
-            imp.filterMode          = FilterMode.Point; // no antialiasing bleed at tile edges
+            imp.filterMode          = FilterMode.Bilinear;
             imp.wrapMode            = TextureWrapMode.Clamp;
             imp.spritePixelsPerUnit = correct;
 
@@ -1681,7 +1998,7 @@ namespace DragonTD.Editor
             string ratio = pxH > 0 ? $"{(float)pxH / pxW:F4}" : "1";
             if (imp.userData != ratio) { imp.userData = ratio; changed = true; }
 
-            if (changed || imp.filterMode != FilterMode.Point)
+            if (changed)
                 imp.SaveAndReimport();
         }
 
@@ -1724,9 +2041,18 @@ namespace DragonTD.Editor
             var root = new GameObject("WaveSetup");
             var wm   = root.AddComponent<WaveManager>();
 
-            var pathViz = new GameObject("WaypointPath");
-            pathViz.transform.SetParent(root.transform);
+            var pathViz = new GameObject("EnemyPathAuthoring");
             pathViz.AddComponent<WaypointPath>();
+            var authoredPath = pathViz.AddComponent<WaypointPathAuthoring>();
+
+            // Fallback: if ComputeWaypoints() returned nothing, use the hardcoded painted path
+            if (waypointPositions == null || waypointPositions.Length == 0)
+                waypointPositions = new Vector3[]
+                {
+                    new Vector3(-9.35f, -0.2f, 0f), new Vector3(-4.65f, -0.2f, 0f),
+                    new Vector3(-4.65f,  2.28f, 0f), new Vector3( 4.72f,  2.28f, 0f),
+                    new Vector3( 4.72f, -3.02f, 0f), new Vector3( 8.7f,  -3.02f, 0f),
+                };
 
             var wps = new Transform[waypointPositions.Length];
             for (int i = 0; i < waypointPositions.Length; i++)
@@ -1753,7 +2079,9 @@ namespace DragonTD.Editor
             for (int i = 0; i < wps.Length; i++)
                 wpProp.GetArrayElementAtIndex(i).objectReferenceValue = wps[i];
 
+            so.FindProperty("_authoredPath").objectReferenceValue = authoredPath;
             so.FindProperty("_eliteEnemyPrefab").objectReferenceValue = elitePrefab;
+            so.FindProperty("_spawnedEnemyVisualScale").floatValue = 0.75f;
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(wm);
         }
@@ -2456,7 +2784,7 @@ namespace DragonTD.Editor
 
         static void EnsureEventSystem()
         {
-            if (Object.FindFirstObjectByType<EventSystem>() != null) return;
+            if (Object.FindAnyObjectByType<EventSystem>() != null) return;
             var go = new GameObject("EventSystem");
             go.AddComponent<EventSystem>();
             go.AddComponent<StandaloneInputModule>();

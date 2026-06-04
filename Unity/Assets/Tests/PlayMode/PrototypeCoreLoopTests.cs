@@ -310,7 +310,7 @@ namespace DragonTD.Tests.PlayMode
 
         private static void DestroyObjects<T>() where T : Component
         {
-            foreach (T component in Object.FindObjectsByType<T>(FindObjectsSortMode.None))
+            foreach (T component in Object.FindObjectsByType<T>(FindObjectsInactive.Exclude))
             {
                 if (component != null)
                     Object.DestroyImmediate(component.gameObject);
