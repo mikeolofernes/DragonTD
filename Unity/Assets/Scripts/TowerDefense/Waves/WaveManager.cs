@@ -18,7 +18,7 @@ namespace DragonTD.TowerDefense
         [Header("Path Visual Alignment")]
         [SerializeField] private Vector2 _pathEnemyOffset = Vector2.zero;
         [SerializeField] private Vector2 _laneEnemyOffset = Vector2.zero;
-        [SerializeField] private float _spawnedEnemyVisualScale = 0.75f;
+        [SerializeField] private float _spawnedEnemyVisualScale = 1.2f;
 
         [Header("Lane Defense")]
         [SerializeField] private float _laneLeftEdgeX  = -5.5f;
@@ -150,7 +150,7 @@ namespace DragonTD.TowerDefense
                         Vector3 spawnPos = ResolveLaneSpawnPosition();
                         GameObject enemyGO = Instantiate(group.EnemyPrefab, spawnPos, Quaternion.identity);
                         ApplySpawnPresentation(enemyGO);
-                        EnemyBase enemy = enemyGO.GetComponent<EnemyBase>();
+                        EnemyBase enemy = enemyGO.GetComponentInChildren<EnemyBase>();
                         if (enemy != null)
                         {
                             enemy.InitializeLane(_wallWorldX);
@@ -167,7 +167,7 @@ namespace DragonTD.TowerDefense
                         Vector3 spawnPosition = ResolvePathSpawnPosition();
                         GameObject enemyGO = Instantiate(group.EnemyPrefab, spawnPosition, Quaternion.identity);
                         ApplySpawnPresentation(enemyGO);
-                        EnemyBase enemy = enemyGO.GetComponent<EnemyBase>();
+                        EnemyBase enemy = enemyGO.GetComponentInChildren<EnemyBase>();
                         if (enemy != null)
                         {
                             enemy.Initialize(_waypoints);
@@ -220,10 +220,17 @@ namespace DragonTD.TowerDefense
         private void ResolvePathWaypointsFromActiveMap()
         {
             if (IsLaneMode) return;
-            if (TryUseAuthoredPath()) return;
 
             MapDefinition map = ChapterContent.Active?.map;
+            Debug.Log($"[WaveManager] ResolveWaypoints — chapter={ChapterContent.Active?.chapterNumber ?? -1}, map={map?.mapName ?? "NULL"}, paintedWPs={map?.paintedPathWaypoints?.Length ?? -1}");
+
+            if (map == null || map.paintedPathWaypoints == null || map.paintedPathWaypoints.Length < 2)
+            {
+                if (TryUseAuthoredPath()) return;
+            }
+
             Vector3[] points = map != null ? map.ComputeWaypoints() : DefaultPaintedPathWaypoints();
+            Debug.Log($"[WaveManager] ComputeWaypoints → {points?.Length ?? -1} points");
             if (points == null || points.Length == 0) return;
 
             if (_runtimeWaypointRoot != null)
@@ -241,6 +248,7 @@ namespace DragonTD.TowerDefense
             }
 
             _spawnPoints = new[] { _waypoints[0] };
+            Debug.Log($"[WaveManager] Runtime waypoints ready: {_waypoints.Length}, spawn at {_waypoints[0].position}");
         }
 
         private bool TryUseAuthoredPath()
@@ -368,7 +376,7 @@ namespace DragonTD.TowerDefense
 
             GameObject enemyGO = Instantiate(_eliteEnemyPrefab, spawnPos, Quaternion.identity);
             ApplySpawnPresentation(enemyGO);
-            EnemyBase enemy = enemyGO.GetComponent<EnemyBase>();
+            EnemyBase enemy = enemyGO.GetComponentInChildren<EnemyBase>();
             if (enemy == null) return;
 
             if (IsLaneMode)

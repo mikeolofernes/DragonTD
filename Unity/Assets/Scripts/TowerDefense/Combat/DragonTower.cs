@@ -82,15 +82,18 @@ namespace DragonTD.TowerDefense
             var spriteRenderer = GetComponent<SpriteRenderer>();
             if (spriteRenderer != null)
             {
-                Sprite portrait = instance.Definition.visualData != null ? instance.Definition.visualData.portrait : null;
-                if (portrait != null)
+                if (spriteRenderer.sprite == null)
                 {
-                    spriteRenderer.sprite = portrait;
-                    spriteRenderer.color  = Color.white;
-                }
-                else
-                {
-                    spriteRenderer.color = _projectileColor;
+                    Sprite portrait = instance.Definition.visualData != null ? instance.Definition.visualData.portrait : null;
+                    if (portrait != null)
+                    {
+                        spriteRenderer.sprite = portrait;
+                        spriteRenderer.color  = Color.white;
+                    }
+                    else
+                    {
+                        spriteRenderer.color = _projectileColor;
+                    }
                 }
             }
             EnsureClickableCollider();

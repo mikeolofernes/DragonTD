@@ -50,6 +50,11 @@ namespace DragonTD.UI
                 new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f),
                 new Vector2(-10f, -10f), compact ? new Vector2(104f, 48f) : new Vector2(110f, 44f));
 
+            PositionButton(FindDescendant(hud, "SpeedButton") as RectTransform,
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f),
+                compact ? new Vector2(-122f, -10f) : new Vector2(-260f, -10f),
+                compact ? new Vector2(74f, 48f) : new Vector2(74f, 44f));
+
             PositionButton(FindDescendant(hud, "NextWaveButton") as RectTransform,
                 new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f),
                 compact ? new Vector2(-10f, -64f) : new Vector2(-130f, -10f),

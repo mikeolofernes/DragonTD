@@ -19,6 +19,7 @@ namespace DragonTD.UI
         [SerializeField] private Text _selectedTowerText;
         [SerializeField] private Text _skillCooldownText;
         [SerializeField] private Button _pauseButton;
+        [SerializeField] private Button _speedButton;
         [SerializeField] private Button _nextWaveButton;
         [SerializeField] private Button _skillButton;
         [SerializeField] private Button _upgradeButton;
@@ -36,6 +37,7 @@ namespace DragonTD.UI
         private void Awake()
         {
             EnsureActionControls();
+            EnsureSpeedButton();
             EnsureWavePreviewPanel();
             EnsureWaveSummaryPanel();
             RuntimeFontScaler.Apply(gameObject);
@@ -44,14 +46,17 @@ namespace DragonTD.UI
         private void Start()
         {
             EnsureActionControls();
+            EnsureSpeedButton();
             EnsureWavePreviewPanel();
             EnsureWaveSummaryPanel();
             RuntimeFontScaler.Apply(gameObject);
             TrySubscribe();
             if (_pauseButton != null)
-                _pauseButton.onClick.AddListener(() => GameManager.Instance.TogglePause());
+                _pauseButton.onClick.AddListener(() => GameManager.Instance?.TogglePause());
+            if (_speedButton != null)
+                _speedButton.onClick.AddListener(() => GameManager.Instance?.CycleGameSpeed());
             if (_nextWaveButton != null)
-                _nextWaveButton.onClick.AddListener(() => GameManager.Instance.StartNextWave());
+                _nextWaveButton.onClick.AddListener(() => GameManager.Instance?.StartNextWave());
             if (_skillButton != null)
                 _skillButton.onClick.AddListener(OnSkillButtonClicked);
             if (_upgradeButton != null)
@@ -75,6 +80,7 @@ namespace DragonTD.UI
                 GameManager.Instance.OnStateChanged -= HandleStateChanged;
                 GameManager.Instance.OnLivesChanged -= UpdateLivesFromEvent;
                 GameManager.Instance.OnBattleMessage -= ShowBattleMessage;
+                GameManager.Instance.OnGameSpeedChanged -= UpdateSpeedButton;
             }
             if (ResourceManager.Instance != null && _subscribedToResources)
             {
@@ -124,6 +130,7 @@ namespace DragonTD.UI
                 GameManager.Instance.OnStateChanged += HandleStateChanged;
                 GameManager.Instance.OnLivesChanged += UpdateLivesFromEvent;
                 GameManager.Instance.OnBattleMessage += ShowBattleMessage;
+                GameManager.Instance.OnGameSpeedChanged += UpdateSpeedButton;
                 _subscribedToGameState = true;
             }
 
@@ -225,6 +232,7 @@ namespace DragonTD.UI
             UpdateSelectedTowerPanel();
             UpdateWavePreview();
             UpdateWaveSummaryVisibility();
+            UpdateSpeedButton();
         }
 
         private void UpdateNextWaveButton(GameState state)
@@ -555,6 +563,40 @@ namespace DragonTD.UI
             RepositionActionControls();
         }
 
+        private void EnsureSpeedButton()
+        {
+            if (_speedButton != null)
+            {
+                PositionTopRightButton(_speedButton, new Vector2(-260f, -10f), new Vector2(74f, 44f));
+                UpdateSpeedButton();
+                return;
+            }
+
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform parent = canvas != null ? canvas.transform : transform;
+            Transform existing = FindDescendant(parent, "SpeedButton");
+            if (existing != null)
+                _speedButton = existing.GetComponent<Button>();
+
+            if (_speedButton == null)
+            {
+                Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                    ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                _speedButton = CreatePanelButton(parent, "SpeedButton", "x1", font, RuntimeWhiteSprite(), Vector2.zero, new Vector2(74f, 44f));
+            }
+
+            PositionTopRightButton(_speedButton, new Vector2(-260f, -10f), new Vector2(74f, 44f));
+            UpdateSpeedButton();
+        }
+
+        private void UpdateSpeedButton()
+        {
+            if (_speedButton == null) return;
+            Text label = _speedButton.GetComponentInChildren<Text>();
+            if (label != null)
+                label.text = GameManager.Instance != null ? GameManager.Instance.GameSpeedLabel : "x1";
+        }
+
         private void EnsureWavePreviewPanel()
         {
             if (_wavePreviewText != null) return;
@@ -654,6 +696,30 @@ namespace DragonTD.UI
             rt.pivot = new Vector2(0.5f, 0.5f);
             rt.anchoredPosition = position;
             rt.sizeDelta = dimensions;
+        }
+
+        private static void PositionTopRightButton(Button button, Vector2 position, Vector2 dimensions)
+        {
+            if (button == null) return;
+            RectTransform rt = button.GetComponent<RectTransform>();
+            if (rt == null) return;
+            rt.anchorMin = new Vector2(1f, 1f);
+            rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(1f, 1f);
+            rt.anchoredPosition = position;
+            rt.sizeDelta = dimensions;
+        }
+
+        private static Transform FindDescendant(Transform root, string name)
+        {
+            if (root == null) return null;
+            if (root.name == name) return root;
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform found = FindDescendant(root.GetChild(i), name);
+                if (found != null) return found;
+            }
+            return null;
         }
 
         private static Text CreatePanelText(Transform parent, string name, Font font, string text, int size, Vector2 position, Vector2 dimensions)

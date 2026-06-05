@@ -9,10 +9,25 @@ namespace DragonTD.Core
 
         [SerializeField] private int _startingLives = 20;
         [SerializeField] private DragonTD.TowerDefense.ChapterContent[] _chapters;
+        [SerializeField] private float _baseGameSpeed = 0.75f;
 
         public int Lives { get; private set; }
         public int CurrentWave { get; private set; }
         public GameState State { get; private set; }
+        public int GameSpeedIndex { get; private set; }
+        public float GameSpeedMultiplier => GameSpeedIndex switch
+        {
+            1 => 2f,
+            2 => 4f,
+            _ => 1f
+        };
+        public float EffectiveGameSpeed => _baseGameSpeed * GameSpeedMultiplier;
+        public string GameSpeedLabel => GameSpeedIndex switch
+        {
+            1 => "x2",
+            2 => "x4",
+            _ => "x1"
+        };
         public bool IsPlanningPhase => State == GameState.Planning || State == GameState.Setup || State == GameState.BetweenWaves;
         public string CurrentStageId { get; private set; } = StageCatalog.DefaultStageId;
         public StageDefinition CurrentStage => StageCatalog.Get(CurrentStageId);
@@ -22,6 +37,7 @@ namespace DragonTD.Core
         public event System.Action<GameState> OnStateChanged;
         public event System.Action<int> OnLivesChanged;
         public event System.Action<string> OnBattleMessage;
+        public event System.Action OnGameSpeedChanged;
 
         private GameState _stateBeforePause;
 
@@ -37,6 +53,7 @@ namespace DragonTD.Core
             DontDestroyOnLoad(gameObject);
             CurrentStageId = PlayerInventory.Instance?.Progression?.CurrentStageId ?? StageCatalog.DefaultStageId;
             ApplyActiveChapter();
+            ApplyTimeScale();
         }
 
         public void SetState(GameState newState)
@@ -70,11 +87,14 @@ namespace DragonTD.Core
             OnLivesChanged?.Invoke(Lives);
             ResourceManager.Instance?.ResetForBattle();
             BattleStatsTracker.Ensure().ResetBattle();
+            GameSpeedIndex = 0;
 
             if (ChapterContent.Active?.map?.mapType == DragonTD.Core.MapType.LaneDefense)
                 SetupLaneDefense(ChapterContent.Active.map);
 
             SetState(GameState.Planning);
+            ApplyTimeScale();
+            OnGameSpeedChanged?.Invoke();
         }
 
         private void SetupLaneDefense(DragonTD.TowerDefense.MapDefinition mapDef)
@@ -188,8 +208,8 @@ namespace DragonTD.Core
         {
             if (State == GameState.Paused)
             {
-                Time.timeScale = 1f;
                 SetState(_stateBeforePause);
+                ApplyTimeScale();
             }
             else
             {
@@ -197,6 +217,19 @@ namespace DragonTD.Core
                 Time.timeScale = 0f;
                 SetState(GameState.Paused);
             }
+        }
+
+        public void CycleGameSpeed()
+        {
+            GameSpeedIndex = (GameSpeedIndex + 1) % 3;
+            ApplyTimeScale();
+            OnGameSpeedChanged?.Invoke();
+        }
+
+        private void ApplyTimeScale()
+        {
+            if (State == GameState.Paused) return;
+            Time.timeScale = EffectiveGameSpeed;
         }
 
         private void CleanupBattlefield()

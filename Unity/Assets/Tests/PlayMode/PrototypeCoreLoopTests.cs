@@ -21,6 +21,8 @@ namespace DragonTD.Tests.PlayMode
             DestroyObjects<GameDirector>();
             DestroyObjects<DragonTower>();
             DestroyObjects<EnemyBase>();
+            DestroyObjects<EnemyAnimatorBridge>();
+            DestroyObjects<EnemyDirectionalSpriteAnimator>();
             DestroyObjects<DamageIndicator>();
             DestroyObjects<SkillCastEffect>();
             DestroyObjects<DeathPopEffect>();
@@ -131,6 +133,90 @@ namespace DragonTD.Tests.PlayMode
             Assert.Less(enemy.HpPercent, 1f);
             string summary = BattleStatsTracker.Instance.FinishWave(1);
             StringAssert.Contains("Skills: 1", summary);
+        }
+
+        [UnityTest]
+        public IEnumerator EnemyAnimatorBridge_TracksMovementStunHitAndDeathSignals()
+        {
+            var go = new GameObject("Animated Enemy");
+            var bridge = go.AddComponent<EnemyAnimatorBridge>();
+
+            bridge.SetMovement(Vector3.right, 0.65f, true);
+            yield return null;
+
+            Assert.IsTrue(bridge.IsMoving);
+            Assert.AreEqual(0.65f, bridge.Speed01, 0.001f);
+            Assert.AreEqual(1f, bridge.FacingX, 0.001f);
+
+            bridge.SetStunned(true);
+            bridge.PlayHit();
+            yield return null;
+
+            Assert.IsTrue(bridge.IsStunned);
+            Assert.Greater(bridge.HitPulse, 0f);
+
+            bridge.PlayDeath();
+            yield return null;
+
+            Assert.IsTrue(bridge.IsDead);
+        }
+
+        [Test]
+        public void EnemyAnimatorBridge_ChoosesFourWayFacingFromMovementDirection()
+        {
+            var go = new GameObject("Directional Enemy");
+            var bridge = go.AddComponent<EnemyAnimatorBridge>();
+
+            bridge.SetMovement(Vector3.right, 1f, true);
+            Assert.AreEqual(EnemyFacingDirection.Right, bridge.FacingDirection);
+
+            bridge.SetMovement(Vector3.left, 1f, true);
+            Assert.AreEqual(EnemyFacingDirection.Left, bridge.FacingDirection);
+
+            bridge.SetMovement(Vector3.up, 1f, true);
+            Assert.AreEqual(EnemyFacingDirection.Back, bridge.FacingDirection);
+
+            bridge.SetMovement(Vector3.down, 1f, true);
+            Assert.AreEqual(EnemyFacingDirection.Front, bridge.FacingDirection);
+        }
+
+        [UnityTest]
+        public IEnumerator EnemyDirectionalSpriteAnimator_AdvancesWalkFramesWhenMoving()
+        {
+            var go = new GameObject("Directional Animated Enemy");
+            var bridge = go.AddComponent<EnemyAnimatorBridge>();
+            var spriteAnimator = go.AddComponent<EnemyDirectionalSpriteAnimator>();
+            Sprite[] frames = new[]
+            {
+                Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 1f, 1f), Vector2.one * 0.5f),
+                Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 1f, 1f), Vector2.one * 0.5f)
+            };
+            var front = new GameObject("Front").AddComponent<SpriteRenderer>();
+            var right = new GameObject("Right").AddComponent<SpriteRenderer>();
+            var back = new GameObject("Back").AddComponent<SpriteRenderer>();
+            var left = new GameObject("Left").AddComponent<SpriteRenderer>();
+            front.transform.SetParent(go.transform);
+            right.transform.SetParent(go.transform);
+            back.transform.SetParent(go.transform);
+            left.transform.SetParent(go.transform);
+
+            SetPrivateField(spriteAnimator, "_bridge", bridge);
+            SetPrivateField(spriteAnimator, "_frontRenderer", front);
+            SetPrivateField(spriteAnimator, "_rightRenderer", right);
+            SetPrivateField(spriteAnimator, "_backRenderer", back);
+            SetPrivateField(spriteAnimator, "_leftRenderer", left);
+            SetPrivateField(spriteAnimator, "_frontWalkFrames", frames);
+            SetPrivateField(spriteAnimator, "_rightWalkFrames", frames);
+            SetPrivateField(spriteAnimator, "_backWalkFrames", frames);
+            SetPrivateField(spriteAnimator, "_leftWalkFrames", frames);
+            SetPrivateField(spriteAnimator, "_walkFps", 30f);
+
+            bridge.SetMovement(Vector3.up, 1f, true);
+            yield return new WaitForSeconds(0.05f);
+
+            Assert.AreEqual(EnemyFacingDirection.Back, spriteAnimator.CurrentDirection);
+            Assert.AreEqual(1, spriteAnimator.CurrentFrameIndex);
+            Assert.AreEqual(frames[1], back.sprite);
         }
 
         [UnityTest]
