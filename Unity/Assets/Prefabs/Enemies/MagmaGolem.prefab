@@ -303,6 +303,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DragonTD::DragonTD.TowerDefense.OrcEnemy
   _data: {fileID: 11400000, guid: ff1ad8060831882468817710d964fdb3, type: 2}
+  _deathAnimationDelay: 0.35
 --- !u!1 &6503265220868688147
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,6 +10,16 @@ namespace DragonTD.Editor
     public static class EnemySkeletalRigBuilder
     {
         private const string PrefabDir = "Assets/Prefabs/Enemies";
+        private const string OrcRunnerRigFolder = "Assets/Art/Enemies/Skeletal/OrcRunner";
+        private static readonly string[] OrcPrefabNames =
+        {
+            "OrcEnemy",
+            "OrcRunner",
+            "OrcBrute",
+            "OrcShielded",
+            "OrcRegenerator",
+            "OrcFlying"
+        };
 
         [MenuItem("DragonTD/Enemies/Apply Skeletal Rig From Selected Folder")]
         public static void ApplySelectedFolderToEnemyPrefab()
@@ -26,12 +36,23 @@ namespace DragonTD.Editor
 
         public static void ApplyOrcRunnerSkeletalRig()
         {
-            ApplyFolderToEnemyPrefab("Assets/Art/Enemies/Skeletal/OrcRunner");
+            ApplyFolderToEnemyPrefab(OrcRunnerRigFolder, "OrcRunner");
+        }
+
+        public static void ApplyOrcRunnerRigToAllOrcPrefabs()
+        {
+            foreach (string prefabName in OrcPrefabNames)
+                ApplyFolderToEnemyPrefab(OrcRunnerRigFolder, prefabName);
         }
 
         private static void ApplyFolderToEnemyPrefab(string folderPath)
         {
             string enemyName = Path.GetFileName(folderPath.TrimEnd('/', '\\'));
+            ApplyFolderToEnemyPrefab(folderPath, enemyName);
+        }
+
+        private static void ApplyFolderToEnemyPrefab(string folderPath, string enemyName)
+        {
             string prefabPath = $"{PrefabDir}/{enemyName}.prefab";
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
             if (prefab == null)

@@ -59,14 +59,18 @@ namespace DragonTD.Editor
             // ── Load or create MapDefinition ──────────────────────────────────────
             var mapDef = EnsureMapDefinition();
 
-            // Push the live snapshot into mapDef so ComputeWaypoints uses the
-            // user's edits rather than whatever is on disk.
-            if (liveWaypoints.Length >= 2)
+            // Use dirty in-memory waypoints only when the user is actively editing
+            // BattleScene. Otherwise the saved MapDefinition is the source of truth.
+            if (liveWaypoints.Length >= 2 && (!HasPaintedWaypoints(mapDef) || HasDirtyActiveBattleScene()))
             {
                 mapDef.paintedPathWaypoints = System.Array.ConvertAll(liveWaypoints,
                     v => new Vector2(v.x, v.y));
                 EditorUtility.SetDirty(mapDef);
                 AssetDatabase.SaveAssets();
+            }
+            else if (HasPaintedWaypoints(mapDef))
+            {
+                Debug.Log("[SceneBootstrapper] Using saved MapDefinition waypoints; live scene snapshot ignored because BattleScene is not dirty.");
             }
 
             // ── Create assets (before NewScene) ──────────────────────────────────
@@ -106,10 +110,11 @@ namespace DragonTD.Editor
             CreateEnemyPrefab("LavaHound", lavaHoundData, new Color(1f, 0.5f, 0.2f), 0.85f);
             CreateEnemyPrefab("MagmaGolem", magmaGolemData, new Color(0.9f, 0.35f, 0.12f), 0.9f);
             CreateEnemyPrefab("EmberWraith", emberWraithData, new Color(1f, 0.6f, 0.35f), 0.85f);
-            EnemySkeletalRigBuilder.ApplyOrcRunnerSkeletalRig();
+            EnemySkeletalRigBuilder.ApplyOrcRunnerRigToAllOrcPrefabs();
             CreateProjectilePrefab();
             ConfigurePortraitImports();
             ConfigureEnemyImports();
+            EnemyAnimatorControllerBuilder.BuildOrcRunnerAnimatorPrototype();
             foreach (var dragon in Phase1DragonData.All)
             {
                 CreateDragonTowerPrefab(dragon);
@@ -395,8 +400,12 @@ namespace DragonTD.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            // Persist any WP positions the user edited in the scene BEFORE wiping it.
-            PreserveSceneWaypointsToMapDef(mapDef);
+            // Only pull waypoints from the saved scene when the map asset has no route.
+            // A stale BattleScene must not overwrite the user's saved MapDefinition.
+            if (!HasPaintedWaypoints(mapDef))
+                PreserveSceneWaypointsToMapDef(mapDef);
+            else
+                Debug.Log("[SceneBootstrapper] Skipping BattleScene waypoint preservation; MapDefinition already has saved path.");
 
             // ── Build scene (reload all references fresh after NewScene) ─────────
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -430,7 +439,7 @@ namespace DragonTD.Editor
             CreateManagerRoot(dirCfg, starters);
             SetupGridManager(tilePref, grassSpr, dirtSpr, mapDef);
 
-            var waypointList  = mapDef != null ? mapDef.ComputeWaypoints() : new Vector3[0];
+            var waypointList  = ResolveBattleWaypoints(mapDef);
             CreateWaveManager(waves, orcPref, waypointList);
             AddSceneBootstrap();
             BuildUI(whiteSpr, cardPref);
@@ -544,12 +553,12 @@ namespace DragonTD.Editor
 
             def.paintedPathWaypoints = new[]
             {
-                new Vector2(-9.35f, -0.2f),
-                new Vector2(-4.65f, -0.2f),
-                new Vector2(-4.65f, 2.28f),
-                new Vector2(4.72f, 2.28f),
-                new Vector2(4.72f, -3.02f),
-                new Vector2(8.7f, -3.02f),
+                new Vector2(-9.35f, 0f),
+                new Vector2(-4f, 0f),
+                new Vector2(-3.8f, 2.8f),
+                new Vector2(4.72f, 2.8f),
+                new Vector2(4.72f, -2f),
+                new Vector2(8.7f, -2f),
             };
             EditorUtility.SetDirty(def);
         }
@@ -572,6 +581,30 @@ namespace DragonTD.Editor
             Debug.Log($"[SceneBootstrapper] Snapshotted {count} live WPs: "
                 + string.Join(", ", System.Array.ConvertAll(pts, p => $"({p.x:F2},{p.y:F2})")));
             return pts;
+        }
+
+        static bool HasPaintedWaypoints(MapDefinition mapDef)
+        {
+            return mapDef != null && mapDef.paintedPathWaypoints != null && mapDef.paintedPathWaypoints.Length >= 2;
+        }
+
+        static bool HasDirtyActiveBattleScene()
+        {
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            return scene.IsValid() && scene.path == "Assets/Scenes/BattleScene.unity" && scene.isDirty;
+        }
+
+        static Vector3[] ResolveBattleWaypoints(MapDefinition mapDef)
+        {
+            if (HasPaintedWaypoints(mapDef))
+            {
+                var points = new Vector3[mapDef.paintedPathWaypoints.Length];
+                for (int i = 0; i < points.Length; i++)
+                    points[i] = new Vector3(mapDef.paintedPathWaypoints[i].x, mapDef.paintedPathWaypoints[i].y, 0f);
+                return points;
+            }
+
+            return mapDef != null ? mapDef.ComputeWaypoints() : new Vector3[0];
         }
 
         // Reads WP_XX child positions from the saved BattleScene.unity file and writes
@@ -1583,13 +1616,16 @@ namespace DragonTD.Editor
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
             var imp = AssetImporter.GetAtPath(assetPath) as TextureImporter;
             if (imp == null) return null;
+
+            int pxHeight = ReadPngHeight(assetPath);
+
             imp.textureType         = TextureImporterType.Sprite;
             imp.spriteImportMode    = SpriteImportMode.Single;
             imp.mipmapEnabled       = false;
             imp.alphaIsTransparency = true;
             imp.filterMode          = FilterMode.Bilinear;
             imp.wrapMode            = TextureWrapMode.Clamp;
-            imp.spritePixelsPerUnit = 256f;          // 256px = 1 world unit
+            imp.spritePixelsPerUnit = pxHeight > 0 ? pxHeight : 256f; // 1 height = 1 world unit
             var settings = imp.GetDefaultPlatformTextureSettings();
             settings.format = TextureImporterFormat.RGBA32;
             imp.SetPlatformTextureSettings(settings);
@@ -1804,7 +1840,7 @@ namespace DragonTD.Editor
         {
             var whiteSpr = GetOrCreateWhiteSprite();
             var cardPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefDir+"/UI/PlacementCard.prefab");
-            CreateUIPrefabIfMissing(PrefDir+"/UI/BattleHUD.prefab", "BattleHUD", root => BuildHUD(root, whiteSpr));
+            CreateUIPrefab(PrefDir+"/UI/BattleHUD.prefab", "BattleHUD", root => BuildHUD(root, whiteSpr));
             CreateUIPrefabIfMissing(PrefDir+"/UI/DragonCollectionPanel.prefab", "DragonCollectionPanel", root => BuildDragonPanel(root, whiteSpr, cardPrefab));
             CreateUIPrefabIfMissing(PrefDir+"/UI/VictoryDefeatPanel.prefab", "VictoryDefeatPanel", root => BuildVictoryPanel(root, whiteSpr));
             CreateUIPrefabIfMissing(PrefDir+"/UI/ProfileProgressionPanel.prefab", "ProfileProgressionPanel", root => BuildProfileProgressionPanel(root, whiteSpr));
@@ -1815,6 +1851,11 @@ namespace DragonTD.Editor
             if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null)
                 return;
 
+            CreateUIPrefab(path, childName, build);
+        }
+
+        static void CreateUIPrefab(string path, string childName, System.Action<GameObject> build)
+        {
             var root = new GameObject("PrefabBuildRoot");
             build(root);
             Transform child = root.transform.Find(childName);
@@ -2045,13 +2086,13 @@ namespace DragonTD.Editor
             pathViz.AddComponent<WaypointPath>();
             var authoredPath = pathViz.AddComponent<WaypointPathAuthoring>();
 
-            // Fallback: if ComputeWaypoints() returned nothing, use the hardcoded painted path
+            // Last-resort path mirrors the saved Chapter1 painted route.
             if (waypointPositions == null || waypointPositions.Length == 0)
                 waypointPositions = new Vector3[]
                 {
-                    new Vector3(-9.35f, -0.2f, 0f), new Vector3(-4.65f, -0.2f, 0f),
-                    new Vector3(-4.65f,  2.28f, 0f), new Vector3( 4.72f,  2.28f, 0f),
-                    new Vector3( 4.72f, -3.02f, 0f), new Vector3( 8.7f,  -3.02f, 0f),
+                    new Vector3(-9.35f, 0f, 0f), new Vector3(-4f, 0f, 0f),
+                    new Vector3(-3.8f, 2.8f, 0f), new Vector3(4.72f, 2.8f, 0f),
+                    new Vector3(4.72f, -2f, 0f), new Vector3(8.7f, -2f, 0f),
                 };
 
             var wps = new Transform[waypointPositions.Length];
@@ -2081,7 +2122,7 @@ namespace DragonTD.Editor
 
             so.FindProperty("_authoredPath").objectReferenceValue = authoredPath;
             so.FindProperty("_eliteEnemyPrefab").objectReferenceValue = elitePrefab;
-            so.FindProperty("_spawnedEnemyVisualScale").floatValue = 0.75f;
+            so.FindProperty("_spawnedEnemyVisualScale").floatValue = 1.2f;
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(wm);
         }
@@ -2260,6 +2301,7 @@ namespace DragonTD.Editor
         {
             var hudGO = new GameObject("BattleHUD");
             hudGO.transform.SetParent(canvas.transform, false);
+            hudGO.AddComponent<RectTransform>();
             StretchFull(hudGO);
 
             var statsPanel = MakePanel(hudGO, "StatsPanel", sprite,
@@ -2335,6 +2377,8 @@ namespace DragonTD.Editor
                 new Vector2(1,1),new Vector2(1,1),new Vector2(1,1),new Vector2(-10,-10),new Vector2(110,44));
             var nextWaveBtn = MakeButton(hudGO,"NextWaveButton","Next Wave",sprite,
                 new Vector2(1,1),new Vector2(1,1),new Vector2(1,1),new Vector2(-130,-10),new Vector2(120,44));
+            var speedBtn = MakeButton(hudGO,"SpeedButton","x1",sprite,
+                new Vector2(1,1),new Vector2(1,1),new Vector2(1,1),new Vector2(-260,-10),new Vector2(74,44));
             var skillBtn = MakeButton(hudGO,"SkillButton","Skill",sprite,
                 new Vector2(0.5f,0),new Vector2(0.5f,0),new Vector2(0.5f,0.5f),
                 new Vector2(-72, 208),new Vector2(124,38));
@@ -2360,6 +2404,7 @@ namespace DragonTD.Editor
             so.FindProperty("_selectedTowerText").objectReferenceValue = selectedText;
             so.FindProperty("_skillCooldownText").objectReferenceValue = skillCooldownText;
             so.FindProperty("_pauseButton").objectReferenceValue    = pauseBtn;
+            so.FindProperty("_speedButton").objectReferenceValue    = speedBtn;
             so.FindProperty("_nextWaveButton").objectReferenceValue = nextWaveBtn;
             so.FindProperty("_skillButton").objectReferenceValue = skillBtn;
             so.FindProperty("_upgradeButton").objectReferenceValue = upgradeBtn;

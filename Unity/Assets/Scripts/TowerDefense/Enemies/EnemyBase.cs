@@ -38,10 +38,14 @@ namespace DragonTD.TowerDefense
         private Transform _shadow;
         private Transform _visualRoot;
         private EnemySkeletalAnimator _skeletalAnimator;
+        private EnemyAnimatorBridge _animatorBridge;
+        private Vector3 _desiredMovementDirection = Vector3.right;
         private float _nextRegenPulseTime;
         private bool _reachedBase;
         private bool  _isLaneMode;
         private float _wallWorldX;
+
+        [SerializeField] private float _deathAnimationDelay = 0.35f;
 
         public bool IsDead { get; private set; }
         public EnemyData Data => _data;
@@ -71,6 +75,7 @@ namespace DragonTD.TowerDefense
         public void Initialize(Transform[] waypoints)
         {
             _skeletalAnimator = GetComponentInChildren<EnemySkeletalAnimator>(true);
+            _animatorBridge = GetComponentInChildren<EnemyAnimatorBridge>(true);
             _spriteRenderer = ConfigureCenteredVisualRenderer();
             _healthBar = GetComponentInChildren<EnemyHealthBar>(true);
             if (_healthBar != null)
@@ -80,6 +85,9 @@ namespace DragonTD.TowerDefense
             _moveSpeed = _data.MoveSpeed;
             _currentHp = _maxHp;
             _waypointIndex = 0;
+            Debug.Log($"[EnemyBase] Init '{name}' pos={transform.position}, waypoints={_waypoints?.Length ?? -1}, speed={_moveSpeed}");
+            SkipReachedWaypoints();
+            Debug.Log($"[EnemyBase] AfterSkip: idx={_waypointIndex}, dead={IsDead}, nextWP={((_waypoints != null && _waypointIndex < _waypoints?.Length) ? _waypoints[_waypointIndex]?.position.ToString() : "NONE")}");
             _shieldCracked = Trait != EnemyTrait.Shielded;
             _baseScale = transform.localScale * VisualScaleMultiplier;
             transform.localScale = _baseScale;
@@ -96,6 +104,7 @@ namespace DragonTD.TowerDefense
             _isLaneMode = true;
             _wallWorldX = wallWorldX;
             _skeletalAnimator = GetComponentInChildren<EnemySkeletalAnimator>(true);
+            _animatorBridge = GetComponentInChildren<EnemyAnimatorBridge>(true);
             _spriteRenderer = ConfigureCenteredVisualRenderer();
             _healthBar = GetComponentInChildren<EnemyHealthBar>(true);
             if (_healthBar != null) _healthBar.Initialize(this);
@@ -153,26 +162,77 @@ namespace DragonTD.TowerDefense
             TickTraitEffects();
         }
 
+        private bool _loggedFirstMove;
         protected virtual void MoveTowardsWaypoint()
         {
             if (_isLaneMode)
             {
+                _desiredMovementDirection = Vector3.right;
                 transform.position += Vector3.right * CurrentMoveSpeed * Time.deltaTime;
                 if (transform.position.x >= _wallWorldX)
                     HitWall();
                 return;
             }
 
+            if (!_loggedFirstMove)
+            {
+                _loggedFirstMove = true;
+                Debug.Log($"[EnemyBase] FirstMove '{name}': pos={transform.position}, wpIdx={_waypointIndex}, wpLen={_waypoints?.Length ?? -1}, speed={CurrentMoveSpeed}, timeScale={Time.timeScale}, dead={IsDead}");
+            }
+
+            SkipReachedWaypoints();
             if (_waypoints == null || _waypointIndex >= _waypoints.Length) return;
 
             Transform target = _waypoints[_waypointIndex];
+            Vector3 toTarget = target.position - transform.position;
+            if (toTarget.sqrMagnitude > 0.0004f)
+                _desiredMovementDirection = toTarget.normalized;
+
             transform.position = Vector3.MoveTowards(transform.position, target.position, CurrentMoveSpeed * Time.deltaTime);
 
             if (Vector3.Distance(transform.position, target.position) < 0.05f)
             {
                 _waypointIndex++;
+                if (_waypointIndex < _waypoints.Length && _waypoints[_waypointIndex] != null)
+                {
+                    Vector3 nextLeg = _waypoints[_waypointIndex].position - transform.position;
+                    if (nextLeg.sqrMagnitude > 0.0004f)
+                        _desiredMovementDirection = nextLeg.normalized;
+                }
+
                 if (_waypointIndex >= _waypoints.Length)
                     ReachBase();
+            }
+        }
+
+        private void SkipReachedWaypoints()
+        {
+            if (_waypoints == null) return;
+
+            while (_waypointIndex < _waypoints.Length)
+            {
+                Transform waypoint = _waypoints[_waypointIndex];
+                if (waypoint == null)
+                {
+                    _waypointIndex++;
+                    continue;
+                }
+
+                if (Vector3.Distance(transform.position, waypoint.position) > 0.05f)
+                    break;
+
+                _waypointIndex++;
+            }
+
+            if (_waypointIndex < _waypoints.Length && _waypoints[_waypointIndex] != null)
+            {
+                Vector3 nextLeg = _waypoints[_waypointIndex].position - transform.position;
+                if (nextLeg.sqrMagnitude > 0.0004f)
+                    _desiredMovementDirection = nextLeg.normalized;
+            }
+            else if (_waypoints.Length > 0)
+            {
+                ReachBase();
             }
         }
 
@@ -249,6 +309,7 @@ namespace DragonTD.TowerDefense
         {
             if (IsDead) return;
             if (_stunRoutine != null) StopCoroutine(_stunRoutine);
+            _animatorBridge?.SetStunned(true);
             _stunRoutine = StartCoroutine(StunRoutine(duration));
         }
 
@@ -260,10 +321,12 @@ namespace DragonTD.TowerDefense
             yield return new WaitForSeconds(Mathf.Max(0.1f, duration));
             _moveSpeedMultiplier = prev;
             _stunRoutine = null;
+            _animatorBridge?.SetStunned(false);
         }
 
         public void FlashHit(Color color)
         {
+            _animatorBridge?.PlayHit();
             if (_spriteRenderer == null || !gameObject.activeInHierarchy) return;
             if (_flashRoutine != null) StopCoroutine(_flashRoutine);
             _flashRoutine = StartCoroutine(FlashHitRoutine(color));
@@ -312,6 +375,7 @@ namespace DragonTD.TowerDefense
         {
             if (IsDead) return;
             IsDead = true;
+            _animatorBridge?.PlayDeath();
             if (!_reachedBase) AudioManager.Instance?.PlaySfx(SfxKey.EnemyDeath);
             DeathPopEffect.Spawn(transform.position, _spriteRenderer != null ? _spriteRenderer.color : Color.white);
             OnDied?.Invoke(this);
@@ -323,7 +387,11 @@ namespace DragonTD.TowerDefense
                 ResourceManager.Instance?.AddGold(_data.GoldValue);
                 BattleStatsTracker.Instance?.RecordReward(_data.GoldValue, 0);
             }
-            Destroy(gameObject);
+            DisableColliders();
+            float destroyDelay = _animatorBridge != null && _animatorBridge.HasRuntimeAnimator
+                ? Mathf.Max(0f, _deathAnimationDelay)
+                : 0f;
+            Destroy(gameObject, destroyDelay);
         }
 
         private float ApplyTraitDamageRules(float damage, Color color, DamageSource source)
@@ -379,15 +447,24 @@ namespace DragonTD.TowerDefense
             Vector3 delta = transform.position - _lastPosition;
             bool isMoving = delta.sqrMagnitude > 0.000001f && CurrentMoveSpeed > 0.01f;
             if (isMoving)
-                _movementDirection = delta.normalized;
+                _movementDirection = _desiredMovementDirection.sqrMagnitude > 0.0001f
+                    ? _desiredMovementDirection.normalized
+                    : delta.normalized;
+
+            bool useRuntimeAnimator = _animatorBridge != null && _animatorBridge.HasPolishedPresentation;
+            _animatorBridge?.SetMovement(_movementDirection, Mathf.Clamp01(CurrentMoveSpeed / 3f), isMoving || Trait == EnemyTrait.Flying);
+            _animatorBridge?.SetStunned(_stunRoutine != null);
 
             if (Trait == EnemyTrait.Flying)
             {
                 float hover = Mathf.Sin(Time.time * 5.2f + _walkPhase);
-                float scale = 1f + hover * 0.045f;
-                transform.localScale = _baseScale * scale;
-                transform.rotation = Quaternion.Euler(0f, 0f, hover * 2.5f);
-                ApplyVisualLocalMotion(new Vector3(0f, hover * 0.08f, 0f), Vector3.one, Quaternion.identity, 18f);
+                if (!useRuntimeAnimator)
+                {
+                    float scale = 1f + hover * 0.045f;
+                    transform.localScale = _baseScale * scale;
+                    transform.rotation = Quaternion.Euler(0f, 0f, hover * 2.5f);
+                    ApplyVisualLocalMotion(new Vector3(0f, hover * 0.08f, 0f), Vector3.one, Quaternion.identity, 18f);
+                }
                 UpdateShadow(0.72f - hover * 0.08f, 0.24f - hover * 0.03f, 0.24f);
             }
             else if (isMoving)
@@ -395,7 +472,12 @@ namespace DragonTD.TowerDefense
                 transform.localScale = _baseScale;
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.identity, Time.deltaTime * 18f);
 
-                if (_skeletalAnimator != null && _skeletalAnimator.IsConfigured)
+                if (useRuntimeAnimator)
+                {
+                    ApplyVisualLocalMotion(Vector3.zero, Vector3.one, Quaternion.identity, 20f);
+                    UpdateShadow(0.82f, 0.25f, 0.32f);
+                }
+                else if (_skeletalAnimator != null && _skeletalAnimator.IsConfigured)
                 {
                     _skeletalAnimator.TickWalk(_movementDirection, Mathf.Clamp01(CurrentMoveSpeed / 3f), Trait);
                     ApplyVisualLocalMotion(Vector3.zero, Vector3.one, Quaternion.identity, 20f);
@@ -421,10 +503,18 @@ namespace DragonTD.TowerDefense
             }
             else
             {
-                float idle = Mathf.Sin(Time.time * 2.4f + _walkPhase) * 0.018f;
-                transform.localScale = _baseScale * (1f + idle);
+                if (!useRuntimeAnimator)
+                {
+                    float idle = Mathf.Sin(Time.time * 2.4f + _walkPhase) * 0.018f;
+                    transform.localScale = _baseScale * (1f + idle);
+                }
+                else
+                {
+                    transform.localScale = _baseScale;
+                }
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.identity, Time.deltaTime * 12f);
-                _skeletalAnimator?.TickIdle();
+                if (!useRuntimeAnimator)
+                    _skeletalAnimator?.TickIdle();
                 ApplyVisualLocalMotion(Vector3.zero, Vector3.one, Quaternion.identity, 12f);
                 UpdateShadow(0.78f, 0.25f, 0.3f);
             }
@@ -435,6 +525,17 @@ namespace DragonTD.TowerDefense
         private SpriteRenderer ConfigureCenteredVisualRenderer()
         {
             SpriteRenderer rootRenderer = GetComponent<SpriteRenderer>();
+            if (_animatorBridge != null && _animatorBridge.HasPolishedPresentation)
+            {
+                SpriteRenderer presentationRenderer = _animatorBridge.PrimarySpriteRenderer;
+                if (_animatorBridge.HasDirectionalPresentation)
+                    return presentationRenderer != null ? presentationRenderer : rootRenderer;
+                if (_animatorBridge.HasRuntimeAnimator && presentationRenderer == null)
+                    return rootRenderer;
+                DisableCompetingSpriteRenderers(presentationRenderer);
+                return presentationRenderer != null ? presentationRenderer : rootRenderer;
+            }
+
             if (rootRenderer == null)
                 return null;
 
@@ -467,6 +568,26 @@ namespace DragonTD.TowerDefense
             _visualRoot.localRotation = Quaternion.identity;
             _visualRoot.localScale = Vector3.one;
             return visualRenderer;
+        }
+
+        private void DisableCompetingSpriteRenderers(SpriteRenderer presentationRenderer)
+        {
+            SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (SpriteRenderer renderer in renderers)
+            {
+                if (renderer == null || renderer == presentationRenderer) continue;
+                renderer.enabled = false;
+            }
+
+            if (presentationRenderer != null)
+                presentationRenderer.enabled = true;
+        }
+
+        private void DisableColliders()
+        {
+            Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
+            for (int i = 0; i < colliders.Length; i++)
+                colliders[i].enabled = false;
         }
 
         private void ApplyVisualLocalMotion(Vector3 localPosition, Vector3 localScale, Quaternion localRotation, float damping)
